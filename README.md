@@ -5,14 +5,14 @@ The full write-up is here https://medium.com/@skippybla/music-live-streaming-415
 
 ## Front-end Highlights:
 
-Audio player and download page (Vanilla JS + Wavesurfer)
+### Audio player and download page (Vanilla JS + Wavesurfer)
 https://github.com/blairliikala/unt_archive/blob/main/templates/downloads.group/item.html
 
-VOD Player (Vanilla JS + JWPlayer)
+### VOD Player (Vanilla JS + JWPlayer)
 https://github.com/blairliikala/unt_archive/blob/main/templates/media.group/playvideo.html
 
-Live Upcoming (Vue)
+### Live Upcoming (Vue)
 https://github.com/blairliikala/unt_archive/blob/main/templates/live.group/index.html
 
-Live Player (Vue)
+### Live Player (Vue)
 https://github.com/blairliikala/unt_archive/blob/main/templates/live.group/_event_recital.html
