@@ -1,18 +1,18 @@
 # UNT Live Streaming and Archive System
-An archive of the AV archive I ran at UNT for demonstration.
+An archive of the AV archive I ran at UNT over about 10 years, posted here for demonstration.
 
 The full write-up is here https://medium.com/@skippybla/music-live-streaming-4153dfb007b9
 
-## Highlights:
+## Front-end Highlights:
 
-Audio player and download page.
+Audio player and download page (Vanilla JS + Wavesurfer)
 https://github.com/blairliikala/unt_archive/blob/main/templates/downloads.group/item.html
 
-VOD Player
+VOD Player (Vanilla JS + JWPlayer)
 https://github.com/blairliikala/unt_archive/blob/main/templates/media.group/playvideo.html
 
-Live upcoming page Vue app
+Live Upcoming (Vue)
 https://github.com/blairliikala/unt_archive/blob/main/templates/live.group/index.html
 
-Live Player
+Live Player (Vue)
 https://github.com/blairliikala/unt_archive/blob/main/templates/live.group/_event_recital.html
