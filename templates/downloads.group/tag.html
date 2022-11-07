@@ -1,0 +1,118 @@
+{!-- Check if tag is in URL, 3rd segment. --}
+{if segment_3 ==""}
+	{embed=site/404 meta="No tag specified so we aren't sure what to show you."}
+{/if}
+
+{if segment_3 !=""}
+{embed=a/h
+	title="By Tag - {exp:tag:tag_name tag="{segment_3}"}"
+	meta="Concert Entries by Tag."
+	og-title="UNT {site_name} - Tag - {exp:tag:tag_name tag="{segment_3}"}"
+	og-type="website"
+	og-url="{site_url}/{segment_1}/{segment_2}/{segment_3}"
+	og-image=""	
+}
+{embed='downloads/_nav'}
+
+<section id="content">
+
+<header class="ens_head" style="max-width:900px;margin-left:auto;margin-right:auto">
+	<h1>"{exp:tag:tag_name tag="{segment_3}"}"</h1>
+
+	{!--
+	{if logged_in}
+		{exp:tag:subscribed id_marker="tag"}
+			{if subscribed}
+				<a href="{unsubscribe_link}" title="Saved Tag controls are in your ME section" class="basic_button iam_subscribed tippy" id="subscriptions"></a>
+			{/if} 
+			{if not_subscribed}
+				<a href="{subscribe_link}" title="Saved Tag controls are in your ME section" class="basic_button not_subscribed tippy" id="subscriptions"></a>
+			{/if}
+		{/exp:tag:subscribed}
+	{/if}
+	--}
+	<a href="{path=feeds/downloads-tag}/{segment_3}" class="basic_button tippy" title="RSS feed of this tag">
+		<span class="fa fa-rss"></span>{!-- There must be a space after this--}
+	</a>
+</header>
+
+{exp:tag:entries
+	orderby="entry_date" 
+	sort="desc" 
+	show_expired="yes" 
+	inclusive="yes" 
+	tag="{segment_3}"
+}
+	{if count=='1'}
+		<section class='vertical_listing onecolumn' style="max-width:900px;margin-left:auto;margin-right:auto">
+  {/if}
+
+
+  {!-- Limit to Archive -- }
+  {if channel_id == 4}
+  <section class='each'>
+    <a href="{entry_id_path=downloads/item}" class="each_link">
+
+      {if ondemand_image}
+          {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {if:elseif archive_default_image}
+          {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {if:elseif '{related_ensembles_v2:default_picture}' }
+          {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+          {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {if:elseif '{room:room_primary_image:server_path}' }
+          {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+          <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {if:else}
+          {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+            <img src="{made}" class="each_image" title="{title}" alt="{title}" width="{width}" height="{height}" />
+          {/exp:ce_img:pair}
+      {/if}
+      <div class='each_meta'>
+        <strong>{exp:char_limit total='50'}{title}{/exp:char_limit}</strong><br />
+        {entry_date format='%Y %F %j'}
+      </div>
+    </a>
+    <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+    <div class='full_track_listing'>
+      {ondemand_chapters_grid}
+        <article class="tracks_row">
+          <span class="tracks_count">{ondemand_chapters_grid:count}.</span>
+          <span class="tracks_name">{exp:char_limit total="50"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+          <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+        </article>
+      {/ondemand_chapters_grid}
+    </div>
+  </section>
+
+  {/if}
+
+	{if count==total_results}
+	</section>
+	{/if}
+  
+{/exp:tag:entries}
+
+<article style="max-width:900px;margin:0 auto">
+	<h3>About This List:</h3>
+	<p>Performers are tagged in recorded on-campus music events.  Recitals shown here are for the last 5 years.  We copy exactly what is printed in the program.  It may be possible that there are different tags for the same person with different spelling or characters.  Let us know if we need to fix something.</p>
+
+	<h3>More Results</h3>
+	<p>Continue searching on the library site for events older than about 5 years. <a href="https://digital.library.unt.edu/explore/partners/UNTML/browse/?q=%27{exp:ce_str:ing rawurlencode}{exp:tag:tag_name id_marker='tag'}{/exp:ce_str:ing}%27&t=fulltext&fq=untl_collection%3ACOMR" class="basic_button">Go...</a></p>
+</article>
+
+</section>
+{embed=a/js}
+{embed=a/f}
+{/if}
+

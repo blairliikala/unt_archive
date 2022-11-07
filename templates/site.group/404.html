@@ -1,0 +1,15 @@
+{embed=a/h title="404" meta="Item Not Found"}
+	 <div id="content">
+	 	<section style="width:60%;margin:4vw auto">
+	 		<h2><span class="fa fa-warning"></span> Not Able To Find It (404) - {embed:error_title}</h2>
+	 		{if embed:error_description}
+	 			<p>{embed:error_description}</p>
+	 		{if:else}
+	   			<p>I'm sorry, but what you are looking for is no longer available or you were not permitted to enter.</p>
+	   		{/if}
+	   	</section>
+	 </div>
+
+{if !embed:error_description}
+{embed=a/f}
+{/if}

@@ -1,0 +1,41 @@
+{!-- 
+
+  Cancelled event.
+
+--}
+{exp:channel:entries 
+  channel="live" 
+  status="closed"
+  show_future_entries="yes" 
+  show_expired="no" 
+  limit="1" 
+  orderby="date" 
+  sort="asc" 
+  disable="member_data|pagination|categories"
+  cache="yes"
+  refresh="1000"
+  entry_id="{segment_3}"
+}
+
+  {embed=a/h
+    title="Live - CANCELLED {title} {entry_date format="%F %j"}"
+    meta="Live concert streaming at North Texas."
+    og-title="UNT Live - CANCELLED {title} {entry_date format="%F %j"}"
+    og-type="music"
+    og-url="{site_url}/live"
+    og-image="{site_url}{if ondemand_image}{exp:ce_img:pair src='{ondemand_image}' width='1280' height='720' crop='yes' save_type='jpg'}{made}{/exp:ce_img:pair}{if:else}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src='{related_ensembles_v2:default_picture}' width'1280'  height='720' save_type='jpg'}{made}{/exp:ce_img:pair}{if related_ensembles_v2:no_results}{exp:ce_img:pair src='{room}{room:room_primary_image}{/room}' width'1280' height='720' save_type='jpg'}{made}{/exp:ce_img:pair}{/if}{/related_ensembles_v2}{/if}"
+    entry_id="{entry_id}"
+  }
+
+<main id="content">
+
+  <h2>"{title}, {entry_date format="%F %j"}" has been cancelled.</h2>
+
+</main>
+
+
+{embed=a/js}
+
+{embed=a/f}
+
+{/exp:channel:entries}

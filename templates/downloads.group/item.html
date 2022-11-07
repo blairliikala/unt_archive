@@ -1,0 +1,2830 @@
+{preload_replace:template_root="downloads"}
+{preload_replace:checkout_root="ctcheckout"}
+{preload_replace:template_item="item"}
+
+{exp:channel:entries
+  channel="live" 
+  status="open|pending|WaitingForReview|LiveStream|pendingvideo|pendingaudio|scheduled|needspayment" 
+  show_expired="yes" 
+  show_future_entries="yes" 
+  cache="yes"
+  refresh="86400" 
+  disable="categories|pagination" 
+  entry_id="{segment_3}"
+}
+
+{if no_results}
+  {embed="site/404"
+    error_title="No Entry Matches that Number" 
+    error_description="It appears that entry ID is no longer in use.  That means there is no concert to display because we don't know which concert to show."
+  }
+{/if}
+
+{!-- Embed the header --}
+{embed=a/h
+  title="{entry_date format="%F %j, %Y"} {title}" 
+  meta="UNT Archive - Concert Media"
+  og-title="{entry_date format="%F %j, %Y"} {title}"
+  og-type="article"
+  og-url="/{segment_1}{if segment_2!=""}/{segment_2}{/if}{if segment_3!=""}/{segment_3}{/if}"
+  og-image=""
+}
+{!-- Embed the archive navigation --}
+{embed='downloads/_nav'}
+
+
+{if logged_in_member_group =='12'}
+  <main id="content">
+    <h2>Restricted.</h2>
+    <p>Unfortunately your access level does not allow you to view entries.</p>
+    <p>Give our Youtube channel a watch.  <a href="https://youtube.com/untrecserv">https://youtube.com/untrecserv</a></p>    
+  </main>
+{if:else}
+
+
+{!--  Admins and editors see a warning that the entry is not public.  --}
+{if logged_in_member_group == "1" OR logged_in_member_group == "6"}
+  {if status != "open"}
+  <section class="content_pending">
+    <p id="admin_notice" class="notice"><span class="fa fa-exclamation-circle"></span> Status: {status}. This entry is not open to students/faculty/staff.</p>
+  </section>
+  {/if}{!-- if open --}
+{if:else}
+
+  {if status != "open"}
+
+    {!-- Hide the content div so nothing displays --}
+    <style>
+      .open {display:none}
+    </style>
+
+    <main id="content">
+
+      <div class="item_background_header">
+              {if ondemand_image}
+                  {exp:ce_img:pair src="{ondemand_image}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                    <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+              {if:elseif archive_default_image}
+                  {exp:ce_img:pair src="{archive_default_image}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                    <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{related_ensembles_v2:default_picture}' }
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                  <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                  {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                  <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{room:room_primary_image:server_path}' }
+                  {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="1280" height="720" crop="yes" save_type="jpg"  fallback_image="/images/default.png" top_colors="3"}
+                  <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+              {if:else}
+                <style>
+                  .ens_head h1 {
+                    background:none;
+                    color:var(--text);
+                    -webkit-text-fill-color:initial;
+                  }
+                </style>
+
+                {!--  Display no image?
+                  {exp:ce_img:pair src="/images/default.png" width="1280" height="720" crop="yes" save_type="jpg"}
+                    <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" class="video_download_background" />
+                  {/exp:ce_img:pair}
+                  --}
+              {/if}  
+      </div>      
+
+      <header class="ens_head">
+        <h1 class="item_title">{title}<br />{entry_date format="%F %j, %Y"}</h1>
+
+        {if concert_program}
+          <a href="{concert_program}" class="basic_button tippy" title="Download Program as a PDF" data-hjtag="item-pdf-download" target="_blank" rel="noopener noreferrer"><span class="fa fa-file-pdf-o "></span> Program</a>
+        {/if}
+
+        <div class="favorites_block" id="fav_{entry_id}">
+        {exp:favorites:info entry_id="{entry_id}" disable_pagination="yes"}
+          <!-- DELETE the current favorite -->
+          {exp:favorites:edit favorite_id="{favorites:favorite_id}" form:id="remove_fav"}
+              <input type="hidden" name="delete" value="yes">
+              <button class="basic_button fav fav_saved_remove" data-favActionButton id="fav_action_button" title="Remove this from your list."><i class="fa fa-check-square-o" aria-hidden="true"></i></button>
+          {/exp:favorites:edit}
+
+          {if favorites:no_results}
+            <!-- ADD a Favorite -->
+            {exp:favorites:form entry_id="{entry_id}" form:id="add_fav"}
+                <button class="basic_button fav" data-favActionButton id="fav_action_button" title="Add this to your list."><i class="fa fa-check" aria-hidden="true"></i></button>
+            {/exp:favorites:form}
+          {/if}
+        {/exp:favorites:info}
+        </div>           
+      </header>
+
+      <section class="video_download_container">
+        <a href="/media/playvideo/{entry_id}" class="play_video_link"><i class="fa fa-play-circle-o" id="video_play_button_v2"></i><br / ><span class="play_button_text">Play Recorded Live Stream</span></a>
+      </section>
+
+
+      <!--
+      <p id="admin_notice" class="notice"><span class="fa fa-exclamation-circle"></span> In Progress ({status}). Will be posted here when completed.</p>
+      -->
+
+      <section class="pending_info" style="margin:4em;padding:1em;text-align: center;position: relative;font-weight: bold;background-color:rgba(255,255,255,.6);border-radius:3px;">
+        {if status=="Scheduled"}
+          <p><strong>{status}</strong> The event is scheduled in our system, and should not need any further action.</p>
+        {/if}
+        {if status=="Needspayment"}
+          <p>The event recording request requires payment to get it on our schedule.</p>
+        {/if}
+
+        {if status=='Pending'}
+          <p>The event is in the initial stage of post-production.</p>
+        {/if}
+        {if status=='pendingvideo'}
+          <p>Audio is edited, and awaiting video to be processed for streaming.</p>
+        {/if}
+        {if status=='pendingaudio'}
+          <p>Video is completed, and waiting on audio to be mixed and edited.</p>
+        {/if}
+        {if status=='waitingforreview'}
+          <p>The event is ready and waiting for a final review.</p>
+        {/if}
+        <p>Download files will be available once editing is complete.</p>
+      </section>
+      
+    </main>
+
+  {/if}{!--if status open --}
+  
+{/if}{!-- if member group 1 or 6 --}
+
+
+
+
+
+
+
+
+
+<main id="content" class="background_{status} open">
+
+{if logged_in_member_group != '12'}
+
+
+
+
+
+  {if 
+    logged_in_member_group=="1" OR 
+    logged_in_member_group=="6" OR 
+    logged_in_member_group=="9" OR
+    video_current_price=="0" OR 
+    {exp:cartthrob:is_purchased_item entry_id='{entry_id}'} OR 
+    '{exp:pvl_checkif value="{logged_in_username}" is_in="{exceptions backspace="1"}{item}|{/exceptions}" parse="inward"}yes{/exp:pvl_checkif}'!="" OR
+    '{exp:pvl_checkif value="{logged_in_username}" is_in="{archive_euid}" parse="inward"}yes{/exp:pvl_checkif}' !=""
+  }
+
+  <!--************** DOWNLOAD MODAL **************-->
+  <div id="video_modal" class="modal micromodal-slide" aria-hidden="true">
+    <div tabindex="-1" data-micromodal-close class="modal__overlay">
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="video_modal-title" style="max-width:100%;margin-left:10%;margin-right:10%">
+      <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+
+      <h1>Video Download</h1>
+
+        <section class="video_download_modal">                    
+          <article>
+            {if video_download_link}
+              {video_download_link}
+                <a id="disableContextMenu"
+                  data-videodownload
+                  data-videotype="program"                      
+                  data-hj="video-download" 
+                  type="video/mp4"
+                  class="newDownload download_button orange dl tippy videoDownload tracker_internal_video_download" 
+                  title="mp4, h.264." 
+                  href="{site_url}{url}" 
+                  download="{filename}.{extension}"><i class="fa fa-video-o"></i> Begin Download</a>
+              {/video_download_link}
+            {if:elseif archive_mux_vod_playback_id}
+              <a
+                data-videodownload
+                data-videotype="program"                      
+                data-hj="video-download-mux" 
+                type="video/mp4"
+                class="basic_button tracker_mux_download" 
+                title="Livestream Recording, mp4, h.264."
+                href="https://stream.mux.com/{archive_mux_vod_playback_id}/high.mp4?download={entry_id}.mp4" 
+                download="{entry_date format="%Y-%M-%d"}-{entry_id}-livestream_recording.{extension}"><i class="fa fa-video-o"></i> Live Stream Recording</a>
+            {if:else}
+              <p>No video link.</p>
+            {/if}                          
+            </article>
+            <article>
+              Name: <strong>{if title}{title}{if:else}{filename}.{extension}{/if}</strong>
+            </article>
+        </section>
+
+
+      {if '{archive_recital_type:title}' == 'ensemble'}
+        <p>Before uploading to Youtube and other public pages please check with us.  Uploading sections for auditions/applications is permitted if the video is unlisted (someone needs a link to see it).  Anything more public needs additional approvals.</p>
+      {if:else}
+        <p>You have permission from the college to use this recording as you would like, such as Youtube, however you may still need permission from other musicians in the concert, and permission for posting musical compositions.</p>
+      {/if}
+
+      <footer class="modal__footer">
+        <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+      </footer>
+    </div></div>
+  </div><!-- /modal -->
+  {/if}
+
+
+
+
+
+
+
+
+  <div class="item_background_header">
+          {if ondemand_image}
+              {exp:ce_img:pair src="{ondemand_image}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif archive_default_image}
+              {exp:ce_img:pair src="{archive_default_image}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+                <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{related_ensembles_v2:default_picture}' }
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+              <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+              {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="1280" height="720" crop="yes" save_type="jpg" fallback_image="/images/default.png" top_colors="3"}
+              <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{room:room_primary_image:server_path}' }
+              {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="1280" height="720" crop="yes" save_type="jpg"  fallback_image="/images/default.png" top_colors="3"}
+              <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:else}
+            <style>
+              .ens_head h1 {
+                background:none;
+                color:var(--text);
+                -webkit-text-fill-color:initial;
+              }
+            </style>
+
+            {!--  Display no image?
+              {exp:ce_img:pair src="/images/default.png" width="1280" height="720" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{title}" alt="{title}"width="{width}" height="{height}" class="video_download_background" />
+              {/exp:ce_img:pair}
+              --}
+          {/if}  
+  </div>
+
+
+  
+    <header class="ens_head">
+      <h1 class="item_title">{title}<br />{entry_date format="%F %j, %Y"}</h1>
+
+      {if concert_program}
+        <a href="{concert_program}" class="basic_button tippy" title="Download Program as a PDF" data-hjtag="pdf-download" target="_blank" rel="noopener noreferrer"><span class="fa fa-file-pdf-o "></span> Program</a>
+      {/if}
+
+      <div class="favorites_block" id="fav_{entry_id}">
+      {exp:favorites:info entry_id="{entry_id}" disable_pagination="yes"}
+        {!--{favorites:favorited_date format="%F %j, %Y"}--}
+
+        <!-- DELETE the current favorite -->
+        {exp:favorites:edit favorite_id="{favorites:favorite_id}" form:id="remove_fav"}
+            <input type="hidden" name="delete" value="yes">
+            <button class="basic_button fav fav_saved_remove" data-favActionButton id="fav_action_button" title="Remove this from your list."><i class="fa fa-check-square-o" aria-hidden="true"></i></button>
+        {/exp:favorites:edit}
+
+        {if favorites:no_results}
+          <!-- ADD a Favorite -->
+          {exp:favorites:form entry_id="{entry_id}" form:id="add_fav"}
+              <button class="basic_button fav" data-favActionButton id="fav_action_button" title="Add this to your list."><i class="fa fa-check" aria-hidden="true"></i></button>
+          {/exp:favorites:form}
+        {/if}
+      {/exp:favorites:info}
+      </div> 
+
+      {if 
+        logged_in_member_group=="1" OR 
+        logged_in_member_group=="6" OR 
+        logged_in_member_group=="9" OR 
+        video_current_price=="0" OR 
+        {exp:cartthrob:is_purchased_item entry_id="{entry_id}"} OR 
+        '{exp:pvl_checkif value="{logged_in_username}" is_in="{exceptions backspace="1"}{item}|{/exceptions}" parse="inward"}yes{/exp:pvl_checkif}' !="" OR
+        '{exp:pvl_checkif value="{logged_in_username}" is_in="{archive_euid}" parse="inward"}yes{/exp:pvl_checkif}' !=""
+      }
+            
+        {!-- Warning messages if video fields are blank --}
+        {if video_download_link=="" AND global_video_download!=""}
+        <button disabled class="basic_button tippy" title="The file is set to be available, but no file is linked to this entry yet."><span class="fa fa-warning" ></span> No Video File Uploaded.</button>
+        {/if}
+
+        {if video_download_link=="" AND global_video_download=="" AND archive_mux_vod_playback_id == ""}
+        <button disabled class="basic_button"><i class="fa fa-info-circle" ></i> No Video Download</button>
+        {/if}
+
+        {!-- Don't show to alumni, educators, discontinued --}
+        {if
+          logged_in_member_group != "10" OR 
+          logged_in_member_group != '11' OR
+          logged_in_member_group != '12'
+          }
+
+          {if video_download_link OR archive_mux_vod_playback_id}          
+            <button data-micromodal-trigger="video_modal" class="basic_button tippy" title="See download options.">Download Video</button>
+          {/if}
+
+        {/if}
+
+        {if {exp:cartthrob:is_purchased_item entry_id="{entry_id}"}}
+          <!--<button class="basic_button" disabled>Purchased</button>-->
+        {/if}
+
+      {if:else}{!--If not admin or bought....--}
+            
+        {if global_video_download != ""} {!--  If the file is available to students.  --}
+
+          {!-- If the item is in the cart, then tell user it is in the cart. --}
+          {if {exp:cartthrob:is_in_cart entry_id="{entry_id}"}}
+            <button disabled class="basic_button" disabled><i>Video In Cart</i></button>
+
+          {if:else}
+
+            {!------ Buy Button. ------}
+            {!-- Dont show to Alumni, educators, and discontinued. --}
+            {if 
+              logged_in_member_group != '10' AND
+              logged_in_member_group != "11"
+              }
+              {exp:cartthrob:add_to_cart_form 
+                entry_id="{entry_id}" 
+                no_shipping="yes" 
+                no_tax="yes" 
+                quantity="1" 
+                return="{checkout_root}/view_cart" 
+                expiration_date="731"
+              } 
+                <button type="submit" class="basic_button" data-hjtag="item-add-video-to-cart" id="button {entry_id}" title="Purchase Download" /><i class="fa fa-plus" aria-hidden="true"></i> Video Download {video_current_price}</button>
+              {/exp:cartthrob:add_to_cart_form}
+            {/if}
+          {/if}
+        {/if}
+
+      {/if}
+
+      {/if}
+
+
+      {if logged_in_member_group=="1" OR logged_in_member_group=="6"}
+        {if archive_mux_asset_id}<a href="/sys/mux/mux_master.html?asset_id={archive_mux_asset_id}" class="basic_button tippy admin_only" title="Get Mux Master File">Master</a>{/if}
+        <a href="{cp_edit_entry_url}" class="basic_button tippy admin_only" title="Edit this Entry in the Control Panel">
+          <span class="fa fa-wrench"></span>
+        </a>
+
+        <button id="regen_waveform" class="basic_button tippy admin_only" title="Re-make audio waveforms, for after updating audio."><i class="fa fa-refresh"></i> Waveforms</button>
+      {/if}
+
+    </header>
+
+
+  {if status =="open" OR logged_in_member_group == "1" OR logged_in_member_group == "6"}
+
+
+    {if archive_concert_notes}<p>{archive_concert_notes}</p>{/if}
+
+
+
+    <!--********************** Video Download **********************-->
+    {if 
+      global_video_download OR 
+      global_streaming OR
+      archive_mux_vod_playback_id != "" OR
+      logged_in_member_group=="1" OR 
+      logged_in_member_group=="6" OR 
+      logged_in_member_group=="9" OR 
+      {exp:cartthrob:is_purchased_item entry_id="{entry_id}"} OR 
+      '{exp:pvl_checkif value="{logged_in_username}" is_in="{exceptions backspace="1"}{item}|{/exceptions}" parse="inward"}yes{/exp:pvl_checkif}' !="" OR
+      '{exp:pvl_checkif value="{logged_in_username}" is_in="{archive_euid}" parse="inward"}yes{/exp:pvl_checkif}' !=""
+    }
+
+      <section class="video_download_container">
+
+        {if global_streaming OR archive_mux_vod_playback_id !=""}
+          <a href="/media/playvideo/{entry_id}" class="play_video_link"><i class="fa fa-play-circle-o" id="video_play_button_v2"></i><br / ><span class="play_button_text">Play</span></a>
+        {/if}
+
+        
+        <article class="download_info">
+          {!-- If the item has been bought, free, or member groups match, show download button.  Otherwise show buy button.--}
+          {if 
+            logged_in_member_group=="1" OR 
+            logged_in_member_group=="6" OR 
+            logged_in_member_group=="9" OR
+            video_current_price=="0" OR 
+            {exp:cartthrob:is_purchased_item entry_id='{entry_id}'} OR 
+            '{exp:pvl_checkif value="{logged_in_username}" is_in="{exceptions backspace="1"}{item}|{/exceptions}" parse="inward"}yes{/exp:pvl_checkif}'!="" OR
+            '{exp:pvl_checkif value="{logged_in_username}" is_in="{archive_euid}" parse="inward"}yes{/exp:pvl_checkif}' !=""
+          }
+            
+            {!-- Warning messages if video fields are blank --}
+            {if video_download_link=="" AND global_video_download!=""}
+            <p id="admin_notice" class="bad tippy" title="The file is set to be available, but no file is linked to this entry yet."><span class="fa fa-warning" ></span> No Video File Uploaded.</p>
+            {/if}
+            {if video_download_link=="" AND global_video_download=="" AND archive_mux_vod_playback_id == ""}
+            <p id="admin_notice" style="color:#ccc"><span class="fa fa-info-circle" ></span> No video download available for this concert.</p>
+            {/if}
+
+            {!-- Don't show to alumni, educators, discontinued --}
+            {if
+              logged_in_member_group != "10" OR 
+              logged_in_member_group != '11' OR
+              logged_in_member_group != '12'
+            }
+
+            {if video_download_link OR archive_mux_vod_playback_id}          
+              <p><button data-micromodal-trigger="video_modal" class="download_button orange dl tippy" title="Click to see download options.">Show Video Download Options</button></p>
+
+
+              <div id="video_modal" class="modal micromodal-slide" aria-hidden="true">
+                <div tabindex="-1" data-micromodal-close class="modal__overlay">
+                <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="video_modal-title" style="max-width:100%;margin-left:10%;margin-right:10%">
+                  <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+
+                  <h1>Video Download</h1>
+
+                    <section class="video_download_modal">                    
+                      <article>
+                        {if video_download_link}
+                          {video_download_link}
+                            <a id="disableContextMenu"
+                              data-videodownload
+                              data-videotype="program"                      
+                              data-hj="video-download" 
+                              type="video/mp4"
+                              class="newDownload download_button orange dl tippy videoDownload tracker_internal_video_download" 
+                              title="mp4, h.264." 
+                              href="{site_url}{url}" 
+                              download="{filename}.{extension}"><i class="fa fa-video-o"></i> Begin Download</a>
+                          {/video_download_link}
+                        {if:elseif archive_mux_vod_playback_id}
+                          <a
+                            data-videodownload
+                            data-videotype="program"                      
+                            data-hj="video-download-mux" 
+                            type="video/mp4"
+                            class="basic_button tracker_mux_download" 
+                            title="Livestream Recording, mp4, h.264."
+                            href="https://stream.mux.com/{archive_mux_vod_playback_id}/high.mp4?download={entry_id}.mp4" 
+                            download="{entry_date format="%Y-%M-%d"}-{entry_id}-livestream_recording.{extension}"><i class="fa fa-video-o"></i> Live Stream Recording</a>
+                        {if:else}
+                          <p>No video link.</p>
+                        {/if}                          
+                        </article>
+                        <article>
+                          Name: <strong>{if title}{title}{if:else}{filename}.{extension}{/if}</strong>
+                        </article>
+                    </section>
+
+       
+                  {if '{archive_recital_type:title}' == 'ensemble'}
+                    <p>Before uploading to Youtube and other public pages please check with us.  Uploading sections for auditions/applications is permitted if the video is unlisted (someone needs a link to see it).  Anything more public needs additional approvals.</p>
+                  {if:else}
+                    <p>You have permission from the college to use this recording as you would like, such as Youtube, however you may still need permission from other musicians in the concert, and permission for posting musical compositions.</p>
+                  {/if}
+
+                  <footer class="modal__footer">
+                    <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+                  </footer>
+                </div></div>
+              </div><!-- /modal -->
+
+              <style>
+                #video_modal {
+                  display: none;
+                }
+
+                #video_modal.is-open {
+                  display: block;
+                  z-index: 99999
+                }
+                .modal__overlay {
+                  z-index: 9999
+                }
+                </style>
+            {/if}
+
+            {/if}
+
+            {if {exp:cartthrob:is_purchased_item entry_id="{entry_id}"}}
+              <p class="own" style="color:white">You have purchased this.</p>
+            {/if}
+
+          {if:else}{!--If not admin or bought....--}
+            {if global_video_download!=""}{!--  If the file is available to students.  --}
+              {!-- If the item is in the cart, then tell user it is in the cart. --}
+              {if {exp:cartthrob:is_in_cart entry_id="{entry_id}"}}
+                <p class="video_is_free">Video Download In Cart</p> 
+
+              {if:else}{!-- Check against delay --}
+
+                {!------ Buy Button. ------}
+                {!-- Dont show to Alumni, educators, and discontinued. --}
+                {if 
+                  logged_in_member_group != '10' AND
+                  logged_in_member_group != "11" AND
+                  logged_in_member_group != '12'
+                }
+                  {exp:cartthrob:add_to_cart_form 
+                    entry_id="{entry_id}" 
+                    no_shipping="yes" 
+                    no_tax="yes" 
+                    quantity="1" 
+                    return="{checkout_root}/view_cart" 
+                    expiration_date="731"
+                  } 
+                    <p><button type="submit" class="basic_button" data-hjtag="item-add-video-to-cart" id="button {entry_id}" title="Buy, and change this to a download button." /><i class="fa fa-plus" aria-hidden="true"></i> Video Download {video_current_price}</button></p>
+                  {/exp:cartthrob:add_to_cart_form}
+                {/if}
+              {/if}
+            {/if}
+          {/if}
+          
+        {/if}
+
+          {if
+            archive_conductor_camera !='' AND 
+            logged_in_member_group != '10' AND
+            logged_in_member_group != "11" AND 
+            logged_in_member_group != '12'
+          }
+            {archive_conductor_camera}
+              <p>
+                  <a id="cc-download"
+                    class="download_button orange dl tippy videoDownload" 
+                    data-videodownload 
+                    data-hj="video-download-cc" 
+                    data-videotype="cc"
+                    type="video/mp4"
+                      href="{exp:link_vault:download_url
+                        file_path="{server_path}"
+                        entry_id="{entry_id}"
+                        title="{filename}"
+                        parse="inward"
+                        cf:title="{entry_date format="%F %j, %Y"} {title}"
+                        cf:album="{entry_date format="%M %d, %Y"} {title}"
+                        cf:artist="{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                        cf:year="{entry_date format="%Y"}"
+                        cf:member_group="{logged_in_group_id}"
+                        cf:page="{segment_1}/item/{entry_id}"
+                        cf:type="video_download_cc"
+                        cf:recitaltype="{archive_recital_degree_type_tag}"
+                        cf:category="{categories backspace="2"}{category_name}, {/categories}"
+                        cf:accesstime="{current_time format='%Y-%m-%d'}"                  
+                    }" title="Conductor camera view only for selected concerts."> Conductor Camera Download</a><br />
+              </p>
+            {/archive_conductor_camera}
+          {/if}
+
+        </article><!--/download info-->
+
+      </section>
+
+    {/if}{!-- videoforsale--}
+
+
+  <!--******************* AUDIO *******************-->
+  <section class="audio_container">
+
+    <header id="audioHeader" class="audio_header" style="opacity: 0">
+      {if global_audio_download=="yes"}
+        <h3 id="audio_title" class="section_title">Audio <span id="audio_global_spinner"></span><span id="loading_bar"></span></h2>
+        <span>
+          <button data-hjtag="item-keyboardshortcuts" class="basic_button keyboard_shortcut_button"><i class="fa fa-keyboard-o"></i></button>
+          <template id="keyboardshortcut_data">
+            <table style="background-color:white;border:1px solid white;border-radius:5px">
+              <tr>
+                <td><i class="key fa fa-long-arrow-up"></i></td>
+                <td>Previous Track</td>
+              </tr>
+              <tr>
+                <td><i class="key fa fa-long-arrow-down"></i></td>
+                <td>Next Track</td>
+              </tr>
+              <tr>
+                <td><div class="key">Space</div></td>
+                <td>Play / Pause</td>
+              </tr>
+              <tr>
+                <td><i class="key fa fa-exchange"></i></td>
+                <td>Skip Forward/Backward</td>
+              </tr>
+              <tr>
+                <td><div class="key">#1<div></td>
+                <td>1/2 Speed</td>
+              </tr>
+              <tr>
+                <td><div class="key">#2<div></td>
+                <td>Normal Speed</td>
+              </tr>
+              <tr>
+                <td><div class="key">#3<div></td>
+                <td>x2 Speed</td>
+              </tr>
+            </table>
+          </template>
+        </span>
+
+        <span class="tip">
+        <!--
+          <div><kbd>Space</kbd> to Play.</div>
+          <div><kbd><i class="fa fa-long-arrow-up"></i><i class="fa fa-long-arrow-down"></i></kbd> to Navigate</div>
+          <div><kbd><i class="fa fa-exchange"></i></kbd> to Seek</div>
+        -->
+        </span>
+
+        {!-- Restrict Alumni, Educators, and discontinued --}
+        {if logged_in_member_group !='10' AND logged_in_member_group !='11' AND logged_in_member_group !='12'}
+          <span>
+            <button id="downloadAllm4a" class="basic_button tippy" title="Download All Audio Files." data-hjtag="download-all-m4a" hidden><i class="fa fa-download"></i> All</button>
+          </span>
+        {/if}
+  
+        <div class="speed"></div>
+      {/if}
+    </header>
+
+    <section class="resize_container">
+        <section id="ini_loading" class="ini_loading">
+          <div class="text">
+            <i class="fa fa-circle-o-notch fa-spin fa-2x"></i><br /><span>Loading Tracks...</span>
+          </div>
+        </section>
+        <section class="audio_grid_v3" style="opacity:0"></section>
+    </section>  
+
+  {/if}
+
+
+</section><!--audio container-->
+
+  <!--******************* All the lower content material *******************-->
+  <article id="metadata-async-load" class="lower_meta">
+    <div style="font-size:4em;text-align:center;margin:0 auto;width:100%;color:rgba(255,255,255,.5)">
+      <i class="fa fa-spin fa-refresh"></i> Loading
+    </div>
+  </article>
+
+  {/if}{!--status--}
+
+</main><!--content-->
+{embed=a/js}
+<script src="/js/wave/wavesurfer.3.3.1.min.js"></script>
+<!--<script src="/js/wave/4.3.0/wavesurfer.4.3.0.min.js"></script>-->
+<script async src="/js/airtable/airtable.browser.js"></script>
+
+
+<script>
+"use strict";
+const debug = false;
+
+const start_time  = new Date();
+
+if(debug){console.debug('Debug is True');}
+
+//const disableLocalStorage = true;
+//const entry_id = {entry_id};
+const group_id = {logged_in_group_id};
+
+
+const config = {};
+
+config.share        = true;
+config.airplay      = true;
+config.localstorage = true;
+config.audio_dl     = true;
+config.dataSave     = {if global:saveData}true{if:else}false{/if};
+
+
+// Hide Download elements from some user groups.
+switch(true) {
+  case group_id == 3 :
+  case group_id == 10 :
+  case group_id == 11 :
+  case group_id == 12 :
+    config.share    = false;
+    config.audio_dl = false;
+    break;
+}
+
+// Detect Airplay support.
+if (window.WebKitPlaybackTargetAvailabilityEvent && config.airplay == true) {
+  config.airplay_supported = true;
+} else {
+  config.airplay_supported = false;  
+}
+
+
+
+
+/***** Change background color *******
+let divs_color = document.querySelectorAll('[data-topcolor]');
+if (divs_color.length) {
+  let bg_color_hex = divs_color[2].dataset.topcolor;
+  //bg_color_hex = bg_color_hex.dataset.topcolor;
+  let bg_color_rgba = hexToRGB(bg_color_hex);
+  //document.querySelector('.audio_container').style.backgroundImage = 'linear-gradient(to top, '+bg_color_rgba+' 93%, rgba(0, 0, 0, 0) )';
+}
+
+function hexToRGB(h) {
+  let r = 0, g = 0, b = 0;
+
+  // 3 digits
+  if (h.length == 4) {
+    r = "0x" + h[1] + h[1];
+    g = "0x" + h[2] + h[2];
+    b = "0x" + h[3] + h[3];
+
+  // 6 digits
+  } else if (h.length == 7) {
+    r = "0x" + h[1] + h[2];
+    g = "0x" + h[3] + h[4];
+    b = "0x" + h[5] + h[6];
+  }
+  
+  return "rgba("+ +r + "," + +g + "," + +b + ", .3)";
+}
+*/
+
+
+
+
+
+/************************************* Chapter Markers ******************************/
+const chaptermarkers = {
+  "entry_id" : {entry_id},
+  "status"   : '{status}',
+  "items" : [
+    {ondemand_chapters_grid backspace="1"}
+    {ondemand_chapters_grid:audio_file}
+    {
+      "performance"   : "{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.",
+      "title"         : "{entry_date format="%F %j, %Y"} {title}",
+      "year"          : "{entry_date format='%Y'}",
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing json_encode}{exp:char_limit total="75" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="75" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="75" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "filename"      : "{ondemand_chapters_grid:audio_file:filename}",
+      "file_id"       : "{ondemand_chapters_grid:audio_file:file_id}",
+      "entry_id"      : "{entry_id}",
+      "createM4aURL"  : "{path=downloads/_preview2}/{entry_id}/{ondemand_chapters_grid:row_id}",
+      "movement"      : "{if total_results > 1}mv. {count}{/if}",
+      "m4a_real"      : "{exp:paths:getpath path_type="relative" url_path="{ondemand_chapters_grid:audio_file:url}"}",
+
+      {!-- Used for streaming. --}
+      "m4a"           : "{exp:link_vault:url
+                                  url='{exp:paths:getpath path_type="absolute" url_path="{ondemand_chapters_grid:audio_file:url}"}'
+                                  parse="inward"                                  
+                                  cf:title="{ondemand_chapters_grid:name_of_piece}"
+                                  cf:album="{entry_date format="%M %d, %Y"} {title}"
+                                  cf:artist="{related_ensembles_v2 backspace="2"}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                                  cf:composer="{ondemand_chapters_grid:name_of_composer}"
+                                  cf:year="{entry_date format="%Y"}"
+                                  cf:page="{segment_1}/item/{entry_id}"                    
+                                  cf:type="preview"
+                                  cf:recitaltype="{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}"
+                                  cf:member_group="{logged_in_group_id}"
+                                  cf:category=""
+                                  cf:accesstime="{current_time format='%Y-%m-%d'}"
+                                }",
+
+      {!-- This is for when the entry is not open.  --}
+      "wav"           : "{ondemand_chapters_grid:audio_file:url}",
+
+
+      {!-- Actual URL --}
+      {!--"dlm4a2"         : "{exp:paths:getpath path_type="relative" url_path="{ondemand_chapters_grid:audio_file:url}"}",--}
+
+      {!-- Protected URL --}
+      "dlm4a"        : "{exp:link_vault:download_link
+                            url_only="true"
+                            file_path='{exp:paths:getpath path_type="server" serverpath="{ondemand_chapters_grid:audio_file:server_path}" parse="inward"}' 
+                            entry_id="{entry_id}" 
+                            parse="inward"
+                            cf:title="{ondemand_chapters_grid:name_of_piece}"
+                            cf:album="{entry_date format="%M %d, %Y"} {title}"
+                            cf:artist="{related_ensembles_v2 backspace="2"}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                            cf:composer="{ondemand_chapters_grid:name_of_composer}"
+                            cf:year="{entry_date format="%Y"}"
+                            cf:page="{segment_1}/item/{entry_id}"
+                            cf:type="download m4a"
+                            cf:member_group="{logged_in_group_id}"
+                            cf:recitaltype="{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}"
+                            cf:category=""
+                            cf:accesstime="{current_time format='%Y-%m-%d'}"                            
+                  }",
+
+      {!-- Actual URL --}                  
+      {!--"dlwav2"     : "{ondemand_chapters_grid:audio_file:url}",--}
+
+      {!-- Protected URL --}      
+      "dlwav"          : "{exp:link_vault:download_link
+                            url_only="true"
+                            file_path='{ondemand_chapters_grid:audio_file:server_path}' 
+                            entry_id="{entry_id}" 
+                            parse="inward"
+                            cf:title="{ondemand_chapters_grid:name_of_piece}"
+                            cf:album="{entry_date format="%M %d, %Y"} {title}"
+                            cf:artist="{related_ensembles_v2 backspace="2"}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                            cf:composer="{ondemand_chapters_grid:name_of_composer}"
+                            cf:year="{entry_date format="%Y"}"
+                            cf:page="{segment_1}/item/{entry_id}"
+                            cf:type="download wav"
+                            cf:member_group="{logged_in_group_id}"
+                            cf:recitaltype="{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}"
+                            cf:category=""
+                            cf:accesstime="{current_time format='%Y-%m-%d'}"                            
+                  }"
+    },{/ondemand_chapters_grid:audio_file}{/ondemand_chapters_grid}
+  ]
+}
+/********* Chapter Markers ************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********** For aborting Fetch requests because people click the video link too bloody quickly. ****/
+//**//
+var controller = new AbortController();
+var signal = controller.signal;
+document.querySelectorAll('.clicking_this_aborts_fetch').forEach( item => {
+  item.addEventListener('click', () => {
+    controller.abort();
+    console.debug('Fetch aborted');
+  });
+});
+
+
+var entry_info = {
+  "entry_id"              : "{entry_id}",
+  "year"                  : "{entry_date format='%Y'}",
+  "month"                 : "{entry_date format='%m'}",
+  "waveform_quality"      : "med",
+  "global_audio_download" : {if global_audio_download}true{if:else}false{/if}  
+};
+//
+
+if (navigator.deviceMemory < 4 || navigator.hardwareConcurrency < 4) {
+    console.debug("Setting waveform quality to low due to hardware limitations.");
+    entry_info.waveform_quality = "low";
+}
+
+
+///
+/********** Get entry info from Local Storage, otherwise create it ***************/
+if(localStorage.getItem(entry_info.entry_id+'-info') && config.localstorage && entry_info.entry_id.toLowerCase() =="open") {
+  entry_info = JSON.parse(localStorage.getItem(entry_info.entry_id+'-info'));
+} else {
+
+}
+
+
+// *****
+
+
+//*********************** Track clicking video download button *******************/
+try {  
+document.querySelectorAll('[data-videodownload]').forEach( element => {
+  element.addEventListener("click", () => {
+
+    trackingTags('video-download');
+
+    let videotype = element.dataset.videotype;
+    try {
+      var Airtable = require('airtable');      
+      var base = new Airtable({apiKey: 'keyZb7gzIYOF7QDRR'}).base('appm24BJQOEjuWSDn');
+      base('VideoAccessLog').create({
+        "ee_user_id"  : {logged_in_member_id},
+        "email"       : "{logged_in_email}",
+        "album"       : "{entry_date format='%M %d, %Y'} {title}",
+        "Concert Date" : "{entry_date format='%M %d, %Y'}",
+        "artist"      : "{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}",
+        "year"        : "{entry_date format='%Y'}",
+        "instrument"  : "{archive_instrument backspace='2'}{archive_instrument:title}, {/archive_instrument}",
+        "entry_id"    : {entry_id},
+        "recitaltype" : "{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}",
+        "member_group": {logged_in_group_id},
+        //"accesstime"  : "{current_time format='%Y-%m-%d'}",
+        "accesstime"  : new Date().toISOString(),
+        "Video Type"  : element.dataset.videotype,
+      }, function(err, record) {
+          if (err) { console.error(err); return; }
+      });
+    } catch(error) {
+      console.error('Airtable log not made: '+error);
+    }
+  });
+});
+} catch(e) {}
+/**** END ****/
+
+
+
+
+/************************ Keen Tracking Event ******************/
+function logEvent(eventType, eventObj) {
+
+  trackingTags(eventType);
+
+}
+
+
+/************************ Loading Error Messages specifically for this page. ******************/
+function errorMessage(messageTxt, showPopup, showFABand) {
+  if (messageTxt || messageTxt != undefined) {
+    // This will hide the audio player and show an error message.
+    if (showFABand) {
+      document.querySelector('.ini_loading').style.opacity = 0;
+      document.querySelector('.audio_grid_v3').innerHTML = '<div class="chapterlist_error"><i class="fa fa-ban fa-5x aria-hidden="true"></i><br />'+messageTxt+'</span>';
+      document.querySelector('.audio_grid_v3').style.opacity = 1;
+    };
+
+    if (showPopup) {
+      new Noty({
+          text: messageTxt,
+          type: 'error',
+          theme: 'nest',
+          timeout: false
+      }).show();
+    }
+
+  }
+}
+
+function alertMessage(messageTxt, showPopup, showFABand) {
+  if (messageTxt || messageTxt != undefined) {
+    // This will hide the audio player and show an error message.
+    if (showFABand) {
+      document.querySelector('.ini_loading').style.opacity = 0;
+      document.querySelector('.audio_grid_v3').innerHTML = '<div class="chapterlist_error"><i class="fa fa-ban fa-5x aria-hidden="true"></i><br />'+messageTxt+'</span>';
+      document.querySelector('.audio_grid_v3').style.opacity = 1;
+    };
+
+    if (showPopup) {
+      new Noty({
+          text: messageTxt,
+          type: 'alert',
+          theme: 'nest',
+          timeout: 8000,
+      }).show();
+    }
+
+  }
+}
+
+
+/*************************  Downloading multiple files. *************************/
+function multipleFileDownload() {
+  if (config.audio_dl) {
+    document.getElementById('downloadAllm4a').addEventListener('click', (e) => {
+        e.preventDefault();
+
+        new Noty({
+            text: 'Attempting to download all the tracks...<br /><br />Some browser settings may block this.',
+            type: 'info',
+            theme: 'nest',
+            timeout: 4000
+        }).show();
+
+        var temporaryDownloadLink = document.createElement("a");
+        temporaryDownloadLink.style.display = 'none';
+
+        document.body.appendChild( temporaryDownloadLink );
+
+        for (var i=0; i<chaptermarkers.items.length; i++) {
+            temporaryDownloadLink.setAttribute( 'href', chaptermarkers.items[i].dlm4a );
+            temporaryDownloadLink.setAttribute( 'download', chaptermarkers.items[i].title );
+            temporaryDownloadLink.click();
+        }
+        document.body.removeChild( temporaryDownloadLink );
+    });
+  }
+}
+
+
+
+
+// ################################ Begin Wavesurfer audio player of doom ################################
+
+//***************************** Get and display tracklist *************************//
+if (entry_info.global_audio_download) {
+
+  /*
+  var chaptermarkers; // What will hold all the audio links, and track information.  json, ajax.
+
+  if(debug){console.debug('GetChapters: Getting track data...')}
+  if(debug){console.time('chaptermarkers')}
+
+  // See if track data is in local storage within browser and populate chaptermarkers.
+  if ( localStorage.getItem(entry_info.entry_id+'-tracks') && config.localstorage && entry_info.entry_id.toLowerCase() =="open") {
+
+    chaptermarkers = JSON.parse(localStorage.getItem(entry_info.entry_id+'-tracks'));
+    if(debug){console.debug('GetChapters: Found in local storage.')};
+    displayAudioTracks();
+    audioTrackPlayerLogic();
+    multipleFileDownload();
+
+  } else {
+
+    // Otherwise get track data remotely and fill chaptermarkers
+    if(debug){console.debug('GetChapters: Localstorage Empty, Getting remote tracklist...')};
+    loadTrackList();
+
+  } // end if.
+
+  */
+
+    displayAudioTracks();
+    audioTrackPlayerLogic();
+    multipleFileDownload();
+
+} else {
+  console.debug('global_audio_download is '+entry_info.global_audio_download );
+  errorMessage('Audio tracks are not available for this event.', false, true);
+}
+
+//***************************** Fetch the tracklist. *************************//
+async function loadTrackList() {
+
+  const tracklistURL = '{site_url}/downloads/_item-audiotracklist/'+entry_info.entry_id;
+  let getTracksTimer = setTimeout(showTracksReloadButton, 4000);
+  
+  let response = await getTrackList(tracklistURL);
+
+  if (response)  {
+    clearInterval(getTracksTimer);
+    displayAudioTracks();
+    audioTrackPlayerLogic();
+    multipleFileDownload();
+  }
+
+
+  async function getTrackList(tracklistURL) {
+    let response = await fetch(tracklistURL, {signal})
+      .catch( async (error) => {
+        switch(error.status) { 
+          case 404: 
+          case 500: 
+            errorMessage('Something went wrong getting the tracks.  We may need to fix it.',false, true);
+            trackingTags('item-error-tracklist');
+            break; 
+          case 0: 
+            // Likely a page navigation.  Surpress error.
+            console.debug('Error code 0');
+            break; 
+          default: 
+            console.debug('Error code unknown.');
+        }
+        console.debug(error);
+      });
+
+    // Something went wrong with the fetch.
+    if (!response.ok) {
+      errorMessage('There was a problem getting the track list.  Refresh the page, let us know.', false, true); 
+      //return false;
+      return Promise.reject(data);
+    }
+
+    // Make sure something JSON-y is returned.
+    try {
+      chaptermarkers = await response.json();
+    } catch (e) {
+      errorMessage('There was a problem getting the track list.  Refresh the page, let us know.', false, true);        
+      console.debug('Error: ', e);
+      return false;
+    }
+
+    // Make sure there are tracks listed.
+    if (chaptermarkers.items.length === 0) {
+      console.debug('The audio_loop returned 0 results.');
+      errorMessage('There are no audio tracks available for this event.', false, true);        
+      return false;
+    }
+
+    // Set to LocalStorage for speed.
+    try {
+      localStorage.setItem(entry_info.entry_id+'-tracks', JSON.stringify(chaptermarkers));
+    } catch(error) {
+      console.error('Unable to set track localstorage: '+error);
+      localStorage.clear();
+    }
+
+    if(debug){console.debug('GetChapters: Received JSON Track data, moving on...')};
+    return true;
+
+  }
+
+  function showTracksReloadButton() {
+    trackingTags('Tracks-GetTrackList-Timeout');
+    errorMessage('It is taking awhile getting the track list from the server...');
+    document.querySelector('.ini_loading').innerHTML = '<h3>Could not get track list.</h3><button id="forceReloadTracks" class="basic_button">Try Again</button>';
+    document.querySelector('#forceReloadTracks').addEventListener('click', () => {
+      document.querySelector('.ini_loading').innerHTML = '<h3>Trying Again...</h3>';
+      getTracksList();
+    });
+  }
+
+}
+
+//***************************** Put list in the DOM, add events. *************************//
+function displayAudioTracks() {
+  if(debug){console.time('displayAudioTracks')}
+
+  let divs = {
+    "audio_grid"        : document.querySelector('.audio_grid_v3'),
+    "ini_loading"       : document.querySelector('#ini_loading'),
+    "resize_container"  : document.querySelector('.resize_container')
+  }
+
+  // Create the chapter list HTML markup and assign it to a var.
+  var chapterlist="<!--Start-->";
+    for (let i=0; i<chaptermarkers.items.length; i++) {
+      var humantrack = i+1;
+
+      var composer_url_encoded = encodeURI(chaptermarkers.items[i].composer);
+      var arranger_url_encoded = encodeURI(chaptermarkers.items[i].arranger);
+
+      chapterlist+="\
+      <article class='each_piece each_piece"+i+"'>\
+        <div class='each_column column_a'>\
+          <div class='track'>"+humantrack+".</div>\
+        </div>\
+        <div class='each_column column_b'>\
+          <div class='each_title'>"+chaptermarkers.items[i].piece+" "+chaptermarkers.items[i].movement+"</div>\
+          <div class='each_composer'><a href='{site_url}/downloads/filter?search:ondemand_chapters_grid:name_of_composer="+composer_url_encoded+"'>"+chaptermarkers.items[i].composer+"</a></div>\
+          <div class='each_arranger'><a href='{site_url}/downloads/filter?search:ondemand_chapters_grid:name_of_arranger="+arranger_url_encoded+"'>"+chaptermarkers.items[i].arranger+"</a></div>\
+        </div>\
+        <div class='each_column column_c'>\
+          <div class='transport transport"+i+"'>\
+            <div id='audioLoading"+i+"' class='loading_percent' style='display:none'></div>\
+            <i id='spinner"+i+"' class='fa fa-circle-o-notch fa-spin'></i>\
+            <i id='soundIcon"+i+"' class='fa fa-volume-up soundicon' style='opacity:0'></i>\
+            <button id='startover"+i+"' class='fa fa-step-backward startover tippy' style='visibility:hidden' title='Start track at Beginning' aria-label='Start track over'></button>\
+            <button id='playpause"+i+"' class='fa fa-pause playpause' style='visibility:hidden;opacity:.2' title='Play/Pause (Space Bar)' aria-label='Play or Pause'></button>\
+            <i id='m4aloading"+i+" class='fa fa-refresh fa-spin m4aloading' style='display:none'></i>\
+            <i id='waveloading"+i+"' class='fa fa-refresh fa-spin waveloading tippy' style='visibility:hidden' title='Loading Waveforms...'></i>\
+          </div>\
+        </div>\
+        <div class='each_column column_d'>\
+          <div class='time time"+i+"'>\
+            <span id='current"+i+"'>0:00</span> / <span id='total"+i+"'>0:00</span>\
+          </div>\
+        </div>\
+        <div class='each_column column_e'>\
+          <div class='audio_download' hidden>\
+            {if logged_in_member_group !='11' AND logged_in_member_group != '10'}{!-- EE Code--}\
+            <a href='"+chaptermarkers.items[i].dlm4a+"' id='download_m4a' class='download_button mediumgray tippy m4aTracking' title='Download Compressed Audio.  Good quality, small filesize' data-hjtag='download-m4a' data-track='"+humantrack+"' download><i class='fa fa-arrow-down' aria-hidden='true'></i> aac</a>\
+            <a href='"+chaptermarkers.items[i].dlwav+"' id='download_wav' class='download_button mediumgray tippy wavTracking' title='Download Uncompressed Audio. High quality but large filesize.' data-hjtag='download-wav' data-track='"+humantrack+"' download><i class='fa fa-arrow-down' aria-hidden='true'></i> wav</a>\
+            <button title='Send to Devices' data-url='"+chaptermarkers.items[i].m4a_real+"' data-title='"+chaptermarkers.items[i].piece+"' class='shareTrackButton download_button mediumgray tippy' aria-label='Share This Track'><img src='/images/share.svg' aria-hidden='true' /></button>\
+            {/if}\
+            <button title='Airplay this track' src='"+chaptermarkers.items[i].m4a_real+"' class='airplay download_button mediumgray tippy' aria-label='Airplay this track' hidden><img src='/images/airplay_audio.png' aria-hidden='true' /></button>\
+          </div>\
+        </div>\
+        <div id='waveform"+i+"' class='waveform'>\
+        </div>\
+        <canvas id='loadedProgress"+i+"' width='100%' height='10' class='loadedprogress tippy' title='Downloaded Segments'></canvas>\
+        </article>";
+      }
+      chapterlist+="<!--End-->";
+
+  if(debug){console.debug('displayAudioTracks: Putting audio HTML into DOM.');};
+  // Put the chapter list in the DOM.
+
+  // Load the html of chapters into the DOM, but hidden.
+  try {
+    divs.audio_grid.innerHTML = chapterlist;
+  } catch(e) {
+    console.error("Problem putting tracklist into DOM.", e);
+  }
+
+  // Fade out the loading div.
+  divs.ini_loading.style.opacity = 0;
+
+  // Get the new hight of the player and resize the height.
+  const playerHeight = divs.audio_grid.clientWidth;
+  divs.resize_container.style.height = playerHeight;
+
+  if(debug){console.timeEnd('displayAudioTracks')}
+
+
+  divs.ini_loading.remove();
+  divs.audio_grid.style.opacity = 1;
+  divs.resize_container.style.height = 'auto';  
+
+  if (config.audio_dl) {
+    document.querySelectorAll('.audio_download').forEach( item => {
+      item.removeAttribute('hidden');
+    });
+  }
+
+  /************************* Download Tracking **********************/
+  if (config.audio_dl) {
+    try {
+      document.querySelector('.m4aTracking').addEventListener('click', function() {
+        let ele = this;
+        logEvent('audioDownload',{ 'track' : ele.dataset.track, 'file' : 'm4a' });
+      });
+    } catch(e) {console.debug('Did not set Download-m4a event listeners.')}
+
+    try {
+      document.querySelector('.wavTracking').addEventListener('click', function() {
+        let ele = this;
+        logEvent('audioDownload',{ 'track' : ele.dataset.track, 'file' : 'wav' });
+      });
+    } catch(e) {console.debug('Did not set Download-wav event listeners.')}
+
+    try {
+      document.querySelector('.videoDL').addEventListener('click', function() {
+        let ele = this;
+        logEvent('videoDownload',{ 'video_type' : ele.dataset.videotype });    
+      });
+    } catch(e) {console.debug('Did not set Download-video event listeners.')}
+  }
+
+  /************************* Share API Button Logic *********************/
+  if (navigator.share && config.share == true) {
+    //$('.shareTrackButton').on('click', function(button) {
+    document.querySelectorAll('.shareTrackButton').forEach( (item) => {
+      item.addEventListener('click', function() {
+
+        // let audioURL = $(this).data('url');
+        // let trackTitle = $(this).data('title');
+        let audioURL = this.dataset.url;
+        let trackTitle = this.dataset.title;
+
+        navigator.share({
+            title: trackTitle,
+            //text: 'words...',
+            url: audioURL
+          }).then(() => {
+            trackingTags('Share-audio-file-complete.');
+            logEvent('shareAPI',{'track':trackTitle});
+          })
+          .catch(err => {
+            console.debug('Not shared, or aborted. ', err.message);
+          });
+      });
+    });
+  } else {
+    // Remove Share button if not supported.
+    document.querySelectorAll('.shareTrackButton').forEach( item => {
+      item.remove();
+    });
+    console.debug('Share API not supported.');
+  }
+
+
+  /********************************************************/
+
+
+  tippy('.tippy', {
+    content(reference) {
+      const title = reference.getAttribute('title')
+      reference.removeAttribute('title')
+      return title
+    },
+    animation : "scale-subtle",
+    arrow: true,
+    delay: [1000, 200],
+    touch: 'hold',
+  });  
+
+
+  /************************* Tippy [tooltip] special cases.  ***************************/
+  const tp_keyboardDiv = document.querySelector('#keyboardshortcut_data');
+  const tp_keyboardContainer = document.createElement('div');
+  tp_keyboardContainer.appendChild(document.importNode(tp_keyboardDiv.content, true));
+
+  let keyboardshortcutTip = tippy('.keyboard_shortcut_button', {
+    content: tp_keyboardContainer.innerHTML,
+  });
+} //end
+
+
+
+
+
+
+
+
+
+
+
+// ################################ Logic, setup auto player ################################
+function audioTrackPlayerLogic() {
+
+  var currentChapter  = 0;
+  var fallback        = false;
+  var wavesurferObj   = {};
+  //var waveformCheckURL_PREVIOUS = '{site_url}/cache/waveforms/'+entry_info.entry_id+'/'+entry_info.entry_id+'-0.json';  // First track's waveform.
+  const waveformCheckURL = '{site_url}/cache/waveforms/'+entry_info.year+'/'+entry_info.month+'/'+entry_info.entry_id+'/'+entry_info.waveform_quality+'/'+entry_info.entry_id+'-0.json';  // First track's waveform.  
+  var keysActive      = true;
+  var tracksLoaded    = { 'count' : 0, 'completed' : false} // Counts each track as it loads.
+  
+  const end_time    = 0;
+  var loaded_track_count = 0;
+
+  function globalAudioSpinner(state) {
+    let div = document.querySelector('#audio_global_spinner');
+    if (state =='show') {
+      div.innerHTML = '<i class="fa fa-spin fa-refresh"></i>';
+    } else {
+      div.classList.add('fadeOut');
+      div.innerHTML = '';
+    }
+  }
+
+  function load_check() {
+    loaded_track_count++;
+    if (loaded_track_count == chaptermarkers.items.length) {
+      const end_time = new Date();
+      let total_time = (end_time.getTime() - start_time.getTime() ) / 1000;
+      console.debug("Track Load Time: "+total_time+" seconds");
+      FS.event('item-trackload', {'time' : total_time, 'total tracks' : chaptermarkers.items.length} );
+    }
+  }  
+
+  /************************* Progress Bar ***********************/
+  function addProgressBar(total) {
+    let progress = document.createElement('progress');
+    progress.value = 0;
+    progress.max = total;
+    progress.id = 'loadingBar';
+    progress.className = 'progress_bar';
+
+    document.querySelector('#audio_title').appendChild(progress);
+
+  };
+  function updateProgressBar(loadedValue) {
+    //$('#loadingBar').attr('value',loadedValue);
+    document.querySelector('#loadingBar').setAttribute('value', loadedValue);
+  };
+  function removeProgressBar(){
+    document.querySelector('#loadingBar').remove();
+  };
+
+
+/*******************************  m4a and waveform creation *******************************/
+
+
+/**********       Primary Logic       **********/
+if(chaptermarkers.status == "open") {
+
+  // Check if HTML5 audio is needed.
+  // Fallback is disabled, figured most browsers can handle wavesurfer now.
+  // fallbackCheck();
+
+  // Figure out which player type to load and load it!
+  /*
+  if (fallback) {
+    if(debug){console.warn('Fallback Check: True. Fallback enagaged.')}
+    createFallbackAudio();
+  }
+  */
+
+  // Don't need to check for m4a if it had already been done and stored in browser.
+  if(entry_info.m4acheck) {
+    if(debug){console.debug('m4acheck is true');}
+    startWavesurfer();
+  } else {
+    //if(debug){console.debug('m4acheck is false, checking for m4a.');}
+    
+    async function audiofile() {
+      
+      if ( chaptermarkers.items.length === 0 ) {
+        errorMessage('<strong>Missing Audio Files</strong><br />Archive could be down.',true,false);
+        console.debug('JSON Track list length is zero. Stopping...');
+        document.querySelector('.audio_container').style.opacity = 0;
+        //globalAudioSpinner('hide');
+        throw new Error("JSON Track list length is zero. Stopping...");
+        return;
+      }
+
+
+      // Check for m4a.
+      let progress = await check(chaptermarkers.items[0].m4a);
+
+      // Create m4a if first track was missing.
+      if (!progress) {
+        if(debug){console.debug('M4A not created.')};
+        errorMessage('Creating compressed audio.  This could take up to 60 seconds.',true,false);
+        progress = await create('audio');
+        return progress;
+      } else {
+        return progress;
+      }
+    }
+
+    async function waveform() {
+      // Check for m4a.
+      let progress = await check(waveformCheckURL);
+
+      // Create waveform if first track was missing.
+      if (!progress) {
+        if(debug){console.debug('waveforms not created.')};
+        alertMessage('Creating waveforms...',true,false);
+        progress = await create('waveform');
+        return progress;
+      } else {
+        return progress;
+      }
+    }
+
+    audiofile()
+    .then(waveform)
+    .then(startWavesurfer);
+
+  }
+} else {
+  // For entries that are not open, show based on wav files.
+  startWavesurfer();
+}
+
+/*******************************/
+async function check(url) {
+
+  let response = await fetch(url, {"method" : "HEAD"})
+    .then( async (response) => {
+      if (response.status == 404) {
+        if(debug){console.debug('file NOT found: '+url)};
+        return false;
+      } else {
+        if(debug){console.debug('file found: '+url)};
+        return true;
+      }
+
+    })
+    .catch( error => {
+      //Error in making request.
+      errorMessage('Something went wrong.  We may need to fix it.',false, true);
+      console.error('Error making request in file check. ', error);
+      return false;
+    });
+  
+  return await response;
+}
+
+async function create(createType) {
+
+  // Var to keep track of each item being completed.  
+  let isCompleted = 0;
+  let result;
+
+  // Show global loading icon.
+  globalAudioSpinner('show');
+  addProgressBar(chaptermarkers.items.length);
+
+  // show the audio header bar.
+  document.querySelector('#audioHeader').style.opacity = 1;
+
+  // Loop through creating m4a by hitting a URL.
+  // Page is delivered after php script (and m4a) are completed.
+  for (const track in chaptermarkers.items) {
+
+    var createURL;
+
+    if (createType == 'audio') {
+      createURL = chaptermarkers.items[track].createM4aURL;
+    }
+    if (createType == 'waveform') {
+      createURL = '/downloads/_waveform/create/'+entry_info.entry_id+'/'+chaptermarkers.items[track].file_id+'/'+track+'/'+entry_info.year+'/'+entry_info.month;
+      console.debug("WF URL: "+createURL);
+    }
+
+    if (createURL == undefined) {
+      console.error('Track URL is undefined for some reason.');
+    }
+
+    // Loading indicator
+    let div_waveLoading = document.querySelector('#waveloading'+track)
+    div_waveLoading.style.visibility = 'visible';
+
+    if(debug){console.debug('Build URL: '+createURL)};
+
+    result = await fetch(createURL, {signal})
+      .then( async (response) => {
+          const data = await response.json();
+          console.debug(data);
+
+          // Remove indicators that the track is processing.
+          if(debug){console.debug(createType+': Completed zero-based track '+track)}
+
+          // Hide spinner for this track.
+          div_waveLoading.style.visibility = 'hidden';
+
+          // Add this interation to array.
+          isCompleted++;
+          if(debug){console.debug(createType+': Incrementing count to '+isCompleted)}
+
+          // Update the progress bar.
+          updateProgressBar(isCompleted);
+          
+          // If all tracks have reported in.
+          if (isCompleted == chaptermarkers.items.length) {
+            removeProgressBar();
+            globalAudioSpinner('hide');// Hide spinners.
+            //entry_info.m4acheck = true;
+            if(debug){console.debug('All Track creation reported in.')};
+            return true;
+          }
+      })
+      .catch( error => {
+        errorMessage('Error creating '+createType+' file on track '+track+'.  The player may not work properly.', true, false);
+        console.error(error);
+        trackingTags('item-error-'+createType);        
+      });
+  };
+
+  console.debug(await result);
+
+  if (isCompleted == chaptermarkers.items.length) {
+    return await result;
+  }
+
+}
+
+async function createSingleTrackWaveform(track) {
+  //const waveformURL = '/downloads/_waveform/create_singe_waveform/'+entry_info.entry_id+'/'+this_fileID+'/'+this_track_number;
+  let createURL = '/downloads/_waveform/create/'+entry_info.entry_id+'/'+chaptermarkers.items[track].file_id+'/'+track+'/'+entry_info.year+'/'+entry_info.month;
+  if(debug){console.group();console.debug('Build Waveforms: Building URL:'+createURL)}
+
+  let buildResult = fetch(createURL)
+    .then( async (response) => { 
+      const data = await response.json();
+      if (response.ok) {
+        return data;
+      } else {
+        return Promise.reject(data);
+      }
+    })
+    .then( response => {
+      if(debug){console.debug('Waveform build success: EntryID: '+entry_info.entry_id+" File ID: "+this_fileID+" Track: "+this_track_number, response)};
+    })
+    .catch(function(error){
+      errorMessage('Error creating waveform data for track.  EntryID: '+entry_info.entry_id+" File ID: "+this_fileID+" Track: "+this_track_number, true, false);
+      trackingTags('item-error-CreateWaveforms. EntryID: '+entry_info.entry_id+" File ID: "+this_fileID+" Track: "+this_track_number);
+      console.debug(data);  
+    });   
+
+  if(debug){console.groupEnd()};
+  return await buildResult;
+}
+
+async function regenerateWaveform() {
+  errorMessage('Rebuliding waveform data...');
+
+  const deleteWaveformURL = '{site_url}/downloads/_waveform/delete/'+chaptermarkers.items[0].entry_id+"/"+entry_info.year+"/"+entry_info.month;
+
+  let result = await fetch(deleteWaveformURL)
+    .then(response => response.json())
+    .then( async (data) => {
+      console.log(data);
+      return await data;
+    })
+    .catch( error => {
+      errorMessage('Something went wrong, but a page refresh might fix it.');
+      console.error('Something went wrong with the request to delete the waveform folder.');
+    });
+
+    if (await result) {
+      create('waveform');
+    }
+}
+
+try {
+  document.querySelector('#regen_waveform').addEventListener('click', () => {
+    console.debug('Triggered a waveform regeneration.');
+    regenerateWaveform();  
+  });
+} catch(e) {
+  if(debug){console.debug('Regen Waveform button not created.')};
+}
+
+
+
+/******************************* Start of Player initialize *******************************/
+var timer = 0;
+
+// The number of tracks to load initially before loading one by one.
+let load_offset = 10;
+
+// Bootstrap!
+function fallbackCheck() {
+  // Detect Web Audio API support.  From Modernizr
+  var webAudio_prefixed   = 'webkitAudioContext' in window;
+  var webAudio_unprefixed = 'AudioContext' in window;
+  if (webAudio_prefixed || webAudio_unprefixed) {
+    if(debug){console.debug('Web Audio supported')};
+  } else {
+    if(debug){console.debug('Web Audio NOT supported')};
+    fallback = true;
+    errorMessage('Your browser does not support showing waveforms so we are showing a basic player.', true, false);
+    trackingTags('item-fallback');    
+  }
+
+
+  // Check session storage if html5 player was manually requested.
+  if(sessionStorage.getItem('audioPlayerFallback') == 'true') {
+    if(debug){console.debug('Saved fallback state is True')};
+    fallback = true;
+  }
+
+  // Set click handler to watch for manual changes.  Currently this is only for admins.
+  try {
+  document.querySelector('#playerViewType').addEventListener('click', () => {
+    if ( fallback == false ) {
+      try {
+        sessionStorage.setItem('audioPlayerFallback', 'true');
+      } catch (error) {
+        console.error('Error, unable to set localstorage: '+error);
+        localStorage.clear();
+      }
+      fallback = true;
+    } else {
+      try {
+        sessionStorage.setItem('audioPlayerFallback', 'false');
+      } catch (error) {
+        console.error('Unable to set localstorage: '+error);
+        localStorage.clear();
+      }
+      fallback = false;
+    };
+    location.reload();
+  });
+  } catch(e) {}
+
+}
+
+// When all the tracks are loaded, apply the airplay button if it works.
+function applyAirplay() {
+  /************************* Airplay **********************/
+  if (window.WebKitPlaybackTargetAvailabilityEvent && config.airplay == true) {
+    console.debug('Airplay: supported');
+
+    // Check if Airplay is available on the network.
+    document.querySelectorAll('.each_piece').forEach( (piece) => {
+      let div_airPlayButton = piece.querySelector('.airplay')
+      let div_audio         = piece.querySelector('audio');
+
+      // Make sure elements exist.
+      if (div_airPlayButton == null || div_audio == null) {
+        return;
+      }
+
+      div_airPlayButton.removeAttribute('hidden');
+
+      div_audio.addEventListener('webkitplaybacktargetavailabilitychanged', function(event) {
+        switch (event.availability) {
+          case "available":
+            console.debug('Airplay: Avalable');
+            div_airPlayButton.hidden = false;
+            div_airPlayButton.disabled = false;
+            break;
+          case "not-available":
+            console.debug('Airplay: Not Avalable');
+            div_airPlayButton.hidden = true;
+            div_airPlayButton.disabled = true;
+        }
+      });
+
+      // Event handler for attaching audio to Airplay.
+      div_airPlayButton.addEventListener('click', function() {
+        let elm = this;
+        trackingTags('item-airplay-click');
+        // Go up to the parent element, then search back down for the audio element, hand that over.
+        console.log(div_audio);
+        div_audio.webkitShowPlaybackTargetPicker();
+
+        // Style modifier for when Airplaying.
+        div_audio.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', function(event) {
+            console.debug('Changing Styles...');
+            div_airPlayButton.classList.toggle('airplay_ing');
+        });   
+      });         
+    });
+  } else {
+    console.debug('Airplay not supported.');
+    document.querySelectorAll('.airplay').forEach( (button) => {    
+      button.remove();
+    });
+  }
+}
+function applyAirplay_v2(track) {
+  let piece = document.querySelector('.each_piece'+track);
+
+  /************************* Airplay **********************/
+  if (config.airplay_supported && config.airplay == true) {
+    console.debug('Airplay: supported');
+    console.log(piece);
+
+    // Check if Airplay is available on the network.
+    let div_airPlayButton = piece.querySelector('.airplay')
+    let div_audio         = piece.querySelector('audio');
+
+    // Make sure elements exist.
+    if (div_airPlayButton == null || div_audio == null) {
+      return;
+    }
+
+    div_airPlayButton.removeAttribute('hidden');
+
+    div_audio.addEventListener('webkitplaybacktargetavailabilitychanged', function(event) {
+      switch (event.availability) {
+        case "available":
+          console.debug('Airplay: Avalable');
+          div_airPlayButton.hidden = false;
+          div_airPlayButton.disabled = false;
+          break;
+        case "not-available":
+          console.debug('Airplay: Not Avalable');
+          div_airPlayButton.hidden = true;
+          div_airPlayButton.disabled = true;
+      }
+    });
+
+    // Event handler for attaching audio to Airplay.
+    div_airPlayButton.addEventListener('click', function() {
+      let elm = this;
+      trackingTags('item-airplay-click');
+      // Go up to the parent element, then search back down for the audio element, hand that over.
+      console.log(div_audio);
+      div_audio.webkitShowPlaybackTargetPicker();
+
+      // Style modifier for when Airplaying.
+      div_audio.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', function(event) {
+          console.debug('Changing Styles...');
+          div_airPlayButton.classList.toggle('airplay_ing');
+      });   
+    });  
+
+  } else {
+    //console.debug('Airplay not supported.');
+    piece.querySelector('.airplay').remove();
+  }
+}
+
+// Updates the track's downnload file progress and displays in the canvas.
+// From Mozilla docs:
+// https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/buffering_seeking_time_ranges
+function loadedSegmentUpdate(track) {
+  let myCanvas  = document.querySelector('#loadedProgress'+track);
+  let myAudio   = document.querySelector('#waveform'+track+' audio');
+  let context   = myCanvas.getContext('2d');
+  let inc = myCanvas.width / myAudio.duration;
+
+  for (var i = 0; i < myAudio.buffered.length; i++) {
+    let startX = myAudio.buffered.start(i) * inc;
+    let endX = myAudio.buffered.end(i) * inc;
+    let width = endX - startX;
+    context.fillRect(startX, 0, width, myCanvas.height);
+    context.rect(startX, 0, width, myCanvas.height);
+    context.stroke();
+  }
+};
+  
+
+
+// Create Wavesurefer object for each track on load.
+function startWavesurfer() {
+
+  // The number of tracks to load initially before loading one by one.
+  let load_offset = 10;
+
+  //**** Show the player header menu (shortcuts, zip downloads)
+  document.querySelector('#audioHeader').style.opacity = 1;
+
+  // Get Network Conditions, and change amount of bulk loading.
+  let networkInfo;
+  if (navigator.connection) {
+      networkInfo = {
+          "downlink"      : navigator.connection.downlink, //mbps
+          "effectiveType" : navigator.connection.effectiveType, //4g
+          "rtt"           : navigator.connection.rtt, // in ms.
+          "reducedData"   : navigator.connection.saveData // true or false.
+      }
+
+    switch(true) {
+      // Requesting reduced data. 
+      case networkInfo.reducedData === true:
+      load_offset = 1;
+      break;
+
+      case config.dataSave === true:
+      load_offset = 1;
+      break;
+
+      // Fast  8mbps.
+      case networkInfo.downlink > 8 :
+      load_offset = 10;
+      break;
+
+      // Medium  3mbps
+      case networkInfo.downlink < 3 :
+      load_offset = 4;
+      break;
+
+      // Slow 2mbps
+      case networkInfo.downlink < 2 :
+      load_offset = 2;
+      break;
+    }
+
+  }
+
+
+  //**** Load the first X amount of tracks immediately
+  for (var i=0; i < chaptermarkers.items.length; i++) {
+    if (i < load_offset) {
+      waveInitialize(i);
+      document.querySelector('#waveloading'+i).style.display = 'none';
+    }
+  }
+
+
+  //**** Load each track after that one, by one.  Note: Loop is in on-ready event callback.
+  if (load_offset < chaptermarkers.items.length ) {
+    let load_track = load_offset; // track 6.
+    waveInitialize(load_track, load_offset);
+    document.querySelector('#waveloading'+load_track).style.display = 'none';      
+  }
+
+
+  //**** Set Entry Info into LocalStore.
+  try {
+    localStorage.setItem(entry_info.entry_id+'-info', JSON.stringify(entry_info));
+  } catch(error) {
+    console.error('Not able to set info to localstorage: '+error);
+    localStorage.clear();
+  }
+  if(debug){console.groupEnd()}  
+}
+
+
+
+// For tracks that haven't been played yet.
+async function waveInitialize(track) {
+
+  const meta = {
+    'divplayer'   : '#waveform'+track,
+    'divcurrent'  : '#current'+track,
+    'divtotal'    : '#total'+track,
+    'divplaypause': '#playpause'+track,
+    'divstartover': '#startover'+track
+  }  
+
+  // Set Wavesurfer options.
+  const ws_options = {
+    "container"       : document.querySelector(meta.divplayer),
+    "backend"         : 'MediaElement',
+    "cursorColor"     : "#aaa",
+    "cursorWidth"     : 2,
+    "height"          : 100,
+    "waveColor"       : "#B7B7B7",
+    "progressColor"   : "#f043a4",
+    "normalize"       : true,
+    "mediaType"       : "audio",
+    "partialRender"   : true,
+    "responsive"      : true
+    //pixelRatio      : 1
+  };
+
+  // Change some color options on the waveform if status isn't open to make it more clear it is loading differently.
+  if (chaptermarkers.status != "open") {
+    //options.pixelRatio = 1;
+    ws_options.waveColor = '#8EBCC4';
+    ws_options.progressColor = '#C2404B'
+  }
+
+  // Get wavesurfer setup.  This is a Wavesurfer method.
+  wavesurferObj[track] = new WaveSurfer(ws_options);
+  wavesurferObj[track].init();
+
+  // Assign to a simple var that matches what is below.
+  const wavesurfer = wavesurferObj[track];
+
+  // Flipped to True on first play.  For stats tracking of playback.
+  wavesurfer.hasPlayed = false;
+
+
+  /*
+    Get the waveform data, then load the file in Wavesurfer.
+    If the status isn't open then use the webaudio browser rendering of the wav file instead of serverside.
+    Note that browser rendering can break browsers due to the amount of memory needed, so only use on desktop for reviewing recordings.
+  */
+  if (chaptermarkers.status == "open") {
+
+    let waveform_url = '/cache/waveforms/'+entry_info.year+'/'+entry_info.month+'/'+entry_info.entry_id+'/'+entry_info.waveform_quality+'/'+entry_info.entry_id+'-'+track+'.json';
+
+    try {
+      let trackWaveformData = await fetch(waveform_url, {signal})
+        .then( async (response) => {
+
+          if (response.ok) {
+            return await response.json();
+          }
+
+          // Couldn't find waveform file. Rebuild and try again.
+          if (response.status === 404) {
+            console.debug("404 on waveform, rebuilding...");
+
+            // Fire the rebuild function, wait for a response, and then do the fetch again.
+            return await createSingleTrackWaveform(track)
+              .then( async (buildResult) => {
+                return await fetch(waveform_url, {signal}) // Redo Fetch.
+                  .then( waveform_data => {
+                    return waveform_data.json(); // convert re-fetch to JSON, return it.
+                  });             
+              })
+              .catch( error => {
+                console.error(error);
+              });
+          }
+        })
+        .catch( error => {
+          console.debug("Waveform Fetch Error: ",error);
+        });
+
+      // Change preload from Auto to None.  Airplay needs 
+      if (config.airplay_supported) {
+        wavesurfer.load(chaptermarkers.items[track].m4a_real, trackWaveformData.data, "auto");
+      } else {
+        wavesurfer.load(chaptermarkers.items[track].m4a_real, trackWaveformData.data, "none");        
+      }
+      //localStorage.setItem(entry_id+'-'+track, JSON.stringify(trackWaveformData.data.data));
+    } catch (error) {
+      console.error('Problem getting waveforms from the server.', error);
+      console.debug('Generating from Browser.');
+      wavesurfer.load(chaptermarkers.items[track].m4a); // Load track with m4a/webaudio API, omit the waveform data, let browser draw it.
+    }
+
+  } else {
+    // When the entry is not open, like reviewing.
+    wavesurfer.load(chaptermarkers.items[track].wav);
+    if(debug){console.timeEnd();console.debug('Status not open, showing wav file.');console.groupEnd()};
+  }
+
+
+  document.querySelector('#playpause'+track).classList.remove('fa-pause');
+  document.querySelector('#playpause'+track).classList.add('fa-play');
+  
+
+
+  //******************** Add Events *********************//
+
+  // Show the percentage loaded.
+  wavesurfer.on('loading', (percent_loaded) => {
+    if(debug){console.debug('Loading: '+percent_loaded)};
+    if (percent_loaded < 100) {
+      document.querySelector('#audioLoading'+track).style.display = 'inline';
+      document.querySelector('#audioLoading'+track).innerHTML = percent_loaded+"%";
+
+    }
+    if (percent_loaded == 100) {
+      document.querySelector('#audioLoading'+track).classList.add('fadeOut');
+    }
+  });
+
+  // After all loading and processing are complete.
+  wavesurfer.on('ready', () => {
+
+    load_check();
+
+    // Show buttons. 
+    document.querySelector('#playpause'+track).style.opacity = 1;
+    document.querySelector('#playpause'+track).style.visibility = 'visible';
+    document.querySelector('#startover'+track).style.visibility = 'visible';
+
+    let div_spinner = document.querySelector('#spinner'+track);
+    
+    div_spinner.classList.add('fadeOut');
+
+    //*** Set the duration **//
+    try {
+      let duration = wavesurfer.getDuration();
+      let div = document.querySelector('#total'+track);
+      if ( !isNaN(duration) ) {
+        div.innerHTML = formatTime(duration);
+      } else {
+        div.innerHTML = '0:00';
+      }
+    } catch(error) {
+      console.debug("Set Duration Error. ", error);
+    }
+
+
+    let div_waveform = document.querySelector('#waveform'+track+' audio');
+    div_waveform.addEventListener('canplay', e => {
+      div_spinner.classList.add('fadeOut');
+    });
+    div_waveform.addEventListener('progress', e => {
+      loadedSegmentUpdate(track);
+    });
+    /*
+    div_waveform.addEventListener('stalled', e => {
+      console.debug(track+' stalled', e);
+    });
+    */
+    /*
+    div_waveform.addEventListener('suspend', e => {
+      console.debug(track+' suspend', e);
+    });
+    */
+    div_waveform.addEventListener('waiting', e => {
+      div_spinner.classList.remove('fadeOut');
+    });
+
+
+    // ** Create Canvas Styles for loaded indicator bar **//
+    function drawMediaProgress() {
+      let progCanvas = document.querySelector('#loadedProgress'+track);
+      let context = progCanvas.getContext('2d');
+      //progCanvas.width = window.innerWidth;
+      progCanvas.width = wavesurfer.drawer.container.clientWidth;
+      progCanvas.height = 2;
+      context.fillStyle = 'rgba(216, 216, 216, .1)'; // Bar
+      context.fillRect(0, 0, progCanvas.width, progCanvas.height);
+      context.fillStyle = 'rgba(255, 0, 255, .7)'; // Iniital Loaded.
+      context.strokeStyle = 'rgba(216, 216, 216, .5)'; // border.
+    }
+    drawMediaProgress();
+
+    window.addEventListener( 'resize', () => {
+      drawMediaProgress();
+      loadedSegmentUpdate(track);
+    });
+
+
+    // Add listeners on buttons.
+    document.querySelector(meta.divplaypause).addEventListener('click', () => {
+      if (debug){console.debug('Playpause button click.  Track:'+track)};
+      currentChapter = track;
+      playpause();
+    });
+
+    document.querySelector(meta.divstartover).addEventListener('click', () => {
+      if (debug){console.debug('Startover button click.  Track:'+track)};
+      currentChapter = track;
+      startOver();    
+    });
+
+
+    applyAirplay_v2(track);
+
+    // Update for when all tracks have been loaded.
+    tracksLoaded.count++
+    if (chaptermarkers.items.length == tracksLoaded.count) {
+      tracksLoaded.complete = true;
+    }
+
+    // One by One loading.
+    if (track >= load_offset && track < (chaptermarkers.items.length - 1) ) {
+      let load_track = 1 + track;
+      waveInitialize(load_track);
+    }
+
+    return;
+                          
+  });
+
+
+  //** Only for Web Audio **/
+  wavesurfer.on('waveform-ready', function(e) {
+    console.debug('On waveform-ready fired.');
+  }); 
+
+
+  // Seek
+  wavesurfer.on('seek', e => {
+    currentChapter = track;
+    if(debug){console.debug('On Seek: Current Chapter:'+currentChapter)}
+    
+    //$(meta.divcurrent).text(formatTime(wavesurfer.getCurrentTime()));
+    try {
+      document.querySelector(meta.divcurrent).innerHTML = formatTime(wavesurfer.getCurrentTime());
+    } catch(e) {
+      console.error('Error resetting time. ', e);
+    }
+
+    const isSeekEvent = true;
+    playpause(isSeekEvent);
+
+    trackingTags('audio-seek');
+    logEvent('audio_events',{'event':'seek'});
+
+    loadedSegmentUpdate(currentChapter);
+
+  });
+  // COMPLETE
+  wavesurfer.on('finish', e => {
+    if (debug){console.debug('Track completed.')}
+    let finished = true;
+    nextTrack(finished);
+    trackingTags('audio-complete');
+  });
+  // Error
+  wavesurfer.on('error', error => {
+    console.debug('Wavesurfer Error on track: '+track, error);
+    //errorMessage('Something went wrong... Not sure...',true, false);
+  });
+
+  /* Playback head.
+  wavesurfer.on('audioprocess', function(e) {
+    console.debug('AudioProcess: '+e);
+  });
+  */
+
+}// wavesuferStart function
+
+
+
+
+
+
+/********************************** Player Control Methods **********************************/
+
+async function playpause(eventSeeked, finishedPrevious) { 
+  if(debug){console.debug('Starting playpause function')}
+  if(debug){console.debug('Event Seeked Var: '+eventSeeked)}
+
+  let wavesurfer = wavesurferObj[currentChapter]; // assign current track reference for clarity.
+  
+  pauseAll(currentChapter);
+
+  try {
+    if (eventSeeked == undefined || eventSeeked == false) {      
+      await wavesurfer.playPause();
+
+      if(debug){console.debug('playpause: pausing or playing.')}
+      trackingTags('audio-playpause');
+
+      //*** Set the Timer **//
+      clearInterval(timer);
+      timer = setInterval(function() {
+        let currentTime = wavesurfer.getCurrentTime();
+        if ( !isNaN(currentTime) ) {
+          try {
+            document.querySelector('#current'+currentChapter).innerHTML = formatTime(currentTime);
+          } catch (e) {
+            console.error('Could not set time. ', e)
+          }
+        } else {
+          document.querySelector('#current'+currentChapter).innerHTML = "0:00";
+        }
+      }, 1000);
+
+    } else {
+      await wavesurfer.play();
+      if(debug){console.debug('playpause: Seek detected, resuming playback.')}
+    }
+
+    if (finishedPrevious == true) {
+      await wavesurfer.seekTo(0);
+    } // Seek to beginning if the previous track ended.
+
+  } catch (error) {
+    console.debug(error);
+  }
+  
+  trackHighlight(currentChapter);
+  mediaNotifications(currentChapter);
+
+  if ( wavesurfer.isPlaying() ) {
+    document.querySelector('#playpause'+currentChapter).classList.remove('fa-play');
+    document.querySelector('#playpause'+currentChapter).classList.add('fa-pause');
+    document.querySelector('#soundIcon'+currentChapter).style.opacity = 1
+    if(debug){console.debug('playpause: Track '+currentChapter+' is playing, adjusting styling.')}
+  } else {
+    document.querySelector('#playpause'+currentChapter).classList.remove('fa-pause');
+    document.querySelector('#playpause'+currentChapter).classList.add('fa-play');
+    document.querySelector('#soundIcon'+currentChapter).style.opacity = 0
+    if(debug){console.debug('playpause: Track '+currentChapter+' is not playing, adjusting styling.')}
+  }
+
+
+  //**** Tracking ***//
+  if (wavesurferObj[currentChapter].hasPlayed == false) {
+    if(debug){console.debug('%c**First Play of this track.**', 'background: #222; color: #bada55')};
+    wavesurferObj[currentChapter].hasPlayed = true;
+
+      /************************* Airtable tracking **************************/
+      try {
+
+        var Airtable = require('airtable');
+        var base = new Airtable({apiKey: 'keyZb7gzIYOF7QDRR'}).base('app5xTaHVo8L4WF0K');
+
+        base('AudioAccessLog').create({
+          "ee_user_id"  : {logged_in_member_id},
+          "email"       : "{logged_in_email}",
+          "title"       : chaptermarkers.items[currentChapter].piece,
+          "composer"    : chaptermarkers.items[currentChapter].composer,
+          "file_id"     : chaptermarkers.items[currentChapter].file_id,
+          "album"       : "{entry_date format='%M %d, %Y'} {title}",
+          "Concert Date" : "{entry_date format='%M %d, %Y'}",
+          "artist"      : "{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}",
+          "year"        : "{entry_date format='%Y'}",
+          "entry_id"    : {entry_id},
+          "type"        : "preview",
+          "recitaltype" : "{archive_recital_degree_type_tag}",
+          "member_group": {logged_in_group_id},
+          "category"    : "{categories backspace='2'}{category_name}, {/categories}",
+          "accesstime"  : "{current_time format='%Y-%m-%d'}"
+        }, function(err, record) {
+            if (err) { console.error(err); return; }
+        });
+      } catch(error) {
+        console.error('Airtable log not made: '+error);
+      }
+
+      try {
+        FS.event('audio-audioplay', {
+          "ee_user_id_int"  : {logged_in_member_id},
+          "email_str"       : "{logged_in_email}",
+          "title_str"       : chaptermarkers.items[currentChapter].piece,
+          "composer_str"    : chaptermarkers.items[currentChapter].composer,
+          "file_id_int"     : chaptermarkers.items[currentChapter].file_id,
+          "album_str"       : "{entry_date format='%M %d, %Y'} {title}",
+          "Concert Date_str" : "{entry_date format='%M %d, %Y'}",
+          "artist_str"      : "{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}",
+          "year_str"        : "{entry_date format='%Y'}",
+          "entry_id_int"    : {entry_id},
+          "type_str"        : "preview",
+          "recitaltype_str" : "{archive_recital_degree_type_tag}",
+          "category_str"    : "{categories backspace='2'}{category_name}, {/categories}",
+          "accesstime_str"  : "{current_time format='%Y-%m-%d'}"
+        });
+      } catch(error) {
+        console.error('Unable to send custom event to Fullstory: '+error);
+      }
+
+      /*
+      logEvent('audioplay',{
+        "event"             : "firstplay",
+        "file_id"           : chaptermarkers.items[currentChapter].file_id,
+        "piece_title"       : chaptermarkers.items[currentChapter].piece,
+        "piece_composer"    : chaptermarkers.items[currentChapter].composer,
+        "piece_arranger"    : chaptermarkers.items[currentChapter].arranger,
+      });
+      */
+
+  }
+}
+function nextTrack(finishedPrevious) {
+    if (debug){console.debug('Next Track')};
+
+    // Change current track +1.
+    currentChapter++;
+
+    if (currentChapter >= chaptermarkers.items.length) {
+      if (debug){console.debug('End of Playlist.')};
+      playlistFinished();
+    } else {
+      pauseAll();
+      playTrack(currentChapter,finishedPrevious);
+      trackHighlight();
+    }
+    logEvent('audio_events',{'event':'nextTrack'});
+}
+function previousTrack() {
+    if (debug){console.debug('Previous Track')}
+
+    // Change current track -1.
+    currentChapter--;
+
+    // Don't let chapter go negative.
+    if (currentChapter < 0) {
+      currentChapter = 0;
+    }
+
+    if(currentChapter >= 0) { 
+      pauseAll(currentChapter);
+      playTrack(currentChapter);
+      //trackHighlight(currentChapter);
+    }
+    logEvent('audio_events',{'event':'previousTrack'});
+}
+async function skipbackward() {
+  if (debug){console.debug('Skip 10 seconds Backward')}
+  try {
+    await wavesurferObj[currentChapter].skipBackward(10);
+    trackingTags('audio-skipbackwards');
+  } catch(error) {
+    console.error("Skipping failed.", error);
+  }
+  logEvent('audio_events',{'event':'skipBackward'});
+}
+async function skipforward() {
+  if (debug){console.debug('Skip 10 seconds Forward')}
+
+  var seekTime = 10;
+  var jumpTo = wavesurferObj[currentChapter].getCurrentTime() + 10;
+  // When it gets less than 10 seconds to end, skip ahead by 1 second.
+  if (jumpTo > wavesurferObj[currentChapter].getDuration() ) {
+    seekTime = 1;
+  }
+  try {
+    await wavesurferObj[currentChapter].skipForward(seekTime);
+    trackingTags('audio-skipforwards');
+  } catch (error) {
+    console.error("Skipping Failed", error);
+  }
+  logEvent('audio_events',{'event':'skipForward'});
+}
+function speedAdjust(theSpeed) {
+  wavesurferObj[currentChapter].setPlaybackRate(theSpeed);
+  //$('.speed').html('Speed: x'+theSpeed);
+  document.querySelector('.speed').innerHTML = 'Speed: x'+theSpeed;
+  trackingTags('audio-speedchange');
+  logEvent('audio_events',{'event':'speedChange'});
+}
+function startOver() {
+  if(debug){console.debug('Returning to Beginning.')};
+  wavesurferObj[currentChapter].seekTo(0);
+  trackingTags('audio-startOver');
+  logEvent('audio_events',{'event':'startOver'});
+}
+// Pause all tracks except currnetly selected one.  Also change icons.
+async function pauseAll() {
+  if (debug){console.debug('Starting "pauseAll" function:')}
+  // Pause any other running versions.
+
+    for (const key in wavesurferObj) {
+      //let value = wavesurferObj[key]; // ???
+
+      if (key != currentChapter) {
+        try {
+          await wavesurferObj[key].pause();
+          document.querySelector('#playpause'+key).classList.remove('fa-pause');
+          document.querySelector('#playpause'+key).classList.add('fa-play');
+          document.querySelector('#soundIcon'+key).style.visibility = 'hidden';
+          document.querySelector('.each_piece'+key).position = '';
+
+          if(debug){console.debug('pauseAll: Pausing track '+key)}
+        } catch(error) {
+          console.debug("Error pausing Tracks", error);
+        }
+      }
+    };
+
+
+    // Kill Track Timers.
+
+
+}
+// Add styling to highlight which track is active.
+function trackHighlight() {
+  if (debug){console.debug('trackHighlight')}
+
+  for (var i=0; i<chaptermarkers.items.length; i++) {
+    if ( i != currentChapter ) {
+      // Unhighlight all other tracks.
+      document.querySelector('.each_piece'+i).classList.remove('trackHighlight', 'trackpaused');
+    } else {
+      // current track.  Toggle playing/paused styling.
+      let div_each_piece = document.querySelector('.each_piece'+currentChapter);
+      if (wavesurferObj[currentChapter].isPlaying()) {
+        div_each_piece.classList.add('trackHighlight');
+        div_each_piece.classList.remove('trackpaused');
+      } else {
+        div_each_piece.classList.add('trackpaused');
+        div_each_piece.classList.remove('trackHighlight');        
+      }
+    }
+  }
+}
+function playTrack(track,finishedPrevious) {
+    if(debug){console.debug('playTrack...')}
+
+    //Update current chapter
+    currentChapter = track*1;
+    if (debug){console.debug('playTrack: Current Chapter now set to: '+currentChapter)}; 
+ 
+    playpause(track,finishedPrevious);
+    trackHighlight(track);
+}
+
+function playlistFinished() {
+  var previousChapter = currentChapter -1;
+  document.querySelector('#playpause'+previousChapter).classList.remove('fa-pause');
+  document.querySelector('#playpause'+previousChapter).classList.add('fa-play');
+  document.querySelector('#soundIcon'+previousChapter).style.opacity = 0;
+
+  // Change styling to not highlight anything.
+  trackHighlight();
+  // Set chapter back to the first track.
+  currentChapter = 0;
+}
+
+// Format time in minutes:seconds
+function formatTime(time){
+  time = Math.round(time);
+
+  var minutes = Math.floor(time / 60),
+      seconds = time - minutes * 60;
+
+  seconds = seconds < 10 ? '0' + seconds : seconds;
+
+  return minutes + ":" + seconds;
+}
+
+function mediaNotifications(track) {
+  //******  Media Notifications *********/
+  if ('mediaSession' in navigator) {
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: chaptermarkers.items[track].piece,
+      artist: chaptermarkers.items[track].composer,
+      album: chaptermarkers.items[track].title,
+      artwork: [
+          {if ondemand_image}
+            {exp:ce_img:pair src="{ondemand_image}" width="256" height="256" crop="yes" save_type="jpg"}
+              {src: '{made}',  sizes: '256x256', type: 'image/jpg' },
+            {/exp:ce_img:pair}
+            {exp:ce_img:pair src="{ondemand_image}" width="512" height="512" crop="yes" save_type="jpg"}
+              {src: '{made}',  sizes: '512x512', type: 'image/jpg' }
+            {/exp:ce_img:pair}
+          {/if}
+          {if ondemand_image ==""}
+            {if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}' }
+              {related_ensembles_v2 limit='1'}
+                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="256" height="256" crop="yes" save_type="jpg"}
+                  {src: '{made}',  sizes: '256x256', type: 'image/jpg' },
+                {/exp:ce_img:pair}
+                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="512" height="512" crop="yes" save_type="jpg"}
+                  {src: '{made}',  sizes: '512x512', type: 'image/jpg' },
+                {/exp:ce_img:pair}                
+              {/related_ensembles_v2}
+            {if:else}
+              {if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                  {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="256" height="256" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '256x256', type: 'image/jpg' },
+                  {/exp:ce_img:pair}
+                  {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="512" height="512" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '512x512', type: 'image/jpg' },
+                  {/exp:ce_img:pair}
+
+              {if:else}
+                {if '{room:room_primary_image:server_path}' }
+                  {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="256" height="256" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '256x256', type: 'image/jpg' },
+                  {/exp:ce_img:pair}
+                  {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="512" height="512" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '512x512', type: 'image/jpg' },
+                  {/exp:ce_img:pair}
+                {if:else}
+                  {exp:ce_img:pair src="/images/default.png" width="256" height="256" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '256x256', type: 'image/jpg' },
+                  {/exp:ce_img:pair}
+                  {exp:ce_img:pair src="/images/default.png" width="512" height="512" crop="yes" save_type="jpg"}
+                    {src: '{made}',  sizes: '512x512', type: 'image/jpg' },
+                  {/exp:ce_img:pair}                  
+                {/if}
+              {/if}
+            {/if}
+          {/if}
+      ]
+    });
+
+    navigator.mediaSession.setActionHandler('play',           (e) => {trackingTags('mediaSession-Play'); playpause() });
+    navigator.mediaSession.setActionHandler('pause',          (e) => {trackingTags('mediaSession-Play'); playpause() });
+    navigator.mediaSession.setActionHandler('seekbackward',   ()  => {trackingTags('mediaSession-skipbackward'); skipbackward() });
+    navigator.mediaSession.setActionHandler('seekforward',    ()  => {trackingTags('mediaSession-skipforward'); skipforward() });
+    navigator.mediaSession.setActionHandler('previoustrack',  ()  => {trackingTags('mediasSession-previousTrack'); previousTrack() });
+    navigator.mediaSession.setActionHandler('nexttrack',      ()  => {trackingTags('mediaSession-nextTrack'); nextTrack() });
+  }  
+}
+
+
+function keyControls() {
+  document.addEventListener("keydown", e => {
+    console.log(searchHasControl);
+    if (keysActive && !searchHasControl) {
+
+      var keys = {};
+
+      keys[e.keyCode] = true;
+      switch(e.keyCode){
+          case 37: case 39: case 38:  case 40: // Arrow keys
+          case 49: case 50: case 51: // 1,2,3
+          case 32: e.preventDefault();trackingTags('audio-keyboard');break; // Space
+          default: break; // do not block other keys
+      }
+
+      //Down
+      if (e.keyCode == 40) {
+        nextTrack();
+      }
+      //UP
+      if (e.keyCode == 38) {
+        previousTrack();
+      }
+      //Space
+      if (e.keyCode == 32) {
+        // If nothing has played yet, play first track.
+        if ( currentChapter == 0) {
+          playTrack(0);
+        } else {
+          playpause();
+        }
+      }
+
+      if (e.keyCode == 37) {
+          skipbackward();
+      }
+      if (e.keyCode == 39) {
+          skipforward();
+      }
+      // 1,2,3
+      if (e.keyCode == 49) {
+        speedAdjust(.5);
+      }
+      if (e.keyCode == 50) {
+        speedAdjust(1);
+      }
+      if (e.keyCode == 51) {
+        speedAdjust(2);
+      }
+    }
+  }, false);
+}
+
+keyControls();
+
+
+
+{if logged_in_member_id != '1' }
+
+/** Hack to deal with Algolia search changing DOM after this script is loaded. **/
+window.setTimeout( searchKeyboardControl, 3000);
+
+function searchKeyboardControl() {
+  // To unbind the keyboard shortcuts when the search form is selected.
+  document.querySelectorAll('input').forEach( div => {
+
+    div.addEventListener('keydown', function(e) {
+      if ( this.value.length > 0 ) {
+        console.debug('Setting keysActive to false to disable player keyboard shortcuts.');
+        keysActive = false;
+      } else {
+        console.debug('Setting keysActive to true to enable player keyboard shortcuts.');
+        keysActive = true;
+      }
+
+      if (e.keyCode == 27) { // Escape.
+        console.debug("Setting keyActive to true for ESC keypress.");
+        keysActive = true;
+      }
+
+    });
+    
+  });
+}
+{/if}
+
+
+
+{!--
+/************* HTML5 Fallback *************/
+function createFallbackAudio() {
+
+  //<link rel="stylesheet" href="https://cdn.plyr.io/3.5.2/plyr.css">
+
+  function loadScriptAsync(uri) {
+    return new Promise(function(resolve, reject) {
+      var tag = document.createElement('script');
+      tag.src = uri;
+      tag.async = true;
+      tag.onload = function() {
+        resolve();
+      };
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    });
+  }
+
+  loadScriptAsync('https://cdn.plyr.io/3.5.2/plyr.js').then(html5Player);
+
+  function html5Player() {
+    // Show the player header menu (shortcuts, zip downloads)
+    $('.player_header').css('opacity','1');
+
+    // Put html5 element into waveform div instead.
+    for (var i=0; i<chaptermarkers.items.length; i++) {
+        $('#waveform'+i).html('<audio controls preload="auto" id="html5_audio'+i+'" class="fallback_audio_element"><source type="audio/mp4" src="'+chaptermarkers.items[i].m4a+'"></audio>');  
+    }
+
+    var options = {
+      volume : 15,
+      keyboardShortcuts: false
+    };
+
+    const audioPlayer = Plyr.setup('.fallback_audio_element', options);
+
+    for (var d=0; d<audioPlayer.length; d++) {
+
+      audioPlayer[d].on('play', function(e) {
+        trackingTags('html5-audio-play');
+      });
+      audioPlayer[d].on('seeked', function(e) {
+        for (var a = 0; a < audioPlayer.length; a++) {
+          //if ('waveform'+a == e.path[1].id ) {
+            if ('waveform'+a == e.currentTarget.parentElement.id) {
+            currentChapter = a;
+            html5PauseAll();
+          }
+        }
+        trackingTags('audio-seek');
+      });
+      audioPlayer[d].on('play', function(e) {
+        for (var b = 0; b < audioPlayer.length; b++) {
+          //if ('waveform'+b == e.path[1].id ) {
+          // Find current track by finding the parent element Plyr is playing in, matching with #ID.
+          if ('waveform'+b == e.currentTarget.parentElement.id) {
+            currentChapter = b;
+            html5PauseAll();
+          }
+        }
+        trackingTags('audio-play');
+      });
+      audioPlayer[d].on('ended', function(e) {
+          html5PlayNext(audioPlayer[d],);
+          trackingTags('audio-complete');
+      });
+    }
+
+    this.html5PauseAll = function() {
+      for (var i = 0; i < audioPlayer.length; i++) {  
+        if ( i != currentChapter) {
+          audioPlayer[i].pause();
+        }
+      }
+    }
+    this.html5PlayNext = function() {
+      currentChapter++;
+      if(currentChapter == audioPlayer.length){
+          currentChapter = 0;
+      }
+      html5Play(currentChapter);
+      trackingTags('audio-playnext');
+    }
+    this.htm5PlayPrevious = function() {
+      currentChapter--;
+      if(currentChapter < 0){
+          currentChapter = 0;
+      }    
+      html5Play();
+      trackingTags('audio-playprevious');
+    }  
+    this.htmlSkipFoward = function() {
+      audioPlayer[currentChapter].forward();
+    }
+    this.htmlSkipBackward = function() {
+      audioPlayer[currentChapter].rewind();
+    }
+    this.html5Play = function(){
+      audioPlayer[currentChapter].togglePlay();
+    }
+  }
+
+} // fallback.
+--}
+
+
+
+
+
+}// Audio tracks of awesome.
+
+
+
+
+/************************ Get lower meta info. ************************/
+let lower_content_loaded = false;
+async function getContent(URL,theDiv) {
+  if(debug){console.time('AJAX-Get-Lower-Metadata')};
+
+  const metadataDiv = document.querySelector(theDiv);
+
+  let response = await fetch(URL, {signal})
+  .then( async (response) => {
+    const data = await response.text();
+    if (response.ok) {
+      return data;
+    } else {
+      return Promise.reject(data)
+    }
+  })
+  .then( response => {
+    metadataDiv.innerHTML = response;
+    iniCallback();
+    lower_content_loaded = true
+    if(debug){console.timeEnd('AJAX-Get-Lower-Metadata')}
+  })
+  .catch( error =>{
+    trackingTags('item-error-GettingMeta');
+    console.error(error);
+    metadataDiv.innerHTML = '<p>We had a problem getting content to place here.</p>';
+    if(debug){console.timeEnd('AJAX-Get-Lower-Metadata')}
+  });
+
+}
+//getContent('{site_url}/downloads/_item-metadata/'+entry_info.entry_id,'#metadata-async-load');
+
+var lower_content = new IntersectionObserver(
+  entries => {
+    if (entries[0].isIntersecting === true || lower_content_loaded === false) {
+      getContent('{site_url}/downloads/_item-metadata/'+entry_info.entry_id,'#metadata-async-load');
+      lower_content.disconnect();
+    }
+  }
+);
+// Start observing an element
+lower_content.observe(document.querySelector('#metadata-async-load'));
+
+
+
+
+
+
+/****************** Fav ******************/
+function favoriteHandler(fav_container) {
+  let button = fav_container.querySelector('[data-favActionButton]');
+
+  button.addEventListener('click', event => {
+    event.preventDefault();
+    //event.target.setAttribute('value', 'updating...');
+    event.target.innerHTML = "<i class='fa fa-circle-o-notch fa-spin' aria-hidden='true'></i>";
+    fav_add_action(event.target, fav_container );
+  });
+
+  async function fav_add_action(button, fav) {
+
+    let fav_form  = fav.querySelector('form');
+    let url       = fav_form.getAttribute('action');
+    let form_data = new FormData(fav_form);
+
+    let response = await fetch(url, {
+      method: 'post',
+      body: form_data,
+      mode: "cors",
+      cache: "no-cache", 
+      credentials: "same-origin",    
+    });
+    if (await response.ok) {
+      // Convert string to HTML nodes.
+      let returnedWebPage = document.createRange().createContextualFragment( await response.text() );
+
+      // get the new form element. #fav_1234 form
+      let new_fav_form = returnedWebPage.querySelector("#"+fav_container.id+' form');
+
+      fav.innerHTML = ''; // Remove the old form.
+      fav.appendChild(new_fav_form); // append the new form.
+      favoriteHandler(fav_container);
+
+    } else {
+      //button.setAttribute('value', 'Error.'); // Change title on button to Error.
+      button.innerHTML = "<i class='fa fa-exclamation-circle' aria-hidden='true'></i>"
+      button.setAttribute('title', 'Something went wrong, please refresh the page to try again.');
+      console.error("Error adding/removing favorite:", response);
+    }
+  }
+}
+
+document.querySelectorAll('.favorites_block').forEach( fav_container => {
+  favoriteHandler(fav_container);
+});
+/******************************************/
+
+
+</script>
+{/exp:channel:entries}
+
+{embed=a/f}

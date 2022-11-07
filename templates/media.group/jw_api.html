@@ -1,0 +1,86 @@
+{!--
+
+This plugin/template does not have checks if the media ID is already created on JW systems, always check with a conditional in the template first.
+
+URL Scheme:
+/media/jw_api/~entry id~/~task~
+
+--}
+
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    status="open|pendingaudio|pendingvideo|waitingforreview"
+    show_future="no"
+    entry_id="{segment_3}"
+    disable="pagination|categories|member_data"
+    limit="1"
+}
+
+
+{if segment_4 == 'create'}
+
+	{!-- Double-check if it hasn't been created yet --}
+	{if archive_jw_media_id ==''}
+	      {exp:bl_jw_api:create
+	        parse="inward"
+	        entry_id="{entry_id}"
+	        title="{entry_date format="%Y-%m-%d"} {title}"
+	        duration="{archive_playtime_duration}"
+            sourceurl="https://54edc27ad2b3c.streamlock.net:443/vod/website/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/smil:{entry_id}.smil/playlist.m3u8"
+	        smil_filename="{entry_id}"
+			
+            thumbnail='/www/public{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif archive_default_image}{exp:ce_img:pair src="{archive_default_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{related_ensembles_v2:default_picture}' }{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="1920" height="1080" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}'		        
+	        
+            tags="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}{archive_recital_type}{archive_recital_type:title},{/archive_recital_type}{related_ensembles_v2}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title},{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}"
+	        
+            ens="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}"
+	        
+            area="{related_ensembles_v2 limit='1'}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title}{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}"
+	      }
+	{/if}{!-- archive_jw_media_id--}
+{/if}{!-- create --}s
+
+
+
+{if segment_4 == 'update'} {!-- JW has been generated...  Update. --}
+      {exp:bl_jw_api:update
+        parse="inward"
+        mediaid="{archive_jw_media_id}"
+        entry_id="{entry_id}"
+        title="{entry_date format="%Y-%m-%d"} {title}"
+        duration="{archive_playtime_duration}"
+        sourceurl="https://54edc27ad2b3c.streamlock.net:443/vod/website/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/smil:{entry_id}.smil/playlist.m3u8"
+        smil_filename="{entry_id}"
+
+		thumbnail='/www/public{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif archive_default_image}{exp:ce_img:pair src="{archive_default_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{related_ensembles_v2:default_picture}' }{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="1920" height="1080" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}'       
+        
+        tags="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}{archive_recital_type}{archive_recital_type:title},{/archive_recital_type}{related_ensembles_v2}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title},{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}"
+        
+        ens="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}"
+        
+        area="{related_ensembles_v2 limit='1'}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title}{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}"
+      }
+{/if}{!--update--}
+
+
+{if segment_4 == 'getvideo'}
+  {exp:bl_jw_api:getVideo
+    parse="inward"
+    mediaid="{archive_jw_media_id}"
+    entry_id="{entry_id}"
+    title="{entry_date format="%Y-%m-%d"} {title}"
+    duration="{archive_playtime_duration}"
+    sourceurl="https://54edc27ad2b3c.streamlock.net:443/vod/website/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/smil:{entry_id}.smil/playlist.m3u8"
+    smil_filename="{entry_id}"
+	thumbnail='/www/public/{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif archive_default_image}{exp:ce_img:pair src="{archive_default_image}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{related_ensembles_v2:default_picture}' }{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="1920" height="1080" crop="yes" save_type="jpg" fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:elseif '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="1920" height="1080" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}'
+
+    tags="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}{archive_recital_type}{archive_recital_type:title},{/archive_recital_type}{related_ensembles_v2}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_
+    performance_area:title},{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}"
+    ens="{related_ensembles_v2}{related_ensembles_v2:title},{/related_ensembles_v2}"
+    area="{related_ensembles_v2 limit='1'}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title}{/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2}" 
+}
+{/if}
+
+{/exp:channel:entries}
+

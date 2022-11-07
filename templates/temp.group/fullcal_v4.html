@@ -1,0 +1,635 @@
+{embed=a/h}
+
+<style>
+#loadingIndicator {
+  position:absolute;
+  top:8em;
+  right:3em;
+  font-size:1em;
+  z-index: 99;
+}
+#loadingIndicator div {
+  border: 8px solid var(--greenfour);
+  border-top-color: var(--greenone);
+  border-radius: 50%;
+  width: 5em;
+  height: 5em;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+#loadingIndicator .hidden {
+  transition: all .5s ease-in-out;
+}
+a.ensemble {background-color:orange;}
+a.instrument {background-color:#ccc;}
+a.dma {
+  background-color:rgba(142, 146, 232, 1);
+}
+a.senior_recital {
+  background-color:rgba(186, 232, 216, 1);
+}
+a.masters {
+  background-color:rgba(232, 155, 177, 1);
+}
+a.fc-event {
+  border:0;
+  padding:1% 3%;
+}
+a.fc-event:hover {
+  background-color:rgba(232, 89, 63, 1);
+  cursor:pointer
+}
+.fullcalendar {display:flex}
+.menu {
+  margin:0;
+  padding:1em 2%;
+  width:30%;
+}
+#calendar {width:auto;}
+
+
+
+.calendar_nav {display:flex;}
+
+input.searchKeyword {
+  display: block;
+  font-weight: bold;
+  margin: 0;
+  padding:1em;
+  outline: none;  
+  border: 1px solid transparent;  
+}
+input.searchKeyword:hover, input.searchKeyword:active {
+  background: var(--purewhite);
+}
+input.searchKeyword:placeholder {color:var(--midgray);}
+input.searchKeyword:focus {outline:none;}
+
+
+.cal_date_select select {
+  margin:0;
+  padding:.8em 1em;
+}
+
+
+.cal_name {
+  margin:0 1px;
+  border:1px solid rgba(0,0,0,.1);
+}
+
+.cal_menu .dropdown_button ~ label {
+  display:inline-block;
+  padding:.8em 1em;
+  background:#ccc;
+}
+.cal_menu .dropdown_button ~ label:hover {cursor:pointer;}
+
+.cal_menu .dropdown_button {display:none;}
+
+.cal_menu > label:hover, 
+.cal_menu > input:checked ~ label,
+.cal_menu .dropdown:hover ~ label
+{background:rgba(0,0,0,.3)}
+
+.dropdown {
+  position: absolute;
+  transition: all 0.5s ease;
+  background-color: var(--purewhite);
+  height:0;
+  max-height:70vh;  
+  min-width:0;
+  overflow: hidden;
+  z-index: 50;
+  padding:0 1em;
+  opacity: 0;
+  box-shadow:5px 5px 20px 0 rgba(98, 101, 97, .5);
+  border-radius:0 0 10px 10px;
+  overflow-y: visible;
+}
+.hall_menu input:checked ~ .cal_menu label:after{
+  border-top:0 solid rgba(255,255,255,.5);
+  border-bottom:4px solid rgba(255,255,255,.5);
+  transition:border-top .1s, border-bottom .1s .1s;
+}
+
+/*show the second levele menu of the selected voice*/
+.cal_menu input:checked ~ .dropdown, 
+.cal_menu input:hover ~ .dropdown, 
+.dropdown:hover {
+  height:auto;
+  min-height:20em;
+  max-height:70vh;
+  min-width:20em;
+  transition:all 0.2s ease-in-out;
+  border:1px solid var(--midgray);
+  padding-top:1em;
+  padding-bottom:1em;
+  opacity: 1;
+}
+
+.cal_menu ul {
+  list-style: none;
+  margin:0;
+  padding:0;
+}
+
+
+
+
+
+
+
+thead {
+  background:none;
+  color:black;
+}
+.fc-day-header {border:none;}
+
+.fc-row:first-child table {
+  border:none;
+}
+table {
+  margin-bottom:0;
+}
+.fc-widget-header {
+  border:0;
+}
+</style>
+
+<section class="modal micromodal-slide" id="event_modal" aria-hidden="true">
+  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title" style="width:90%;max-width:90%;z-index:999999;position:relative;">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modal-1-title">Title</h2>
+        <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+      </header>
+      <main class="modal__content" id="modal-1-content">
+        <p><span id="starttime"></span> to <span id="endtime"></span></p>
+        <p><span id="event_description"></span></p>
+        <p>Go to <a id="event_link">Event</a></p>
+      </main>
+      <footer class="modal__footer">
+        <!--<button class="modal__btn modal__btn-primary">Continue</button>-->
+        <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+      </footer>
+    </div>
+  </div>
+</section> 
+
+
+  <header class="calendar_header">
+    <h1>Test Calendar, v4</h1>
+    <span id="loadingIndicator" class="hidden"><div></div></span>
+  </header>
+
+  <nav class="calendar_nav">
+
+    <article class="cal_menu">
+      <input id="menu1" type="checkbox" name="menu" class="dropdown_button" />
+      <label for="menu1" class="cal_name">Halls</label>
+      <div class="dropdown">
+        <h2>Select Halls</h2>
+        <p>This only works for room views.</p>
+        <form id="hall_resources">
+          {exp:channel:entries channel="rooms"}
+          <li>
+            <input type="checkbox" id="{entry_id}" name="{entry_id}" class="hallcheckbox" data-halltitle="{title}" checked>
+            <label for="{entry_id}">{title}</label>
+          </li> 
+          {/exp:channel:entries}
+        </form>
+      </div>
+    </article>
+
+    <article class="cal_search">
+      <input type="search" id="calendarSearch" class="searchKeyword" placeholder="Search" />
+    </article>
+
+    <section class="cal_date_select">
+      <select id="month">
+          <option value="00" {if '{current_time format='%m'}' == '01'}selected{/if}>January</option>
+          <option value="01" {if '{current_time format='%m'}' == '02'}selected{/if}>February</option>
+          <option value="02" {if '{current_time format='%m'}' == '03'}selected{/if}>March</option>
+          <option value="03" {if '{current_time format='%m'}' == '04'}selected{/if}>April</option>
+          <option value="04" {if '{current_time format='%m'}' == '05'}selected{/if}>May</option>
+          <option value="05" {if '{current_time format='%m'}' == '06'}selected{/if}>June</option>
+          <option value="06" {if '{current_time format='%m'}' == '07'}selected{/if}>July</option>
+          <option value="07" {if '{current_time format='%m'}' == '08'}selected{/if}>August</option>
+          <option value="08" {if '{current_time format='%m'}' == '09'}selected{/if}>September</option>
+          <option value="09" {if '{current_time format='%m'}' == '10'}selected{/if}>October</option>
+          <option value="10" {if '{current_time format='%m'}' == '11'}selected{/if}>November</option>
+          <option value="11" {if '{current_time format='%m'}' == '12'}selected{/if}>December</option>
+      </select>      
+      <select id="year">
+          {!-- Plugin that displays the last x years in a option dropdown. --}
+          {exp:year_options years="5"}
+      </select>
+    </section>
+
+    <article class="cal_menu">
+      <input id="menu2" type="checkbox" name="menu" class="dropdown_button" />
+      <label for="menu2" class="cal_name">Instruments</label>
+
+      <div class="dropdown">
+      <form id="filter_instruments">
+        <ul>
+          <li>
+            <input type="radio" name="instrument" id="none" class="searchMeta" data-key="child:archive_instrument" data-value="">
+            <label for="none">None</label>
+          </li>
+          {exp:channel:entries channel="college_instruments"}
+          <li>
+            <input type="radio" name="instrument" id="{url_title}" class="searchMeta" data-key="child:archive_instrument" data-value="{url_title}">
+            <label for="{url_title}">{title}</label>
+          </li> 
+          {/exp:channel:entries}
+        </ul>
+      </form>
+      </div>
+    </article>
+
+    <article class="cal_menu">
+      <input id="menu3" type="checkbox" name="menu" class="dropdown_button" />
+      <label for="menu3" class="cal_name">Ensembles</label>
+
+      <div class="dropdown">
+        <form id="filter_instruments">
+          <ul>
+          <li>
+            <input type="radio" name="ens" id="none" class="searchMeta" data-key="child:related_ensembles_v2" data-value="">
+            <label for="none">None</label>
+          </li>         
+          {exp:channel:entries channel="ensembles"}
+            <li>
+              <input type="radio" name="ens" id="{url_title}" class="searchMeta" data-key="child:related_ensembles_v2" data-value="{url_title}">
+              <label for="{url_title}">{title}</label>
+            </li> 
+          {/exp:channel:entries}
+          </ul>
+        </form>
+      </div>
+    </article>
+  </nav>
+
+  <div id='calendar'></div>
+
+  </body>
+
+
+    {jquery}
+    {embed=a/js}
+
+    <link href='/js/fullcalendar/v4/packages/core/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/bootstrap/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/daygrid/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/list/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/resource-timeline/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/timegrid/main.min.css' rel='stylesheet' />
+    <link href='/js/fullcalendar/v4/packages/timeline/main.min.css' rel='stylesheet' />
+
+    <script src='/js/fullcalendar/v4/packages/core/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/resource-common/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/bootstrap/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/daygrid/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/timegrid/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/timeline/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/interaction/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/list/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/moment/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/resource-common/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/resource-daygrid/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/resource-timegrid/main.min.js'></script>
+    <script src='/js/fullcalendar/v4/packages/resource-timeline/main.min.js'></script>
+
+   <script src='/js/moment/moment.2.24.0.min.js'></script>
+
+
+    <script>
+
+      //document.addEventListener('DOMContentLoaded', function() {
+      $(document).ready(function() {        
+
+        MicroModal.init();
+
+        var today = new Date();
+        var currentDate = today;
+
+        var searchParams = {};
+
+
+        const calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          plugins: [ 
+            'dayGrid', 
+            'timeGrid', 
+            'interaction', 
+            'list',
+            'timeline',
+            'moment',
+            'resourceTimeGrid',
+            'resourceDayGrid',
+            'resourceTimeline',
+          ],
+
+          slotDuration: '00:15:00',
+          nowIndicator:true,
+
+          editable: true,
+          eventResizableFromStart: true,
+          selectable: true,
+          placeholder: true,
+          selectMirror: true,
+          //eventStartEditable: false,
+          eventOverlap:false,
+          filterResourcesWithEvents:true,
+
+          defaultTimedEventDuration: '1:00',
+
+          resourceLabelText: 'Halls',
+
+          eventResize: function(arg) {
+            console.log(arg);
+          },
+
+          dateClick:function(arg){
+            console.log('dateClick', arg);
+          },
+
+          select: function(arg) {
+            console.log(
+              'select callback',
+              arg.startStr,
+              arg.endStr,
+              arg.resource ? arg.resource.id : '(no resource)'
+            );
+            calendar.addEvent( arg );
+          },
+          unselect: function(arg) {
+            console.log('Unselect', arg);
+          },
+          dateClick: function(arg) {
+            console.log(
+              'dateClick',
+              arg.date,
+              arg.resource ? arg.resource.id : '(no resource)'
+            );
+          },
+
+          //schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+
+          header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek,dayGridWeek,resourceDayGrid,resourceTimeGrid,resourceTimeline,resourceTimelineWeek,',
+
+            'resourceDayGrid':'Room Day Grid'
+          },
+
+          /*
+          views: {
+            agendaTwoDay: {
+              type: 'agenda',
+              duration: { days: 2 },
+
+              // views that are more than a day will NOT do this behavior by default
+              // so, we need to explicitly enable it
+              groupByResource: true
+
+              //// uncomment this line to group by day FIRST with resources underneath
+              //groupByDateAndResource: true
+            },
+            */
+          buttonText : {
+            dayGridMonth          : "Month",
+            timeGridWeek          : "Week",
+            timeGridDay           : "Day",
+            listWeek              : "Day-list",
+            dayGridWeek           : "Week-list",
+
+            resourceDayGrid       : "Roomview-DayStacked",
+            resourceTimeGrid      : "Roomview",
+            resourceTimeline      : "Roomview-Horz",
+            resourceTimelineWeek  : "Roomview/Week-Horz"
+
+          },
+
+          views: {
+            dayGridMonth: {
+              minTime: '07:00:00',
+            },
+            timeGridWeek: {
+              minTime: '07:00:00',
+            },
+            timeGridDay: {
+              minTime: '07:00:00',
+            },
+            listWeek: {
+              minTime: '07:00:00',
+            },
+            dayGridWeek: {
+              minTime: '07:00:00',
+            },
+            resourceDayGrid: {
+              minTime: '07:00:00',
+            },
+            resourceTimeGrid: {
+              minTime: '07:00:00',
+            },
+            resourceTimeline: {
+              minTime: '07:00:00',
+            },
+            resourceTimelineWeek: {
+              minTime: '07:00:00',
+            }
+
+
+          },
+
+          eventSources: [
+            {
+              startParam: 'range-from:entry_date', // to be added to URL dynamically.  Matches Low Search.
+              endParam: 'range-to:expiration_date', // to be added to URL dynamically.  Matches Low Search.
+              url: '/feeds/concert-item-medium?limit=1000&status=open&show_expired=yes&show_future_entries=yes&status=open|livestream|pending|pendingaudio|pendingvideo|scheduled|waitingforreview',
+              method: 'GET',
+              extraParams: searchParams,
+              /*
+              extraParams: {
+                'child:archive_instrument' : '',
+                'child:related_ensembles_v2' : '',
+                'child:room' : '',
+              },*/              
+              failure: function() {
+                alert('there was an error while fetching events!');
+              }
+            }          
+          ],
+
+
+
+
+          resources: [
+            {exp:channel:entries 
+              channel="rooms" 
+              sort="desc"
+              dynamic="off" 
+              disable="member_data|pagination|category_fields"
+              cache="yes"
+              refresh="10000"
+              entry_id="{segment_3}"
+            }  
+            {
+              id: '{entry_id}',
+              title: '{title}',
+            }{if count < total_results},{/if}
+            {/exp:channel:entries}
+          ],
+
+
+          eventClick: function (item) {
+            console.log(item);
+            //item.el.preventDefault();
+            MicroModal.show('event_modal');
+            //element.attr('href', 'javascript:void(0);');
+            $("#modal-1-title").html(item.event.title);
+            //$("#starttime").html(moment(item.event.start).format('MMM Do h:mm A'));
+            //$("#endtime").html(moment(item.event.end).format('MMM Do h:mm A'));
+            $("#starttime").html(item.event.start);
+            $("#endtime").html(item.event.end);
+            $("#event_description").html(item.event.description);
+            $("#event_link").attr('href', item.event.url);
+            //$("#eventContent").dialog({ modal: true, title: event.title, width:350});
+          },
+
+          loading: function (bool) {
+            if (bool) {
+              document.querySelector('#loadingIndicator').classList.remove('hidden');
+              console.log('Rendering.');
+            } else {
+              document.querySelector('#loadingIndicator').classList.add('hidden');
+              console.log('Finished Render.');              
+            }
+          }    
+
+
+        });
+
+        calendar.render();
+
+
+
+
+
+    //Check if index.php is in URL.
+        $("#month").change(function() {
+            //Run pageUPdate function
+            pageUpdate(5, this);
+        });            
+        $("#year").change(function() {
+            pageUpdate(4, this);
+        });
+
+
+        function pageUpdate(segment, IDthis) {
+            // Trigger page transition effect.
+            //gearFade('show');
+
+            let month  = $("#month").val();
+            let year   = $("#year").val();
+
+            console.log(month);
+
+    
+            //let momentDate = moment(currentDate);
+
+            let newDate = moment().set('month', month).set('year', year).subtract({hours:5}).toISOString();
+            console.log(newDate);
+
+            calendar.gotoDate( newDate );
+            
+        };
+
+
+        function gearFade(state) {
+          if (state == 'show') {
+            //Fade everything out.
+            $('.entire_calendar').css('opacity','.4');            
+            //Fade in the spinning gear.
+            $('html body').append('<div id="spinningGear" class="animated bounceInDown"><i class="fa fa-cog fa-spin fa-lg"></i></div>');
+            //$('.waiting').css('display','inline').addClass('animated bounceInDown');
+          }
+          if (state == 'hide') {
+            $('html body')
+              .removeClass('bounceInDown')
+              .addClass('bounceOutUp');
+          }
+        };
+
+
+
+
+        /********************************  ********************************/
+
+      $('.hallcheckbox').on('change', function(element){
+          let resource = calendar.getResourceById(this.name);
+          if(this.checked){
+            calendar.addResource({
+              id : this.name,
+              title : this.dataset.halltitle,
+            });
+          } else {
+            resource.remove();
+          }
+      });
+
+
+      $('.searchMeta').on('change', function(element){
+          let item = this;
+
+          if(item.checked){
+            searchParams[item.dataset.key] = item.dataset.value;
+          } else {
+            delete searchParams[item.dataset.key] // Blank it out to remove.
+          }
+          console.log(searchParams);
+          // Re-render calendar.
+          let events = calendar.getEventSources();
+          calendar.refetchEvents(events); //Typo in docs.
+      });
+
+
+      $('#calendarSearch').keyup(delay(function (e) {
+        let item = this;
+        let encodedSearch = encodeURI(item.value);
+
+        searchParams['keywords'] = encodedSearch;
+
+        // Re-render calendar.
+        let events = calendar.getEventSources();
+        calendar.refetchEvents(events); //Typo in docs.
+
+      }, 500));
+
+
+
+
+      function delay(callback, ms) {
+        var timer = 0;
+        return function() {
+          var context = this, args = arguments;
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            callback.apply(context, args);
+          }, ms || 0);
+        };
+      }
+
+
+      });
+
+    </script>  
+{embed=a/f}

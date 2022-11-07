@@ -1,0 +1,376 @@
+{exp:channel:entries
+	channel="live" 
+	entry_id="{meta:invoice_id}" 
+	disable="categories|pagination" 
+	show_future_entries="yes"
+	show_expired="yes"
+	status="open|closed|needspayment|paid"
+}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+        <title>UNT Recording Services - Receipt</title>
+		<style type="text/css">
+			/* Client-specific Styles */
+			#outlook a{padding:0;} /* Force Outlook to provide a "view in browser" button. */
+			body{width:100% !important;} .ReadMsgBody{width:100%;} .ExternalClass{width:100%;} /* Force Hotmail to display emails at full width */
+			body{-webkit-text-size-adjust:none;} /* Prevent Webkit platforms from changing default text sizes. */
+
+			/* Reset Styles */
+			body{margin:0; padding:0;}
+			img{border:0; height:auto; line-height:100%; outline:none; text-decoration:none;}
+			table td{border-collapse:collapse;}
+			#backgroundTable{height:100% !important; margin:0; padding:0; width:100% !important;}
+			body, #backgroundTable{
+				/*@editable*/ background-color:#FAFAFA;
+			}
+
+			#templateContainer{
+				/*@editable*/ border: 1px solid #DDDDDD;
+			}
+			h1, .h1{
+				/*@editable*/ color:#202020;
+				display:block;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:34px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:100%;
+				margin-top:0;
+				margin-right:0;
+				margin-bottom:10px;
+				margin-left:0;
+				/*@editable*/ text-align:left;
+			}
+			h2, .h2{
+				/*@editable*/ color:#202020;
+				display:block;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:30px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:100%;
+				margin-top:0;
+				margin-right:0;
+				margin-bottom:10px;
+				margin-left:0;
+				/*@editable*/ text-align:left;
+			}
+			h3, .h3{
+				/*@editable*/ color:#202020;
+				display:block;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:26px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:100%;
+				margin-top:0;
+				margin-right:0;
+				margin-bottom:10px;
+				margin-left:0;
+				/*@editable*/ text-align:left;
+			}
+			h4, .h4{
+				/*@editable*/ color:#202020;
+				display:block;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:22px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:100%;
+				margin-top:0;
+				margin-right:0;
+				margin-bottom:10px;
+				margin-left:0;
+				/*@editable*/ text-align:left;
+			}
+			#templateHeader{
+				/*@editable*/ background-color:#FFFFFF;
+				/*@editable*/ border-bottom:0;
+			}
+			.headerContent{
+				/*@editable*/ color:#202020;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:34px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:100%;
+				/*@editable*/ padding:0;
+				/*@editable*/ text-align:center;
+				/*@editable*/ vertical-align:middle;
+			}
+			.headerContent a:link, .headerContent a:visited, /* Yahoo! Mail Override */ .headerContent a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#336699;
+				/*@editable*/ font-weight:normal;
+				/*@editable*/ text-decoration:underline;
+			}
+
+			#headerImage{
+				height:auto;
+				max-width:600px !important;
+			}
+			#templateContainer, .bodyContent{
+				/*@editable*/ background-color:#FFFFFF;
+			}
+			.bodyContent div{
+				/*@editable*/ color:#505050;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:14px;
+				/*@editable*/ line-height:150%;
+				/*@editable*/ text-align:left;
+			}
+			.bodyContent div a:link, .bodyContent div a:visited, /* Yahoo! Mail Override */ .bodyContent div a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#336699;
+				/*@editable*/ font-weight:normal;
+				/*@editable*/ text-decoration:underline;
+			}
+			.templateDataTable{
+				/*@editable*/ background-color:#FFFFFF;
+				/*@editable*/ border:1px solid #DDDDDD;
+			}
+			.dataTableHeading{
+				/*@editable*/ background-color:#96C36E;
+				/*@editable*/ color:white;
+				/*@editable*/ font-family:Helvetica;
+				/*@editable*/ font-size:14px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:150%;
+				/*@editable*/ text-align:left;
+			}
+			.dataTableHeading a:link, .dataTableHeading a:visited, /* Yahoo! Mail Override */ .dataTableHeading a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#FFFFFF;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ text-decoration:underline;
+			}
+			.dataTableContent{
+				/*@editable*/ border-top:1px solid #DDDDDD;
+				/*@editable*/ border-bottom:0;
+				/*@editable*/ color:#202020;
+				/*@editable*/ font-family:Helvetica;
+				/*@editable*/ font-size:12px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ line-height:150%;
+				/*@editable*/ text-align:left;
+			}
+			.dataTableContent a:link, .dataTableContent a:visited, /* Yahoo! Mail Override */ .dataTableContent a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#202020;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ text-decoration:underline;
+			}
+			.templateButton{
+				-moz-border-radius:3px;
+				-webkit-border-radius:3px;
+				/*@editable*/ background-color:#96C36E;
+				/*@editable*/ border:0;
+				border-collapse:separate !important;
+				border-radius:3px;
+			}
+			.templateButton, .templateButton a:link, .templateButton a:visited, /* Yahoo! Mail Override */ .templateButton a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#FFFFFF;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:15px;
+				/*@editable*/ font-weight:bold;
+				/*@editable*/ letter-spacing:-.5px;
+				/*@editable*/ line-height:100%;
+				text-align:center;
+				text-decoration:none;
+			}
+
+			.bodyContent img{
+				display:inline;
+				height:auto;
+			}
+
+			#templateFooter{
+				/*@editable*/ background-color:#FFFFFF;
+				/*@editable*/ border-top:0;
+			}
+
+			.footerContent div{
+				/*@editable*/ color:#707070;
+				/*@editable*/ font-family:Arial;
+				/*@editable*/ font-size:12px;
+				/*@editable*/ line-height:125%;
+				/*@editable*/ text-align:center;
+			}
+
+			.footerContent div a:link, .footerContent div a:visited, /* Yahoo! Mail Override */ .footerContent div a .yshortcuts /* Yahoo! Mail Override */{
+				/*@editable*/ color:#336699;
+				/*@editable*/ font-weight:normal;
+				/*@editable*/ text-decoration:underline;
+			}
+
+			.footerContent img{
+				display:inline;
+			}
+
+			#utility{
+				/*@editable*/ background-color:#FFFFFF;
+				/*@editable*/ border:0;
+			}
+
+			#utility div{
+				/*@editable*/ text-align:center;
+			}
+		</style>
+	</head>
+    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0">
+    	<center>
+        	<table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable">
+            	<tr>
+                	<td align="center" valign="top" style="padding-top:20px;">
+                    	<table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer">
+                        	<tr>
+                            	<td align="center" valign="top">
+                                    <!-- // Begin Template Header \\ -->
+                                	<table border="0" cellpadding="0" cellspacing="0" width="600" id="templateHeader">
+                                        <tr>
+                                            <td class="headerContent" style="background:#96C36E;display:block;max-width:560px;min-height:100px;padding:20px">
+
+
+<img style="max-width:560px;" id="headerImage campaign-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACeEAAAGsCAMAAABnkQ7LAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA+lpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjYxOTdEN0ZBNDM1MTExRTNCMTVERTRGOEYxMTc0M0MxIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjYxOTdEN0Y5NDM1MTExRTNCMTVERTRGOEYxMTc0M0MxIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzYgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGODdGMTE3NDA3MjA2ODExODIyQURERjJFMDlGNTYxMCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowMTgwMTE3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"/>
+
+
+                                            	<!-- // Begin Module: Standard Header Image \\
+                                            	<img src="{site_url}/images/college_of_music_white.png" style="max-width:560px;" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext />
+                                            	-->
+                                            	<!-- // End Module: Standard Header Image \\ -->
+                                            	<span style="color:white;text-align:center">Recording Services</span>
+                                            
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- // End Template Header \\ -->
+                                </td>
+                            </tr>
+                        	<tr>
+                            	<td align="center" valign="top">
+                                    <!-- // Begin Template Body \\ -->
+                                	<table border="0" cellpadding="0" cellspacing="0" width="600" id="templateBody">
+                                    	<tr>
+                                            <td valign="top">
+                                
+                                                <!-- // Begin Module: Standard Content \\ -->
+                                                <table border="0" cellpadding="20" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td valign="top" class="bodyContent">
+                                                            <div mc:edit="std_content00">
+                                                                <h1 class="h1">Order Complete!</h1>
+                                                                <p>
+                                                              	{customer_name}<br>
+																{customer_email}<br>
+																Transaction ID: {payment_id}<br />
+																Customer ID: {customer_id}<br />
+																Payment Date: {stripe_created format="%n/%d/%Y %g:%i%a"}<br />
+																{invoices_description}
+																</p>
+                                                            </div>
+														</td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td valign="top" style="padding-top:0; padding-bottom:0;">
+                                                          <table border="0" cellpadding="10" cellspacing="0" width="100%" class="templateDataTable">
+                                                              <tr>
+                                                                  <th scope="col" valign="top" width="40%" class="dataTableHeading" mc:edit="data_table_heading01">
+                                                                    Description
+                                                                  </th>
+                                                                  <th scope="col" valign="top" width="10%" class="dataTableHeading" mc:edit="data_table_heading02">
+                                                                    QT
+                                                                  </th>
+                                                                  <th scope="col" valign="top" width="20%" class="dataTableHeading" mc:edit="data_table_heading03">
+                                                                    Price
+                                                                  </th>
+                                                                  <th scope="col" valign="top" width="20%" class="dataTableHeading" mc:edit="data_table_heading04">
+                                                                    Item Total
+                                                                  </th>
+                                                              </tr>
+                                                              {invoices_cost_breakdown}
+																<tr mc:repeatable>
+																<td valign="top" class="dataTableContent" mc:edit="data_table_content01">
+																{invoices_cost_breakdown:description}
+																</td>
+																<td valign="top" class="dataTableContent" mc:edit="data_table_content02">
+																{invoices_cost_breakdown:quantity}
+																</td>
+																<td valign="top" class="dataTableContent" mc:edit="data_table_content03">
+																${invoices_cost_breakdown:cost_per_unit}
+																</td>
+																<td valign="top" class="dataTableContent" mc:edit="data_table_content04">
+																${invoices_cost_breakdown:total}
+																</td>
+																</tr>
+                                                     		{/invoices_cost_breakdown}
+                                                          </table>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                    	<td>
+                                                    		<table cellspacing="0" cellpadding="2" width="100%" class="bodyContent" style="font-family:Arial;">
+                                                    			<tr>
+                                                    				<td style="width:85%"></td>
+                                                    				<td></td>
+                                                    			</tr>
+																<tr>
+																	<td valign="top" align="right"><strong>Total:</strong></td>
+																	<td valign="top" align="right"><strong>{amount_currency_formatted}</strong></td>
+																</tr>
+															</table>
+                                                    	</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td valign="top" class="bodyContent">
+                                                            <div mc:edit="std_content01">
+                                                                
+
+                                                            </div>
+																												</td>
+                                                    </tr>
+
+                                                </table>
+                                                <!-- // End Module: Standard Content \\ -->
+                                                
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- // End Template Body \\ -->
+                                </td>
+                            </tr>
+                        	<tr>
+                            	<td align="center" valign="top">
+                                    <!-- // Begin Template Footer \\ -->
+                                	<table border="0" cellpadding="10" cellspacing="0" width="600" id="templateFooter">
+                                    	<tr>
+                                        	<td valign="top" class="footerContent">
+                                            
+                                                <!-- // Begin Module: Transactional Footer \\ -->
+                                                <table border="0" cellpadding="10" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td valign="top">
+                                                            <div mc:edit="std_footer">
+																<em>Copyright {stripe_created format="%Y"} All rights reserved.</em>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td valign="middle" id="utility">
+                                                            <div mc:edit="std_utility">
+                                                                &nbsp;<a href="{site_url}/invoice/receipt/{hash}" target="_blank" rel="noopener noreferrer">view this in your browser</a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <!-- // End Module: Transactional Footer \\ -->
+                                            
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- // End Template Footer \\ -->
+                                </td>
+                            </tr>
+                        </table>
+                        <br />
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </body>
+</html>
+
+{/exp:channel:entries}

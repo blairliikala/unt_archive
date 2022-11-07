@@ -1,0 +1,553 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>UNT {if segment_1=="live"}College of Music{/if} {site_name} - {embed:title}</title>	
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="description" content="{embed:meta} RS provides professional recording for the College of Music" />
+	<meta name="theme-color" content="#BAE197">
+	<meta name="supported-color-schemes" content="light dark">
+	<link rel="shortcut icon" href="{site_url}/favicon.ico">
+	<base href="{site_url}">
+	<link rel="canonical" href="{site_url}/{segment_1}{if segment_2!=''}/{segment_2}{/if}{if segment_3!=''}/{segment_3}{/if}" />
+
+	<meta property="og:site_name" content="UNT Recording Services" />
+	{if embed:meta}<meta property="og:description" content="{embed:meta}" />{/if}
+	{if embed:og-title}<meta property="og:title" content="{embed:og-title}" />{/if}
+	{if embed:og-type}<meta property="og:type" content="{embed:og-type}" />{/if}
+	{if embed:og-url}<meta property="og:url" content="{embed:og-url}" />{/if}
+	{if embed:og-image}<meta property="og:image" content="{embed:og-image}" />{/if}
+	
+	<!-- Disable iOS telephone auto-detection.  Only one phone number in the footer. -->
+	<meta name="format-detection" content="telephone=no">
+
+	<!-- RSS -->
+	<link rel="sitemap" type="application/xml" title="Sitemap" href="{path='feeds/sitemap'}" />
+	<link rel="alternate" type="application/rss+xml" title="All Recorded Concerts" href="{path='feeds/downloads-all}" />
+
+
+  <link rel="stylesheet" href="{stylesheet=site/css_site}" />
+
+  {if segment_1 !="" AND segment_1 !="live" AND segment_1 !='services' AND segment_1 !='pages'}
+	<link rel="stylesheet" href="{stylesheet=site/css_archive}" />
+	<link rel="stylesheet" href="{stylesheet=site/css_checkout}" />
+  {/if}
+
+  <link rel="preload" href="/fonts/fontawesome-webfont.woff2" as="font" crossorigin>
+
+  {!-- Redirect Discontinued to special page --}
+  {if logged_in_member_group == "12" AND segment_2 != "noaccess"}
+    {redirect="a/noaccess"}
+  {/if}
+
+  <!--////////// Javascript /////////-->
+  <script>
+    window['_fs_debug'] = false;
+    window['_fs_host'] = 'fullstory.com';
+    window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
+    window['_fs_org'] = 'E0RT2';
+    window['_fs_namespace'] = 'FS';
+    (function(m,n,e,t,l,o,g,y){
+        if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+        g=m[e]=function(a,b,s){g.q?g.q.push([a,b,s]):g._api(a,b,s);};g.q=[];
+        o=n.createElement(t);o.async=1;o.crossOrigin='anonymous';o.src='https://'+_fs_script;
+        y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+        g.identify=function(i,v,s){g(l,{uid:i},s);if(v)g(l,v,s)};g.setUserVars=function(v,s){g(l,v,s)};g.event=function(i,v,s){g('event',{n:i,p:v},s)};
+        g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+        g.log = function(a,b){g("log",[a,b])};
+        g.consent=function(a){g("consent",!arguments.length||a)};
+        g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+        g.clearUserCookie=function(){};
+        g._w={};y='XMLHttpRequest';g._w[y]=m[y];y='fetch';g._w[y]=m[y];
+        if(m[y])m[y]=function(){return g._w[y].apply(this,arguments)};
+    })(window,document,window['_fs_namespace'],'script','user');
+
+      {if logged_in}
+        {if
+          logged_in_member_group=='1' OR
+          logged_in_member_group=='9' OR 
+          logged_in_member_group=='11'
+        }
+        // For faculty/staff, and educators
+          FS.identify('{if logged_in_member_id == 1}99999{if:else}{logged_in_member_id}{/if}', {
+            displayName: '{logged_in_screen_name}',
+            email: '{logged_in_email}',
+            memberGroup_str: "{logged_in_group_title}",
+            memberGroupID_int: {logged_in_group_id}
+          });
+        {if:else}
+          {exp:member:custom_profile_data member_id="{logged_in_member_id}"}
+            {if ldap_directory_withdraw ==""}
+              FS.identify('{logged_in_member_id}', {
+                displayName: '{logged_in_group_title}-{logged_in_member_id}',
+                memberGroup_str: "{logged_in_group_title}",
+                memberGroupID_int: {logged_in_group_id}
+              });
+            {/if}
+          {/exp:member:custom_profile_data}
+       {/if}
+      {/if}
+  </script>
+
+
+
+
+
+
+{!--  For Google, but often it didn't work right and didn't give us much advantage with results.
+  {if segment_1 == 'live'}
+  <!-- Structured JSON-LD -->
+  <script type="application/ld+json">
+    [
+    {if segment_2 ==''}
+    	{exp:channel:entries 
+    	  channel="live" 
+    	  status="scheduled|closed|cancelled" 
+    	  show_future_entries="yes" 
+        search:room:room_enable_live_streaming="true"
+    	  show_expired="no" 
+    	  sort="asc"
+    	  dynamic="on" 
+    	  disable="member_data|pagination|categories"
+    	  cache="yes"
+    	  refresh="10000"
+    	  backspace="1"
+    	}
+    {if:else}
+    	{exp:channel:entries 
+    	  channel="live" 
+    	  status="scheduled|closed|cancelled" 
+    	  show_future_entries="yes" 
+    	  show_expired="no" 
+    	  sort="asc"
+    	  dynamic="on"
+    	  entry_id="{segment_3}"
+    	  disable="member_data|pagination|categories"
+    	  cache="yes"
+    	  refresh="10000"
+    	  backspace="1"
+    	  limit="1"
+    	}
+    {/if}
+
+    {if no_results}
+      {  
+        "@context": "http://schema.org",
+        "@type" : "MusicEvent",
+        "eventStatus": "https://schema.org/EventCancelled"
+      }
+    {/if}
+
+    {  
+      "@context": "http://schema.org",
+      "@type" : "Event",
+      "name": "{entry_date format="%F %j"} {title}",
+      "description": "Livestreamed, or come watch in person.",
+      "url" : "{site_url}/live/event/{entry_id}",
+      "startDate": "{entry_date format='%c'}",
+      "endDate": "{expiration_date format='%c'}",
+      "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
+      "eventStatus": [
+        "{if status == "closed" OR status=="cancelled"}https://schema.org/EventCancelled{if:else}https://schema.org/EventScheduled{/if}"
+      ],
+      "location": [{
+        "@type": "VirtualLocation",
+        "url": "{site_url}/live/event/{entry_id}"
+        },    
+        {
+        "@type": "Place",
+        {if '{room}{room:entry_id}{/room}' == '3266'}
+          "name": "{room}{room:title}{/room}, UNT College of Music",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "2100 Interstate 35 Frontage Road",
+            "addressLocality": "Denton",
+            "postalCode": "76201",
+            "addressRegion": "TX",
+            "addressCountry": "US"
+          }
+        {if:else}
+          "name": "{room}{room:title}{/room}, UNT College of Music",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "415 Ave C",
+            "addressLocality": "Denton",
+            "postalCode": "76201",
+            "addressRegion": "TX",
+            "addressCountry": "US"
+          }
+        {/if}
+      }],
+      "offers": {
+        "@type": "Offer",
+        "url": "{site_url}/live/event/{entry_id}",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "validFrom": "{entry_date format='%c'}"
+      },
+      "organizer" : {
+        "@type" : "Organization",
+        "name"  : "University of North Texas College of Music",
+        "url"   : "{site_url}/{segment_1}"
+      },
+
+      "performers": [
+        {
+          "@type": "PerformingGroup",
+          "name": "UNT Faculty, Staff, Students"
+        }     
+      {if related_ensembles_v2},
+        {related_ensembles_v2 backspace='1'}
+        {
+          "@type": "PerformingGroup",
+          "name": "UNT {related_ensembles_v2:title}"
+        },{/related_ensembles_v2}
+      {if:else}
+        {exp:tag:tags tag_group_id="3" backspace="1" entry_id="{segment_3}"}
+        ,{
+          "@type": "PerformingGroup",
+          "name": "{tag}"
+        }, {/exp:tag:tags}
+      {/if}
+      ],     
+
+      "image": [
+          {if ondemand_image}
+            "{exp:ce_img:pair src='{ondemand_image}' width='1080' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{ondemand_image}' width='1080' height='810' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{ondemand_image}' width='1920' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}"
+          {if:elseif '{related_ensembles_v2:default_picture}'}
+            "{exp:ce_img:pair src='{related_ensembles_v2:default_picture}' width='1080' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{related_ensembles_v2:default_picture}' width='1080' height='810' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{related_ensembles_v2:default_picture}' width='1920' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}"
+          {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+            "{exp:ce_img:pair src='{archive_faculty_notificaiton:faculty_photo:server_path}' width='1080' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{archive_faculty_notificaiton:faculty_photo:server_path}' width='1080' height='810' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{archive_faculty_notificaiton:faculty_photo:server_path}' width='1920' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}"
+          {if:elseif '{room:room_primary_image:server_path}'}
+            "{exp:ce_img:pair src='{room:room_primary_image:server_path}' width='1080' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{room:room_primary_image:server_path}' width='1080' height='810' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='{room:room_primary_image:server_path}' width='1920' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}"
+          {if:else}
+            "{exp:ce_img:pair src='/images/default.png' width='1080' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='/images/default.png' width='1080' height='810' crop='yes'}{site_url}{made}{/exp:ce_img:pair}",
+            "{exp:ce_img:pair src='/images/default.png' width='1920' height='1080' crop='yes'}{site_url}{made}{/exp:ce_img:pair}"
+          {/if}
+      ]
+    },{/exp:channel:entries}
+    ]
+  </script>
+  {/if}
+--}
+
+
+
+</head>
+
+<body id="{if segment_1==""}homepage{/if}{segment_1}" class="{segment_2} {segment_3}" data-theme="dark">
+
+
+<!--
+<section id="message_board"><p><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Text</p></section>
+-->
+
+
+<nav id="search_app" class="archive_nav_v3" >
+
+  <header class="primary_header">
+    <!-- -->
+    <a href="https://music.unt.edu" title="UNT College of Music Home" class="com_logo_link"><img src="/images/unt_lettermark.svg" alt="UNT Logo" class="com_logo" width="100" height="30" translate="no" />College of Music</a> <a href="/" class="com_logo_link">Recording Services</a>
+
+    <section class="sub_nav">
+    {if logged_in}
+      <ul>
+        {if segment_2=='order' OR segment_1=='downloads' OR segment_1=='ctcheckout'}<!-- For Performance-->
+          {!-- Shopping cart total --}
+          {if {exp:cartthrob:total_items_count} >= 1}
+            <li><a href="{path='ctcheckout/view_cart'}" title="checkout"><span class="fa fa-shopping-cart" aria-hidden="true"></span> Cart ({exp:cartthrob:total_items_count}) {exp:cartthrob:cart_total}</a></li>
+          {/if}
+        {/if}
+        <li><a href="{site_url}/me" {if segment_1=="me"}class="highlight"{/if}><span class="menu_txt">{logged_in_screen_name}</span></a></li>
+        <li><a href="{path="logout"}"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
+      </ul>
+    {/if}
+    {if logged_out}
+
+      {!-- Warning message applied when on part of the site that will require a login.  Since live and vod is being more integrated, need to rethink this.
+      {if segment_1=="downloads"}
+        <section class="logged_out_warning">
+          <li>You will need to login to listen or watch.</li>
+          <li><a href="{path=a/login}" class="header_login">Login</a></li>
+        </ul>
+        </section>
+      {if:else}
+        <ul>
+          <li><a href="{path=a/login}" class="header_login">Login</a></li>
+        </ul>
+      {/if}
+      --}
+      
+      <a href="{path=a/login}" class="header_login">Login</a>
+
+    {/if}
+    </section>
+  </header>
+
+    <ais-instant-search 
+      :search-client="searchClient"
+      index-name="archive"
+      >
+    <nav class="menu_links">
+        <form 
+          id="ag_search_form"
+          class="ag_search_form"
+          method="post" 
+          action="{path='downloads/filter'}" 
+          v-on:submit.prevent
+          ref="searchform"
+          >
+
+          <!-- While this should be a button, the browser can't be stopped in preventing submission on enter.-->
+          <button
+            class="archive_nav_search_icon"
+            title="Display Search Results"
+            v-on:click="toggle_resultsbox"
+            v-bind:class="{ ag_results_box_is_active: resultsbox_isVisable }"
+            >
+              <i class="fa fa-caret-down nav_search_icon_rotation"  aria-hidden="true" ref="search_icon"></i>
+          </button>
+
+          <button
+            class="toggle_refinement"
+            v-on:click="toggle_refinement"
+            ref="refinement_button"
+            title="Display Search Refinements"
+            >
+            <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
+          </button>
+                
+          {exp:low_search:form required="keywords" result_page="downloads/filter"}
+            <ais-search-box>
+              <div slot-scope="{ currentRefinement, isSearchStalled, refine }">
+                <input
+                  type="search"
+                  inputmode="search"
+                  id="ag_search_field"
+                  class="ais-input" 
+                  name="keywords"
+                  title="Search pieces, composers, performers, halls, instruments, ensembles"
+                  placeholder="Search..."
+                  autocorrect="off"
+                  autocapitalize="off"
+                  autocomplete="off"
+
+                  v-on:keyup="search_input_keypress"
+                  v-on:keyup.up="navigate_up"
+                  v-on:keyup.down="navigate_down"
+                  v-on:keyup.enter="navigate_enter(event)"
+                  v-on:keydown.enter.prevent
+
+                  @blur="searchHasKeyControl = false"
+                  @focus="searchHasKeyControl = true"
+
+                  v-model="searchboxtext"
+                  @input="refine($event.currentTarget.value)"
+                >
+                <span class="ais-loading" hidden="hidden" :hidden="!isSearchStalled">Loading...</span>
+              </div>
+            </ais-search-box> 
+          {/exp:low_search:form}
+        </form>
+
+        <div class="nav_primary_group" aria-label="Broader site sections">
+          <a id="services-menu" class="{if segment_1=="services"}primary_highlight{/if}" title="Descriptions and Payment of our audio & video services." href="/services">Services</a>
+
+          <a id="live-menu" class="{if segment_1=="live"}primary_highlight{/if}" title="Live HD Video Streaming of Ensembles" href="/live">Live</a>
+
+          <a id="downloads-menu" class="{if segment_1=="downloads" OR segment_1=="media"}primary_highlight{/if}" title="Stream and Download previous events" href="/downloads">
+            <div class="lock_badge" aria-hidden="true">{if logged_out}<i class="fa fa-lock"></i>{if:else}<i class="fa fa-unlock"></i>{/if}</div>Archive
+          </a>
+        </div>
+
+        <div class="nav_secondary_group" aria-label="Sub site sections">
+          <a href="{site_url}/downloads/calendar" {if segment_2=="calendar"}class="secondary_highlight"{/if} title="For All Events">Calendar</a>
+          <a href="{site_url}/downloads/byensemble" {if segment_2=="byensemble"}class="secondary_highlight"{/if} title="Events Sorted by Ensemble">Ensembles</a>
+          <a href="{site_url}/downloads/byinstrument" {if segment_2=="byinstrument"}class="secondary_highlight"{/if} title="Events Sorted by Instrument">Instruments</a>
+        </div>
+      
+    </nav>
+
+    <section
+      id="ag_results_box" 
+      class="ag_results_box"
+      v-bind:style="ag_results_box_styles"
+      ref="ag_results_box"
+      >
+
+      <section class="ag_results" ref="ag_results">
+        <ais-current-refinements></ais-current-refinements>
+
+        <ais-configure
+          :filters="searchDateFilter()"
+        />
+
+        <!--
+        <ais-state-results>
+        <div slot-scope="{ query, hits }">
+        <ais-hits v-if="query.length > 0" />
+        -->
+        <ais-hits>
+            <a 
+              :href="getEventLink(item)" 
+              slot="item"
+              slot-scope="{ item, index }"
+              class="ag_each_link"
+              v-bind:class="{ 'event_in_future' : isEventInFuture(item.date)}"
+              >
+              <!--<img :src="item.thumbURL" class="ag_each_image" v-if="!reduce_data" :alt="item.title">-->
+              <article class='ag_each_meta'>
+                <article class="each_title">
+                  <span class="fa fa-lock" v-if="(logged_in === false && isEventInFuture(item.date) === false)" aria-hidden="true" title="Requires login"></span>
+                  <ais-highlight :hit="item" attribute="title" />
+                </article>
+
+                <p class="event_in_future_message" v-if="(isEventInFuture(item.date) == true)">Upcoming {{item.starttime}}</p>
+
+                <article class="each_perf">
+                  <div class="each_meta_title" v-if="!isEmptyPerf(item._highlightResult.performers)"><!--Performers:--></div>
+                  <span v-for="performers in item._highlightResult.performers">
+                    <span v-if="performers.matchLevel != 'none'">
+                      <span v-html="'- '+performers.value"></span>, 
+                    </span>
+                  </span>
+                </article>    
+
+                <article class="each_track">
+                  <div class="each_meta_title" v-if="!isEmptyTrack(item._highlightResult.program)"><!--Track:--></div>
+                  <span v-for="program in item._highlightResult.program">
+                    <span v-if="program.name_of_piece.matchLevel != 'none' || program.name_of_composer.matchLevel != 'none' || program.name_of_arranger.matchLevel != 'none'">
+                      - 
+                      <span v-html="program.name_of_piece.value"></span> by
+                      <span v-html="program.name_of_composer.value"></span>
+                      <span
+                        v-if="program.name_of_arranger.value !=''"
+                        v-html="'arr. '+program.name_of_arranger.value">
+                      </span><br />
+                    </span>
+                    </span>
+                  </span>
+                </article>
+              </article>
+            </a>
+        </ais-hits>
+        <!--
+        </div>
+        </ais-state-results>
+        -->
+
+        {!--
+        <ais-state-results>
+          <div slot-scope="{ query, hits }">
+            <ais-hits v-if="query.length == 0" />
+              <p>No Search Tearms. Type in a search to see the results</p>
+            </ais-hits>
+          </div>
+        </ais-state-results>
+        --}
+
+        <ais-state-results>
+          <div slot-scope="{ query, hits }">
+            <ais-hits v-if="hits.length < 1" />
+              <p>No Concerts found for <i>{{ query }}</i>.</p>
+              <p>Items archived here are only for the last 5 years. Maybe continue search at the UNT Library <a :href="willis_Library_link" target="_blank">{{query}} <i class="fa fa-external-link"></i></a></p>
+            </ais-hits>
+          </div>
+        </ais-state-results>            
+
+        <ais-pagination :class-names="{'ais-Pagination-list': 'pagination'}"></ais-pagination>
+        <ais-powered-by />
+
+      </section>
+
+      <section class="ag2_refinement" ref="refinement_block">  
+        <h4 class="column_header">Filters:</h4>
+
+        <ul class="dateTypeSelect">
+          <li>
+            <input type="radio" id="returnPastFuture" name="returnDateType" value="all" v-model="returnDateType">
+            <label for="returnPastFuture">All</label>
+          </li>
+
+          <li>
+            <input type="radio" id="returnFuture" name="returnDateType" value="futureOnly" v-model="returnDateType">
+            <label for="returnFuture">Upcoming</label>
+          </li>
+
+          <li>
+            <input type="radio" id="returnPast" name="returnDateType" value="pastOnly" v-model="returnDateType">
+            <label for="returnPast">Archived</label>
+          </li>
+        </ul>
+
+        <ais-panel>
+          <template slot="header"><h5>Ensemble</h5></template>
+          <template slot="default">
+            <ais-refinement-list 
+              attribute="ensemble"
+              searchable
+              :class-names="{
+                'ais-refinement-list__count': 'badge',
+                'ais-refinement-list__item': 'checkbox'
+              }" />
+            </template>
+        </ais-panel>
+
+        <ais-panel>
+          <template slot="header">
+            <h5>Type</h5>
+          </template>
+          <template slot="default">
+            <ais-refinement-list attribute="recitaltype" :class-names="{
+              'ais-refinement-list__count': 'badge',
+              'ais-refinement-list__item': 'checkbox'
+              }">
+            </ais-refinement-list>
+          </template>
+        </ais-panel>            
+
+        <ais-panel>
+          <template slot="header"><h5>Instrument</h5></template>
+          <template slot="default">              
+            <ais-refinement-list attribute="instrument" searchable :class-names="{
+              'ais-refinement-list__count': 'badge',
+              'ais-refinement-list__item': 'checkbox'
+              }">
+            </ais-refinement-list>
+          </template>
+        </ais-panel>
+
+        <ais-panel>
+          <template slot="header"><h5>Hall</h5></template>
+          <template slot="default">              
+            <ais-refinement-list attribute="hall" :class-names="{
+              'ais-refinement-list__count': 'badge',
+              'ais-refinement-list__item': 'checkbox'
+              }">
+            </ais-refinement-list>
+          </template>
+        </ais-panel>
+
+      </section>
+
+    </section>
+    
+    </ais-instant-search>    
+
+</nav>
+
+{if logged_in_group_id=='12'}
+  <article class="discontinued_warning" style="background:rgba(255, 141, 0, 0.4);padding:.3em 1em;font-weight:bold;"><i class="fa fa-warning"></i> You must be a current student/faculty/staff to access audio and video.  Access is restrcted.</article>
+{/if}

@@ -1,0 +1,279 @@
+{embed=a/h
+    title="Educator Access"
+    meta="Apply for access to our streaming archive."
+}
+
+
+<style>
+@media (min-width:768px) {
+  .columns {
+    display:flex;
+    justify-content:space-around;
+  }
+  .columns section {
+      min-width:49%;
+  }
+  .columns #login_form {
+    margin:0;
+    width:100%;
+    max-width: 100%;
+  }
+}
+.field_is_valid {
+    color:#BAE197;
+    color:var(--greenfour);
+}
+/*** custom checkboxes ***/
+input[type=checkbox]:checked +label:before, input[type=checkbox]:checked +label.checkbox {color:#BAE197;}
+
+</style>
+
+<div id="content" class="columns">
+
+{if logged_in AND logged_in_member_id != '1'}
+
+<p style="color:red">You are currently logged in.  Please log out to see this signup form.</p>
+
+{if:else}
+
+
+<section class="signup_two_column">
+<h1>Apply for Educator Access</h1>
+<!--
+<h2>Hello...</h2>
+<p><img src="/images/blair.jpg" style="width:100px;border-radius:50px;float:left;margin:1em" />I'm Blair and I run the recording department here at UNT along with the code and servers for this resource.  We have likely already talked.  Most features should be working, but I am still working on some personalization and support/help desk things for a Summer 2017 launch.  If you have technical problems let me know, but I might be slow to respond for troubleshooting.  Thanks and enjoy!</p>
+-->
+<h2>About This Resource</h2>
+<p>UNT is providing streaming-only access to our performance video archive for educators.  It is intended to be a resource for classroom and academic use.  The archive includes full concert multicamera video streaming on most of UNT's performing ensembles, and audio streaming for every concert and student degree recital going back about 4 years.</p>
+
+<p>To be approved you must:
+<ul>
+    <li>Currently be employed at a non-profit educational instituion as a music instructor.  This includes preschool through college.</li>
+    <li>Submit your email address and provide educator verification through providing a link to your institutional web address that lists you as a faculty member or providing a copy of your institutional ID.</li>
+</ul>
+
+
+<h2>Legal</h2>
+<p>This resource complies with:
+    <ul>
+        <li>UNT Policy https://copyright.unt.edu/</li>
+        <li>U.S.C. Title 17, Chapter 1, Sections 107, 108 and 110</li>
+    </ul>
+</p>
+<p>Duplication, downloading content, or sharing your login with others is prohibited.</p>
+
+<h3>Terms & Expectations</h3>
+<p>This is a free resource and as such we do not guarentee 100% service availability, provide immediate technical support, or try to support every device or playback situation.  We reserve the right to re-verify your status at any time.  This service logs your activity, and you have no expectation of privacy except where legally prohibited.</p>
+</section>
+
+<section class="signup_two_column">
+
+<div id="login_form">
+
+{exp:user:register
+    form:name="educator_form"
+    override_return="me/pending_approval" 
+    admin_register="yes"
+    group_id="11" 
+}
+
+    <h3>Request Access Form</h3>
+
+    {if logged_in}
+        <p style="color:red">You are logged in and likely do not need to fill this out.</p>
+    {/if}
+
+    <ul>
+        <li>
+            <label>School Email (will be your Login):
+                <i class="tippy" title="Must be a school email address."><i class="fa fa-info"></i></i>
+                <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i></div>
+                <div class="field_is_not_valid" style="display:none"><i class="fa fa-exclamation-triangle"></i> Not Accepted Email.</div>
+            </label>
+            <input type="email" inputmode="email" name="username" value="{email}" id="field_login" required autocomplete='email' maxlength='50' autofocus />
+            <!--<div class="form_error_message field_email"></div>-->
+        </li>
+        {!--
+        <!--<li style="position:absolute;left:-100000px">-->
+        <li>
+            <label>School Email Address:</label>
+            <input type="email" name="email" inputmode="email" value="{email}" id="field_email" required autocomplete='email' maxlength='50' />
+        </li>
+        --}
+        <li>
+            <label>Your First and Last Name:
+                <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i></div>
+            </label>
+            <input type="text" name="screen_name" class="html5validate" required autocomplete='name' maxlength='50' minlength="8" />
+        </li>
+        <li>
+            <label>Full School Name:
+                <i class="tippy" title="Where do you instruct?  Full name please."><i class="fa fa-info"></i></i>
+                <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i></div>
+            </label>
+            <input type="text" name="member_educator_school" class="html5validate" required autocomplete='off' maxlength='50' minlength="8" />
+        </li>
+        {!--
+        <li>
+            <label>State Name <i class="tippy" title="What State are you and the school in?"><i class="fa fa-info"></i></i></label>
+            <input type="text" class="html5validate" name="member_educator_state" required maxlength='50' autocomplete="state" minlength="4" />
+        </li>
+        --}
+        <li>
+            <label>A link to a school public profile
+                <i class="tippy" title="Link to a school profile page or biography to help us check if you work at a school."><i class="fa fa-info"></i></i>
+                <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i></div>
+            </label>
+            <input type="url" name="member_educator_profile" value="http://" class="html5validate" required autocomplete='off' pattern="https?://.+" maxlength='50' minlength="10" />
+        </li>
+
+        {!--
+        <li>
+            <label>Grade Levels You Teach <span class="tippy" title="Grade levels you teach."><i class="fa fa-info"></i></span></label>
+                <ul id="relationship_checkboxes">
+                    {select_member_educator_grades}
+                    <li>
+                        <input type="checkbox" id="s_{option_index}" name="member_educator_grades[]" value="{value}" />
+                        <label class="checkbox" for="s_{option_index}">{value}</label>          
+                    </li>
+                    {/select_member_educator_grades}
+                 </ul>
+        </li>
+        --}
+
+{!--
+        <li>
+            <label>Opt into Mailing List <span class="tippy" title="Can we send you emails about upcoming and posted events?"><i class="fa fa-info"></i></span></label>
+                <ul id="relationship_checkboxes">
+                    <li>
+                        <input type="checkbox" id="s_yes" name="member_educator_opt_email" value="true" />
+                        <label class="checkbox" for="s_yes">Yes</label>
+                    </li>
+                 </ul>
+        </li>
+--}
+        <!--
+        <li>
+            <label>Mailing List Areas <span class="tippy" title="What areas would you be interested in listening to?  We will show them first."><i class="fa fa-info"></i></span></label>
+                <ul id="relationship_checkboxes">
+                    {exp:channel:entries channel="performance_categories" orderby="title" sort="asc"}
+                    <li>
+                        <input type="checkbox" id="s_{url_title}" name="member_educator_area_categories[]" value="{title} " />
+                        <label class="checkbox" for="s_{url_title}">{title}</label>          
+                    </li>
+                   {/exp:channel:entries}
+                 </ul>
+        </li>
+        -->
+
+        <li>        
+            <label>Create Password: <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i> Match</div></label>
+            <input type="password" name="password" id="field_pass1" minlength="7" required autocomplete='new-password' maxlength='50' />
+        </li>
+        <li>
+            <label>Confirm Password:
+                <div class="field_is_valid" style="display:none"><i class="fa fa-check"></i> Match</div>
+                 <div class="field_is_not_valid" style="display:none"><i class="fa fa-exclamation-triangle"></i> Not Match</div>
+            </label>
+            <input type="password" name="password_confirm" id="field_pass2" minlength="7" required autocomplete='new-password' maxlength='50' />
+        </li>
+
+        <input type="hidden" name="key" value="{key}" />
+
+        <input type="hidden" name="member_educator_applied_date" value="{current_time format="%Y-%m-%d"}" />
+
+        <li><button value="Submit" class="login_submit" id="submit" tabindex="3">Send Request</button></li>
+    </ul>
+    <p>After submitting we will verify your eligibility and you will receive an approval email.</p>
+</div>
+
+{/exp:user:register}
+
+{/if}{!--Logged_in--}
+
+</div>
+
+</section>
+{embed=a/js}
+
+{jquery}
+<script>
+//$('textarea').autoResize();
+
+
+$('#field_login').keyup( function(event) {
+    var currentValue = $(this).val();
+    //$('#field_email').val( currentValue );
+
+    // Run validation functions.
+    var isFreeService = checkFreeServices(currentValue);
+    var isValidEmail = validate(currentValue);
+
+    $(this).removeClass('form_notice form_error form_valid');
+    $(this).parent().find('.field_is_valid').css('display','none');
+    $(this).parent().find('.field_is_not_valid').css('display','none');
+
+    if(isFreeService && isValidEmail) {
+        $(this).addClass('form_notice');
+        $(this).parent().find('.field_is_not_valid').css('display','inline');
+    }
+    if(isFreeService && !isValidEmail){
+        $(this).addClass('form_notice');
+        $(this).parent().find('.field_is_not_valid').css('display','inline');        
+    }
+    if(!isFreeService && !isValidEmail){
+        $(this).addClass('form_error');
+    }
+    if(!isFreeService && isValidEmail){
+        $(this).addClass('form_valid');
+        $(this).parent().find('.field_is_valid').css('display','inline');
+    }
+
+});
+
+function checkFreeServices(email) {
+    // regex for matching emails to free services.
+    var re = '[a-zA-Z_\\.-]+@((hotmail)|(yahoo)|(unt)|(gmail))\\.[a-z]{2,4}';
+
+    // Checking if the email matches free services.
+    if(email.match(re)){
+        return true;
+    } else {
+        return false;
+    } 
+}
+function validate(email){
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    if (re.test(email)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Check that passwords match.
+$('#field_pass2').keyup( function(event) {
+    var pass1 = $('#field_pass1').val();
+    var pass2 = $(this).val();
+
+    if(pass1 == pass2){
+        $(this).removeClass('form_notice');
+        $(this).addClass('form_valid');
+        $(this).parent().find('.field_is_valid').css('display','inline');
+        $(this).parent().find('.field_is_not_valid').css('display','none');
+        $('#field_pass1').addClass('form_valid');
+    }else{
+        $(this).addClass('form_notice');
+        $(this).removeClass('form_valid');
+        $(this).parent().find('.field_is_valid').css('display','none');
+        $(this).parent().find('.field_is_not_valid').css('display','inline');
+        $('#field_pass1').removeClass('form_valid');
+    }
+
+});
+
+
+</script>
+
+{embed=a/f}

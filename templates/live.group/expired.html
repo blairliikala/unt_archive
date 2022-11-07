@@ -1,0 +1,153 @@
+{!-- 
+
+  Expired Live Event
+
+--}
+{exp:channel:entries 
+  channel="live" 
+  status="open|closed|pending|pendingaudio|pendingvideo|waitingforreview" 
+  show_future_entries="yes" 
+  show_expired="yes"
+  limit="1" 
+  orderby="date" 
+  sort="desc" 
+  disable="member_data|pagination|categories"
+  cache="yes"
+  refresh="10000"
+  entry_id="{segment_3}"
+}
+  
+  {if no_results}
+    {if logged_in_member_id!='1'} <script>window.location = "{site_url}/live/empty";</script>{/if}
+    {embed=a/h
+      title="Live - {title} {entry_date format="%F %j"}"
+      meta="Live concert streaming at North Texas."
+      og-title="UNT College of Music - Live Concert Streaming"
+      og-type="article"
+      og-url="{site_url}/live"
+      og-image=""
+    }
+  {/if}
+
+  {embed=a/h
+    title="Live - {title} {entry_date format="%F %j"}"
+    meta="Live concert streaming at North Texas."
+    og-title="UNT Live - {title} {entry_date format="%F %j"}"
+    og-type="music"
+    og-url="{site_url}/live"
+    og-image="{site_url}{if ondemand_image}{exp:ce_img:pair src='{ondemand_image}' width='1280' height='720' crop='yes' save_type='jpg'}{made}{/exp:ce_img:pair}{if:else}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src='{related_ensembles_v2:default_picture}' width'1280'  height='720' save_type='jpg'}{made}{/exp:ce_img:pair}{if related_ensembles_v2:no_results}{exp:ce_img:pair src='{room}{room:room_primary_image}{/room}' width'1280' height='720' save_type='jpg'}{made}{/exp:ce_img:pair}{/if}{/related_ensembles_v2}{/if}"
+    entry_id="{entry_id}"
+  }
+
+  <style>
+    @media (min-width:800px) {
+      .live_content {
+        width:60%;
+        margin:0 auto;
+      }
+    }
+
+  </style>
+
+
+  <div class="live_content">
+
+      <h2 style='padding:4em 2em 0 2em;text-align:center'>The {title} Event has Ended.</h2>
+      <p style='padding:0 2em;text-align:center'>UNT members can view it <a href="{site_url}/downloads/item/{entry_id}" class="basic_button">here.</a>
+      <p style='padding:0 2em 4em 2em;text-align:center'>Clips may be posted publically on <a href="https://youtube.com/untrecserv">youtube</a> within a week or two of the event.</p>
+
+      <h2>Upcoming Related Events:</h2>
+    
+    {related_ensembles_v2}
+      {related_ensembles_v2:ensemble_performance_area}                
+        {related_ensembles_v2:ensemble_performance_area:parents orderby="title" sort="asc"}
+        <h3>{related_ensembles_v2:ensemble_performance_area:parents:title}</h3>
+        <article class="upcoming_list" aria-label="Upcoming Events List for {related_ensembles_v2:ensemble_performance_area:parents:title}.">
+          {related_ensembles_v2:ensemble_performance_area:parents:parents 
+            show_future_entries="yes" 
+            status="livestream" 
+            sort="asc" 
+            orderby="date"
+            }
+            <div class="upcoming_list_row">
+              <span><a href="{site_url}/live/{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_id}" target="_blank" rel="noopener noreferrer" data-hjtag="live-schedulelink">{related_ensembles_v2:ensemble_performance_area:parents:parents:title}</a></span>
+              <span>
+                <time datetime="{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_date format='{DATE_ATOM}'}">{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_date format="<span class='upcoming_list_time_1'>%F %j</span> <span class='upcoming_list_time_2'>%g:%i%a</span>"}<span>CST</span></time>
+              </span>
+              <span>{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_date:relative}</span>
+              <!--
+              <span><a href="/live/caldav-event-export/{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_id}" data-tippy-content="Download event reminder." data-hjtag="live-ical" target="_blank">iCal/Outlook</a></span>
+              <span><a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={exp:ce_str:ing rawurlencode}{related_ensembles_v2:ensemble_performance_area:parents:parents:title}{/exp:ce_str:ing}&dates={related_ensembles_v2:ensemble_performance_area:parents:parents:entry_date timezone='GMT' format='%Y%m%dT%H%i%sZ'}/{related_ensembles_v2:ensemble_performance_area:parents:parents:expiration_date timezone='GMT' format='%Y%m%dT%H%i%sZ'}&details={exp:ce_str:ing rawurlencode}{related_ensembles_v2:ensemble_performance_area:parents:parents:room:title} {related_ensembles_v2:ensemble_performance_area:parents:parents:concert_program}{site_url}{url}{/related_ensembles_v2:ensemble_performance_area:parents:parents:concert_program} {related_ensembles_v2:ensemble_performance_area:parents:parents:archive_concert_notes}{/exp:ce_str:ing}&location=https%3A%2F%2Frecording.music.unt.edu/{related_ensembles_v2:ensemble_performance_area:parents:parents:entry_id}&trp=true&sprop=https%3A%2F%2Frecording.music.unt.edu&sprop=name:UNT%20College%20of%20Music&pli=1&sf=true" data-tippy-content="Add this concert to Google Calendar" target="_blank">Google</a></span>
+            -->
+            </div>
+          {/related_ensembles_v2:ensemble_performance_area:parents:parents}
+        </article>
+        {/related_ensembles_v2:ensemble_performance_area:parents}
+      {/related_ensembles_v2:ensemble_performance_area}
+    {/related_ensembles_v2}
+  
+    {/exp:channel:entries}
+
+    <header class="h3_block"><h3>All Upcoming Concerts</h3>
+    </header>
+    <!-- Schedule -->
+    {exp:channel:entries 
+      channel="live" 
+      status="LiveStream" 
+      show_future_entries="yes" 
+      show_expired="no" 
+      sort="asc"
+      dynamic="no" 
+      disable="member_data|pagination|categories"
+      cache="yes"
+      refresh="10000"
+    }
+      <article class="each_upcoming_livestream" aria-label="Event: {title}">
+        <section class="ensemble_image" aria-label="Event Image for {title}">
+          <a href="{site_url}/live/event/{entry_id}" aria-label="Link to the event {title} page.">
+            {if ondemand_image}
+              <img srcset="
+                {exp:ce_img:pair src="{ondemand_image}" width="160" height="90" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 160w,
+                {exp:ce_img:pair src="{ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 320w,
+                {exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 480w,
+                {exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 640w"
+                sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+                src="{exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair}" alt="{title}" title="{title}" itemprop="image" class="ensemble_image_actual" loading="lazy"
+              />            
+            {if:else}
+              {related_ensembles_v2 limit="1"}
+                <img srcset="
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="160" height="90" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 160w,
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="320" height="180" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 320w,
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="480" height="270" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 480w,
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair} 640w"
+                  sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+                  src="{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="480" height="270" crop="yes" save_type="jpg"}{site_url}{made}{/exp:ce_img:pair}" alt="{title}" title="{title}" itemprop="image" class="ensemble_image_actual" loading="lazy"
+              />
+              {if related_ensembles_v2:no_results}
+                {exp:ce_img:pair src="/images/default.png" width="150" height="100" crop="yes" save_type="jpg" fallback_src="/images/default.png"}<img src="{site_url}{made}" alt="{title}" title="Open {title}" width="{width}" height="{height}" itemprop="image" class="ensemble_image_actual" loading="lazy" />{/exp:ce_img:pair}
+              {/if}
+              {/related_ensembles_v2}
+            {/if}
+          </a>
+        </section><!-- ensemble image-->
+
+        <section class="event_info" aria-label="{title} metadata">
+          <div class="event_title">
+            <a
+              href="{site_url}/live/event/{entry_id}" 
+              style="text-decoration:none" 
+              class="event_info_title listJSmeta" 
+              data-listJSmeta="{related_ensembles_v2}{related_ensembles_v2:ensemble_performance_area}{related_ensembles_v2:ensemble_performance_area:title} {/related_ensembles_v2:ensemble_performance_area}{/related_ensembles_v2} {related_ensembles_v2}{related_ensembles_v2:title} {/related_ensembles_v2}" 
+            >{title}</a>
+          </div>
+          <time datetime="{entry_date format='%c'}">{entry_date format="%F %d %g:%i %A"} CST</time>
+
+        </section><!-- Event info-->
+
+      </article>
+    {/exp:channel:entries}
+
+  </div>
+
+  {embed=a/f}

@@ -1,0 +1,839 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    show_future="no"
+    entry_id="{if segment_4 ==""}{segment_3}{/if}{if segment_4 !=""}{segment_4}{/if}"
+    status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio"
+    disable="pagination|categories|member_data"
+    limit="1"
+    cache="yes"
+    refresh="9000"
+}
+
+{!-- search:global_streaming="yes" --}
+
+{embed=a/h
+  title="{entry_date format="%M %j, %Y"} {title}"
+  meta="On-demand Video"
+}
+
+{if no_results} <p>Not available or no entries found.</p> {/if}
+
+<!--<div id="message_board"><p>Streaming is currently down.</p></div>-->
+
+{if logged_in_member_group =='12'}
+  <h2>Restricted.</h2>
+  <p>Unfortunately your access level does not allow you to view entries.</p>
+{if:else}
+
+{if status != "open"}
+    <div id="message_board"><p>This entry is not live yet.</p></div>
+{/if}
+
+<div id="percentage_complete" style="position: absolute;color:white;z-index:99;font-size:2em;padding:.8em 1em;"></div>
+
+<div class="videoWrapper_outside">
+<div id="player_container" class="player_container videoWrapper_inside">
+  <!--<div class="pre_jw_loading"><i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i></div>-->
+  <!--<div id="mediaspace"></div>-->
+</div>
+</div>
+
+<section class="information_block">
+
+  <header>
+	  <h4>{entry_date format="%M %j, %Y"} {title}</h4>
+
+    <nav class="header_menu">
+      {if logged_in_member_id == 1}
+      <a href="/comstreaming/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/{entry_date format='%Y-%m-%d-'}{entry_id}-1.mp4" download="{entry_date format="%M %j, %Y"} {title}">Download[adminonly]</a>
+      {/if}      
+      <button id="pipButton" class="header_button tippy" hidden title="Picture-in-Picture">PiP</button>
+      <a href="{entry_id_path=downloads/item}" class="backtoentry" title="Return to this Entry">Back to Entry</a>
+    </nav>
+  </header>
+
+  <!--{!-- Check if there are actually chapters --} -->
+  {ondemand_chapters_grid limit="1"}
+    {if ondemand_chapters_grid:chapter_location_human}
+      <div id="chapterlist"></div>
+    {if:else}
+      <p style="color:#616161">No track markers set for this concert.</p>
+    {/if}
+  {/ondemand_chapters_grid}
+
+  <p class="legal_notice">Subject to the requirements set forth in Section 108(f)(1) of the Copyright Act, making a copy or the subsequent distribution of material accessed through this electronic reserve is strictly prohibited.</p>
+
+
+</section><!-- meta -->
+
+{embed=a/js}
+<link rel="stylesheet" href="{stylesheet=media/styles}" />
+<style>
+  .bmpui-ui-watermark {display:none;}
+
+  .videoWrapper_outside {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+  }
+  .videoWrapper_inside {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+
+<!-- <script src="//cdn.bitmovin.com/player/web/8/bitmovinplayer.js"></script> -->
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-core.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-engine-bitmovin.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-hls.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-mserenderer.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-abr.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-style.js"></script>
+<script src="//cdn.bitmovin.com/player/web/8/modules/bitmovinplayer-ui.js"></script>
+
+<script src="//cdn.bitmovin.com/analytics/web/1/bitmovinanalytics.min.js"></script>  
+
+
+<script>
+bitmovin.player.core.Player.addModule(window.bitmovin.player['engine-bitmovin'].default);
+bitmovin.player.core.Player.addModule(window.bitmovin.player.mserenderer.default);
+bitmovin.player.core.Player.addModule(window.bitmovin.player.hls.default);
+bitmovin.player.core.Player.addModule(window.bitmovin.player.abr.default);
+bitmovin.player.core.Player.addModule(window.bitmovin.player.style.default);
+bitmovin.player.core.Player.addModule(window.bitmovin.player.ui.default);
+
+
+//*********************************** Global
+const vDebug = false;
+const archive_playtime_duration = {if archive_playtime_duration}{archive_playtime_duration}{if:else}0{/if} // EE generated.
+
+const meta = {
+  "year"      : "{entry_date format='%Y'}",
+  "month"     : "{entry_date format='%m'}",
+  "entry_id"  : "{entry_id}",
+  "status"    : "{status}",
+  "ondemand"  : {if global_streaming}true{if:else}false{/if},
+}
+//**/
+
+/** Jump to a specific time when the page loads. **/
+const urlParams = new URLSearchParams(window.location.search);
+const requestedTimeJump = urlParams.get('t') * 1;
+
+const wowza_base = 'https://54edc27ad2b3c.streamlock.net:443/vod/website/';
+
+var playback_list_count = 0;
+const playback_list = [
+  wowza_base + meta.year + '/' + meta.month + '/' + meta.entry_id + '/smil:'+ meta.entry_id + '.smil/playlist.m3u8', // Newer, sorted by year/month.
+  wowza_base + meta.entry_id + '/smil:'+meta.entry_id+'.smil/playlist.m3u8', // Primary, flat entry id folders
+  wowza_base + meta.entry_id + "/smil:{entry_date format='%Y-%m-%d'}.smil/playlist.m3u8", // Much older, before SMIL used entry_id.
+  "{video_download_link limit='1'}{url}{/video_download_link}" // mp4 on RS site.
+]
+const playback_list_length = playback_list.length;
+
+
+if(vDebug){console.log('Debug Enabled.');}
+
+
+
+
+/*
+function timeToSeconds(time) {
+  const a = time.split(':'); // split it at the colons
+  var seconds = 0;
+
+  switch(true) {
+    case a.length == '3' :
+     seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);    
+     break;
+     
+    case a.length == '2' :
+      seconds = (+a[0]) * 60 + (+a[1]);  
+      break;
+      
+    case a.length == '1' :
+      seconds = (+a[0]);
+      break;
+
+    default:
+      seconds = false;
+      console.error('Error! Something is wrong with time.');
+  }
+
+  return seconds;
+
+}
+function secondsToTime(seconds) {
+
+  // Time as 00:00:00
+  var time = {};
+  time.full = new Date(seconds * 1000).toISOString().substring(11, 19);
+
+  const splitTime = time.full.split(':');
+
+  // remove hours.
+  if (splitTime[0] == "00") {
+    time.pretty = time.full.substr(3);
+  }
+  // Remove minutes.
+  if (splitTime[1] == "00") {
+    time.pretty = time.pretty.substr(3);
+  }
+
+  // Remove starting zero.
+  time.pretty = time.pretty.replace(/^0+/, '');
+
+  return time;
+}
+*/
+
+/************************ Tracking Event ******************/
+function logEvent(eventType, eventObj) {
+
+  FS.event(eventType);
+  ga('send', {
+    hitType: 'event',
+    eventCategory: 'VOD',
+    eventAction: eventType,
+    eventLabel: {entry_id}
+  });
+
+}
+//* End */
+
+
+//*********************************** Helper functions /***********************************/
+
+
+//***************** Ping the Wowza info page to see if it is working.
+async function wowzaPing() {
+  console.debug('Checking Wowza...');
+
+  let ping = await fetch('https://recording.music.unt.edu/sys/wowza_ping.php')
+    .then(response => {
+      try {
+        return response.json();
+      } catch(e) {
+        console.error('Wowza did not response.', e);
+        return false;
+      }
+    })
+    .then(result => {
+      if (result.success) {
+        console.log( 'Wowza responded...' );
+        if (result.contains_wowza) {
+          console.log('Wowza ping fully successful.');
+          return true;
+        } else {
+          console.log('Wowza responded, but Wowza identifier not shown.');
+          return false;
+        }
+      } else {
+        console.log('Wowza did not respond.', result);
+        return false;
+      }
+    })
+    .catch( error => {
+      console.error('There was an error with getting the server status.', error);
+      return false;
+    });
+
+  return ping;
+}
+
+
+//***************** Chapter List JSON ***************/
+const chaptermarkers = {
+  "items" : [
+    {ondemand_chapters_grid backspace="1"}
+    {
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "marker"        : "{exp:timetoseconds:convert time='{ondemand_chapters_grid:chapter_location_human}'}",
+      "markerhuman"   : "{ondemand_chapters_grid:chapter_location_human}",
+      "rowid"         : "{ondemand_chapters_grid:field_row_count}",
+      "prefixedrowid" : "row-{ondemand_chapters_grid:field_row_count}"
+    },{/ondemand_chapters_grid}
+  ]
+}
+//* color formatting break. *//
+
+//*****************  Show Chapter Marker List ***************/
+function displayChapterMarks() {
+
+  if (chaptermarkers.items.length > 0) {
+
+    // Create the chapter list HTML markup and assign it to a var.
+    var chapterlist="<section class='programlist clickable'>";
+
+    for (var i=0; i<chaptermarkers.items.length; i++) {
+      chapterlist+="<article data-playercontrol='"+chaptermarkers.items[i].marker+"' data-track='"+i+"' class='program_row "+chaptermarkers.items[i].prefixedrowid+"'><div class='row'>"+chaptermarkers.items[i].rowid+".</div><div class='time'>"+chaptermarkers.items[i].markerhuman+"</div><div class='piece'>"+chaptermarkers.items[i].piece+"</div><div class='composer'>"+chaptermarkers.items[i].composer+"</div><div class='arranger'>"+chaptermarkers.items[i].arranger+"</div></article>";
+    }
+    chapterlist+="</section>";
+
+    // Put the chapter list in the DOM.
+    try {
+      document.querySelector('#chapterlist').innerHTML = chapterlist;
+    } catch {
+      console.log('No Chapters.');
+    }
+    
+  }
+}
+
+
+
+/************** Restart where last left off based on local storage ***************/
+function updateSavedPosition(player) {
+  window.setInterval(updatePosition, 6000);
+
+  function updatePosition() {
+    localStorage.setItem('{entry_id}-position', player.getPosition() );
+  }
+}
+
+
+//******************************  JW Player internal streaming ********************************
+
+function bootPlayer() {
+
+  iniPlayer();
+
+}
+
+
+async function iniPlayer() {
+  if(vDebug){console.log('Starting Player...');}
+  var currentChapter = 0;
+
+  const config = {
+    "key" : "1101648f-a2a9-491c-88c9-78c3f1b28006",
+    //"title": "{entry_date format="%M %j, %Y"} {title}",
+    //"description": "What is this event... Parcour?",
+    "hls": playback_list[playback_list_count],
+    //"dash" : "",
+    "progressive": playback_list[playback_list.length - 1],
+    "poster" : "{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{/if}",
+    "remotecontrol" : {
+        "type" : "googlecast",
+    },
+    "playback": {
+        "autoplay": true,
+        "muted": false,
+    },
+    "adaptation": {
+      "desktop": {
+        "preload": true
+      },
+      "mobile": {
+        "preload": true
+      }
+    },
+    'style' : {
+      'aspectratio': '16:9'
+    },
+    'skin' : {
+      'screenLogoImage' : ""
+    },
+    "markers" : [
+      {ondemand_chapters_grid backspace="1"}
+      {
+          "time": {if ondemand_chapters_grid:chapter_location_human!=""}{exp:timetoseconds:convert time="{ondemand_chapters_grid:chapter_location_human}"}{if:else}0{/if},
+          //"duration" : 400,
+          //"cssClasses" : "chapter_marker_{count}",
+          "title": {exp:ce_str:ing json_encode html_entity_decode}{ondemand_chapters_grid:name_of_piece} by {ondemand_chapters_grid:name_of_composer}{/exp:ce_str:ing}
+      },{/ondemand_chapters_grid}
+
+    ],
+    "analytics": {
+      "key": '9aa690bd-2b7b-4915-b176-4ee1b54fd405',
+      "videoId": '{entry_id}',
+      "title": {exp:ce_str:ing json_encode html_entity_decode}{entry_date format="%M %j, %Y"} {title}{/exp:ce_str:ing},
+      "userId": '{logged_in_member_id}',
+      "cdnProvider" : "UNT"
+      /*
+      cdnProvider: 'CDN provider',
+      customData1: 'custom data',
+      customData2: 'custom data',
+      customData3: 'custom data',
+      customData4: 'custom data',
+      customData5: 'custom data'
+      */
+    }        
+  }
+
+  //player = new bitmovin.player.Player(document.querySelector('#player_container'), config);
+  player = new bitmovin.player.core.Player(document.querySelector('#player_container'), config);
+
+  player.load(config).then(
+    () => {
+      console.log('Successfully created Bitmovin Player instance');
+      enableChapterSeeking();
+    }
+  ).catch(
+    () => {
+      console.log('Error while creating Player instance');
+    }
+  );  
+
+  // Fires every time it plays.
+  // player.on(bitmovin.player.PlayerEvent.Playing, () => console.log('player is playing'));
+
+
+  // Update Current Track Visually.
+  let div_row = document.querySelectorAll('.program_row');
+  player.on(bitmovin.player.PlayerEvent.TimeChanged, function(event) {
+
+    // Find the chapter in the JSON list, and pull the time.
+    var results = chaptermarkers.items.filter(function (el) {
+      return el.marker < event.time + 1; // +1 for better highlighting.
+    });
+    // Make sure the search finds something otherwise Console lights up with undefined var errors.
+    if(results.length != 0) {
+      var activeRow = results[results.length - 1].prefixedrowid;
+      // returns chapter number.
+      currentChapter = results.length - 1;
+      
+      //$('.programlist').find('.program_row').removeClass('active');
+      div_row.forEach( item => {
+        item.classList.remove('active');
+      });
+
+      //$('.programlist').find('.'+activeRow).addClass('active');
+      try {
+        document.querySelector('.programlist .'+activeRow).classList.add('active');
+      } catch(error) {}
+    }
+
+  });
+
+
+  // Seek to chapter when clicked.
+  // This should be fired after the player is ready to accept a seek.
+  function enableChapterSeeking() {
+    document.querySelectorAll('[data-playercontrol]').forEach( item => { 
+      item.addEventListener('click', function(event) {
+
+        // Get current track from HTML dataset.  Zero-index, so add one.
+        currentChapter = this.dataset.track;
+
+        //currentChapter = $('#chapterlist').find('.program_row').index(this);
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+
+        // change var to a number type.
+        seekTime = seekTime * 1;
+
+        // Seek player to time.
+        player.seek( seekTime );
+      });
+    });
+  }
+
+  // Error Handling??
+
+
+
+
+
+
+{!--  
+  player.on('setupError', function(event) {
+    // .message is the JW error returned.
+    console.debug('Setup Error:',event.message);
+    logEvent('jwplayer-setupError-failed');
+
+  });
+
+  player.on('error', function(event) {
+    console.debug('JW General Error.', event);
+    logEvent('jwplayer-error');
+
+    playback_list_count++;
+    console.debug('Playing Back List #',playback_list_count);
+
+    if (playback_list_count < playback_list_length ) {
+      player.remove();
+      iniJWPlayer();
+    } else {
+      player.remove();
+      logEvent('jwplayer-fail. Entry: '+meta.entry_id);
+      errorMessage('We had a problem loading this event.<br />An error report was sent.');
+    }
+
+    // Check if Wowza is running.
+    /*
+    let result = await wowzaPing();
+    if (!result) {
+      errorMessage('Our streaming system might be offline. Try a page refresh or visit again a bit later.');          
+    }
+    */
+  
+  });
+
+  player.on('ready', function(){
+
+    /** Change quality level to lowest on seeking to improve playback performance, then put back to auto.**/
+    /*
+    jwplayer().on('seek', function(e){
+      let lowest = jwplayer().getQualityLevels().length - 1;
+      jwplayer().setCurrentQuality(lowest);
+    });    
+
+    jwplayer().on('seeked', function(e){
+      jwplayer().setCurrentQuality(0);
+    });
+    */  
+
+    function playpause() {
+      if (jwplayer().getState() == 'paused') {
+        jwplayer().play();
+      } else {
+        jwplayer().pause();
+      }
+    }
+    function skipAhead() {
+      var currentPosition = jwplayer().getPosition();
+      // skip 5 seconds.
+      var newPosition = currentPosition + 5;
+      jwplayer().seek(newPosition);
+    }
+    function skipBackwards() {
+      var currentPosition = jwplayer().getPosition();
+      // skip 5 seconds.
+      var newPosition = currentPosition - 5;
+      jwplayer().seek(newPosition);
+    }
+    function playNextChapter() {
+      currentChapter++;
+      if(currentChapter > chaptermarkers.items.length - 1) {
+        currentChapter = '0';
+        var seekTime = chaptermarkers.items[0].marker;
+      }else{
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+      }
+      jwplayer().seek( seekTime );
+    }
+    function playPreviousChapter() {
+      currentChapter--;
+      // If at the beginning and go up, then go to the end.
+      if(currentChapter < 0) {
+        var seekTime = chaptermarkers.items[chaptermarkers.items.length - 1].marker;
+      } else {
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+      }
+      jwplayer().seek( seekTime );
+    }
+
+
+  });// End on-ready.
+
+
+
+
+
+  jwplayer().on('firstFrame', () => {
+    logEvent('video-firstplay');
+
+    // Get any saved position from the last playback from LocalStorage.
+    let savedTime = localStorage.getItem('{entry_id}-position');
+
+    // If there was a saved position, resume.
+    if (savedTime) {
+      player.seek(savedTime);
+    }
+
+    updateSavedPosition(player);
+
+    //$('.pre_jw_loading').remove();
+    document.querySelector('.pre_jw_loading').remove();
+
+    {if '{global:saveData}'}
+      // Data Save enable.
+      let lowest = jwplayer().getQualityLevels().length - 1;
+      jwplayer().setCurrentQuality(lowest);
+
+      new Noty({
+          text: 'Data Saving is enabled.  Showing low resolution video.',
+          type: 'error',
+          theme: 'nest',
+          timeout: 3000
+      }).show(); 
+
+    {/if}
+
+    // If muted, show a message.
+    /*
+    if(jwplayer().getMute()){
+      noticeMessage('Pst...Volume is Muted');
+    }
+    if(jwplayer().getVolume() < 2){
+      noticeMessage('Pst...Volume is Muted');
+    }
+    */
+
+    jwplayer().setVolume(100);
+
+    // Put quality back to auto.
+    //jwplayer().setCurrentQuality(0); 
+
+    if (requestedTimeJump || requestedTimeJump == 0) {
+      player.seek(requestedTimeJump);
+      player.play();
+    }
+
+    // Tracking Events //
+    jwplayer().on('play', function(e){
+      logEvent('video-play');
+    });
+    jwplayer().on('seek', function(e){
+      logEvent('video-seek');
+    });
+    jwplayer().on('pause', function(e){
+      logEvent('video-pause');
+    });
+    jwplayer().on('volume', function(e){
+      logEvent('video-volumechange');
+    });
+    jwplayer().on('fullscreen', function(e){
+      logEvent('video-fullscreen');
+    });
+    /* Needs throttling for tag tragging. */
+    jwplayer().on('resize', function(e){
+      if(vDebug){console.log('resizing...'+e)};
+    });
+    jwplayer().on('displayClick', function(e){
+      logEvent('video-displayClick');
+    });
+    /* Track the number of times a buffer stalled. */
+    /*
+    jwplayer().on('buffer', function(e){
+      if (e.reason === 'stalled' || e.reason === 'error') {
+        console.log('Buffer Stalled or Errored.'+e.reason);
+        console.log(e);
+      }
+    });
+    */
+    jwplayer().on('bufferChange', function(e){
+      if(e.bufferPercent <=0){
+        console.group();
+        console.log('Buffer Underrun.');
+        console.log(e);
+        console.groupEnd();
+      }
+      //This generates events every second.  if(vDebug){console.group();console.log('BufferChnage: ');console.log(e);console.groupEnd()};
+    });
+
+    if (vDebug) {
+
+      player.on('visualQuality', function(e){
+        //logEvent('video-q-'+e.level.index);
+        //console.log("Quality Level: "+e.level.index);
+      });
+
+      player.on('levelsChanged', function(e){
+      });
+
+      player.on('levels', function(e){
+      });
+
+    }
+
+    player.on('visualQuality', function(e){
+      logEvent('video-q-'+e.level.index);
+    });
+
+
+    console.debug( 'Ad Block: '+player.getAdBlock() );
+    try {
+      FS.event("adblock", {'true_bool' : true});
+      ga('send', 'event', 'adblock', true, 'VOD', {nonInteraction: true} );
+    } catch(error) {
+      console.error('Adblock event failed.');
+    }
+
+    /*
+    if ( player.getAdBlock() ) {
+      noticeMessage('Your adblocker may cause issues on this page.');
+    }
+    *?
+
+
+    /*********** Picture in Picture Mode **********/
+    const jwElements      = player.getContainer();
+    const jwVideo         = jwElements.querySelector('.jw-video');
+    const pipButton       = document.querySelector('#pipButton');
+    let safariPipSupport  = false;
+    let chromePipSupport  = false;
+
+    //jwVideo.removeAttribute('disableremoteplayback');
+
+    /**** Safari ****/
+    if (jwVideo.webkitSupportsPresentationMode && typeof jwVideo.webkitSetPresentationMode === "function") {
+      safariPipSupport = true;
+      // Toggle PiP when the user clicks the button.
+      pipButton.addEventListener("click", function(event) {
+        jwVideo.webkitSetPresentationMode(jwVideo.webkitPresentationMode === "picture-in-picture" ? "inline" : "picture-in-picture");
+      });
+    }
+
+    /** Everything Else ***/
+    if ('pictureInPictureEnabled' in document) {
+      chromePipSupport = true;   
+      pipButton.addEventListener('click', async function(event) {
+        try {
+          if (jwVideo !== document.pictureInPictureElement)
+            await jwVideo.requestPictureInPicture();
+          else
+            await document.exitPictureInPicture();
+        } catch(error) {
+          console.log(`> Argh! ${error}`);
+        }
+      });
+    }
+
+    // Show button if it is supported in either platform.
+    if (chromePipSupport || safariPipSupport) {
+      pipButton.hidden = false;
+    }
+
+
+    // Update the URL to include the time.
+    function timeUpdate() {
+      //window.location.hash = '#food';
+      history.replaceState(undefined, undefined, "/media/playvideo/{entry_id}?t=" + Math.round(player.getPosition()));
+    }
+    var urlTimeUpdate = setInterval(timeUpdate,5000);
+
+  });// On First Frame.
+--}
+
+} // function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  Show Encoding Status if the video is not ready to be played yet.
+// Commenting out for now as it isn't needed.
+/*
+async function findMachingJob(entry_id) {
+  let jobs = await fetch('/sys/elementalserver_control.php?action=status_all').then(response=>{return response.json()});
+
+  let matchingJob;
+
+  jobs['job'].forEach( item => {
+
+    // Parse out the ExpressionEngine from the filename.
+    let uri = item.input.file_input.uri; // File path.
+    let uri_array = uri.split("/"); // Split path to array.
+    let filename = uri_array.slice(-1)[0]; // Get the last item, should be filename.
+    let filename_array = filename.split("-"); // split filename into array.
+    let ee_id = filename_array[3]; // get the second to last, should be the EE ID.
+
+    if (ee_id == meta.entry_id ) {
+      matchingJob = item;
+    }
+  });
+  console.debug("Matched:", matchingJob);
+  return matchingJob;
+}
+
+async function getSingleJob(job_id) {
+  return await fetch('/sys/elementalserver_control.php?action=status&id='+job_id).then(response=>{return response.json()});
+}
+
+function updatePercentage(percentage) {
+  //div_percent.innerHTML = percentage + "%"; // Update Div.
+  document.querySelector('#percentage_complete').textContent = "Processing " + percentage + "%"; // Update Div.
+}
+
+function pollElemental(job, interval) {
+  switch(true) {
+
+    case job.status == "complete" :
+      console.debug('Processing Complete.');
+      document.querySelector('#percentage_complete').remove();
+      clearInterval(interval);
+      displayChapterMarks();
+      bootPlayer();
+      break
+
+    case job.status == "error" :
+      console.debug("Elemental Errored.");
+      clearInterval(interval);
+      break;
+
+    case job.status == "running" :
+    case job.status == "pending" :
+      console.debug('Encoder is encoding...');
+      updatePercentage(job.pct_complete);
+      break;
+
+    default:
+      console.error('Status not accounted for: ', job.status);
+      //clearInterval(interval);
+  }
+}
+
+async function encodingStatus() {
+
+  // Gets the generic data of the job that matches this entry.
+  let job = await findMachingJob(meta.entry_id);
+
+  if (job == undefined) {
+    console.debug('Could not find matching encoder job.');
+    return;
+  }
+  // Parse out the job ID.
+  let link = job['@attributes'].href;
+  let link_array = link.split('/');
+  let job_id = link_array[2];
+
+  console.debug('Encoder ID:', job_id);
+  pollElemental(job);
+
+  if (job.status != "complete") {
+    let encodingDetailsTimer = setInterval( () => { 
+      console.debug('Pinging Encoder...');
+      getSingleJob(job_id)
+        .then( response => {
+          pollElemental(response, encodingDetailsTimer);        
+        });
+
+    }, 5000);
+  }
+}
+*/
+
+if (meta.status == "PendingVideo") {
+  encodingStatus();
+} else {
+  displayChapterMarks();
+  bootPlayer();
+}
+
+
+
+
+//******************************************************************************
+
+</script>
+{/if}{!-- member group is 12 --}
+{/exp:channel:entries}
+
+{embed=a/f}

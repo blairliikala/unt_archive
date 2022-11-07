@@ -1,0 +1,14 @@
+{!--
+
+	Just the Callback function.  Intended to be hit by the Elemental Live or Haivision when a file is done transcoding.
+
+	Expecting
+		/media/streaming_api_callback_v2/live/1234
+		/media/streaming_api_callback_v2/post/
+
+	process_type="live"
+	process_type="post" = Processed by the Elemental.
+
+--}
+<!-- Streaming API callback -->
+{exp:blstreaming_api_v2:callback process_type="{segment_3}" entry_id="{segment_4}" }

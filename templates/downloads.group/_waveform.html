@@ -1,0 +1,39 @@
+{!-- URL: entryid  / Assets file ID / track number from 1 --}
+
+{if segment_3 ==''}Missing Action.<br />{/if}
+
+{if segement_3 == "create"}
+
+	{if segment_4 ==''}Missing Entry ID.<br />{/if}
+	{if segment_5 ==''}Missing Asset File ID.<br />{/if}
+	{if segment_6 ==''}Missing Track Number.<br />{/if}
+	{if segment_7 ==''}Missing Year.<br />{/if}
+	{if segment_8 ==''}Missing Month.<br />{/if}
+
+	{exp:assets:files file_id="{segment_5}"}
+
+		{exp:blwaveforms:createwaveform 
+			entry_id="{segment_4}" 
+			tracknumber="{segment_6}" 
+			audiofilepath="{server_path}"
+			year="{segment_7}"
+			month="{segment_8}"
+		}
+		
+	{/exp:assets:files}
+
+{/if}
+
+
+
+{!-- This will delete the folder and start over. --}
+{if segment_3 == "delete"}
+
+	{exp:blwaveforms:delete 
+		entry_id="{segment_4}"
+		year="{segment_5}"
+		month="{segment_6}"
+	}
+
+
+{/if}

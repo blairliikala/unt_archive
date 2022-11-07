@@ -1,0 +1,70 @@
+{!--
+
+	Shows iCal formatted events for upcoming events.
+
+--}BEGIN:VCALENDAR
+METHOD:PUBLISH
+VERSION:2.0
+X-WR-CALNAME:Upcoming Concerts
+X-WR-CALDESC:Recitals and Concerts (not livestreamed)
+X-APPLE-CALENDAR-COLOR:#2952A3
+X-WR-TIMEZONE:America/Chicago
+PRODID:UNT Recording Services
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+LAST-MODIFIED:20050809T050000Z
+BEGIN:STANDARD
+DTSTART:20071104T020000
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0600
+TZNAME:CST
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:20070311T020000
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0400
+TZNAME:EDT
+END:DAYLIGHT
+END:VTIMEZONE
+{exp:channel:entries
+	channel="live" 
+	show_future_entries="yes" 
+	show_expired="no" 
+	limit="500" 
+	status="Scheduled" 
+	disable="pagination|categories|member_data"
+}
+BEGIN:VEVENT
+TRANSP:OPAQUE
+SUMMARY:{title}
+LOCATION:{room limit="1"}{room:title}{/room}
+DTSTART;TZID=America/Chicago:{entry_date format="%Y%m%dT%H%i%s"}
+DTEND;TZID=America/Chicago:{expiration_date format="%Y%m%dT%H%i%s"}
+DESCRIPTION:Autoscheduled.  {room:title}
+URL;VALUE=URI:http://recording.music.unt.edu/downloads/item/{entry_id}
+DTSTAMP;TZID=America/Chicago:{if edit_date}{edit_date format="%Y%m%dT%H%i%s"}{if:else}20190701T110000{/if}
+SEQUENCE:{if archive_ical_increment}{archive_ical_increment}{if:else}0{/if}
+UID:{entry_id}{!--
+BEGIN:VALARM
+X-WR-ALARMUID:{entry_id}{entry_id}
+UID:{entry_id}{entry_id}
+TRIGGER;VALUE=DATE-TIME:{entry_date format="%Y%m%dT%H%i%s"}Z
+ACTION:NONE
+END:VALARM
+BEGIN:VALARM
+X-WR-ALARMUID:{entry_id}{entry_id}
+UID:{entry_id}{entry_id}
+TRIGGER:-PT1M
+ATTACH;VALUE=URI:Basso
+ACTION:AUDIO
+END:VALARM
+--}
+END:VEVENT
+{ical_space}{/exp:channel:entries}
+END:VCALENDAR{!--
+
+X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=2100 N Interstate 35 E\\
+ nDenton TX 76205;X-APPLE-RADIUS=99;X-TITLE=2100 N Interstate 35 E:geo:33
+ .208022,-97.159236
+
+ --}

@@ -1,0 +1,110 @@
+{embed=a/h title="My Account Info" meta="Account Information"}
+<h1 style="margin:1em">Account</h1>
+<div class="thirds_container">
+{embed=me/_nav}
+
+<div class="thirds_content">
+
+<h3>Account Info</h3>
+  {if logged_in_member_group!='11'}
+  <p>This information is pulled from the UNT database automatically, and is not possible to edit here.  If you believe you were put in the wrong group, faculty/staff/student, please let us know by sending an email.</p>
+  <table class="basic_tables">
+  {exp:member:custom_profile_data}	
+      <tr>
+          <td><span class="profile_title">Name: </span></td>
+          <td>{first_name} {last_name}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">EUID/Username: </span></td>
+          <td>{username}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Email: </span></td>
+          <td>{email}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Group: </span></td>
+          <td>{group_title}</td>
+      </tr>	
+      <tr>
+          <td><span class="profile_title">Last Visit: </span></td>
+          <td>{last_visit format="%M %j, %Y"}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Affiliation</span></td>
+          <td>{if affiliation}{affiliation}{if:else}No Affiliation listed.  Sorted group might be incorrect.  Let us know.{/if}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Phone</span></td>
+          <td>{phone}</td>
+      </tr>
+  {/exp:member:custom_profile_data}
+  </table>
+  {if:else}
+  <table class="basic_tables">
+  {exp:member:custom_profile_data}
+      <tr>
+          <td><span class="profile_title">Name: </span></td>
+          <td>{screen_name}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Email: </span></td>
+          <td>{email}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">Group: </span></td>
+          <td>{group_title}</td>
+      </tr>	
+      <tr>
+          <td><span class="profile_title">Last Visit: </span></td>
+          <td>{last_visit format="%M %j, %Y"}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">School: </span></td>
+          <td>{member_educator_school}</td>
+      </tr> 
+      <tr>
+          <td><span class="profile_title">Grades: </span></td>
+          <td>{member_educator_grades}</td>
+      </tr> 
+      <tr>
+          <td><span class="profile_title">Profile URL: </span></td>
+          <td>{member_educator_profile}</td>
+      </tr>
+      <tr>
+          <td><span class="profile_title">State: </span></td>
+          <td>{member_educator_state}</td>
+      </tr>                                            
+  {/exp:member:custom_profile_data}
+  </table> 
+
+{exp:user:edit}
+<!--<p>Your Member Field <input name="your_member_field" value="{your_member_field}" /></p>-->
+<div id="login_form">
+	<h4>Change your Password</h4>
+	<ul>
+		<li>
+			<label>Current Password</label>
+			<input type="password" name="current_password" />
+		</li>
+		<li>
+			<label>New Password</label>
+			<input type="password" name="password" />
+		</li>
+		<li>
+			<label>Password Confirm</label>
+			<input type="password" name="password_confirm" />
+		</li>
+	 	<li><button name="Save" value="Submit" class="login_submit" id="submit" tabindex="3">Save</button></li>
+	</ul>
+</div>
+{/exp:user:edit}
+
+    {/if}
+
+</div><!--content-->
+
+</div>
+{embed=a/js}
+
+{embed=a/f}

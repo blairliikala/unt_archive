@@ -1,0 +1,189 @@
+{embed=a/h title="Services" meta="Recitals, Sessions, Duplications"}
+<article class="thirds_container">
+{exp:channel:entries channel="pages" entry_id="2" disable="member_data|categories|relationships|pagination"}
+	{page_code}
+</article>
+  {if logged_in_member_group=="1" OR logged_in_member_group=="6"}
+    <a href="{cp_edit_entry_url}" class="basic_button admin_only" title="Edit This">Edit</a>
+    <p class="admin_only">Last Edited: {edit_date format="%F %j %Y"}</p>
+  {/if}
+{/exp:channel:entries}
+
+
+{embed=a/js}
+<script src="https://unpkg.com/rough-notation/lib/rough-notation.iife.js"></script>
+
+<script>
+const annotate = RoughNotation.annotate;
+const annotationGroup = RoughNotation.annotationGroup;
+
+/*
+const a1 = annotate($('h1'), { type: 'highlight', color: '#FFF176' });
+const a2 = annotate($('header span.abox'), { type: 'box', color: '#F44336', padding: 3 });
+const a3 = annotate($('header a'), { type: 'underline', color: '#2196F3', padding: 3, strokeWidth: 3 });
+const a4 = annotate($('header span.acircle'), { type: 'circle', color: '#F44336', padding: 2 });
+const ag = annotationGroup([a1, a2, a3, a4]);
+*/
+
+/*
+const a1 = annotate( document.querySelector('.draw_highlight'), { type: 'highlight', color: '#FFF176' });
+const ag = annotationGroup([a1]);
+ag.show();
+*/
+
+//const e = document.querySelector('#myElement');
+//const annotation = annotate(e, { type: 'underline' });
+//annotation.show();
+
+
+function drawItems(entries, observer) {
+
+  /**** Draw *****/
+  let group1 = [];
+
+  //document.querySelectorAll('[data-draw]').forEach( element => {
+  entries.forEach(entry => {
+    let element = entry.target;
+
+    console.log(element.dataset.hasdraw );
+
+    if (element.dataset.hasdraw == undefined) {
+
+      switch(true) {
+
+        case element.dataset.draw == 'highlight' :
+          group1.push( annotate(element, {type: 'highlight', color: '#FFF176', animationDuration: 800, animationDelay: 500} ) );
+        break;
+
+        case element.dataset.draw == 'circle' :
+          group1.push( annotate(element, {type: 'circle', padding: 3, color: '#0D47A1', animationDuration: 800, animationDelay: 500} ) );
+        break;
+
+        case element.dataset.draw == 'underline' :
+          group1.push( annotate(element, {type: 'underline', strokeWidth: 3, padding: 3, color: '#B71C1C', animationDuration: 800, animationDelay: 500 } )) ;
+        break;
+
+        case element.dataset.draw == 'box' :
+          group1.push( annotate(element, {type: 'box', strokeWidth: 2, padding: 4, color: '#4A148C', animationDuration: 1500, animationDelay: 500} ) );
+        break;
+
+      }
+
+      element.dataset.hasdraw = "true";
+
+    }
+  });
+
+  const ag = annotationGroup(group1);
+  ag.show();
+
+}
+
+
+
+let options = {
+  root: null,
+  rootMargin: "0px",
+  //threshold: buildThresholdList()
+};
+let draw_observer = new IntersectionObserver(drawItems, options);
+document.querySelectorAll('[data-draw]').forEach( element => {
+  draw_observer.observe(element);
+});
+
+</script>  
+
+
+
+<style>
+  html {
+    scroll-behavior: smooth;    
+  }
+@media screen and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}  
+</style>
+
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+
+  const numSteps = 20.0;
+  let prevRatio = 0.0;
+
+  const nav = document.querySelector('#singlePageNav');
+
+  let log = [];
+
+  let options = {
+    root: null,
+    rootMargin: "0px",
+    threshold: buildThresholdList()
+  };
+
+
+  function buildThresholdList() {
+    let thresholds = [];
+    let numSteps = 20;
+
+    for (let i=1.0; i<=numSteps; i++) {
+      let ratio = i/numSteps;
+      thresholds.push(ratio);
+    }
+
+    thresholds.push(0);
+    return thresholds;
+  }
+
+  function handleIntersect(entries, observer) {
+    entries.forEach(entry => {
+
+      const id = entry.target.getAttribute('id');
+
+      // Update ratio for div. Could this be cleaner?
+      log.forEach( (log_item, index, array) => {
+        if (log_item.div_name == id) {
+          log[index].ratio = Math.round(entry.intersectionRatio * 100);
+        }
+      });
+
+      let orderedLog = log.sort(orderLog); // Re-sort order by highest visablity.
+      let active_div = orderedLog[0].div_name; // Get just the most visable div from list.
+
+      if (id == active_div) {
+        nav.querySelector(`a[href="/services#${id}"]`).classList.add('current'); 
+      } else {
+        nav.querySelector(`a[href="/services#${id}"]`).classList.remove('current');
+      }
+    });
+  };
+
+
+  // Track all sections that have an `id` applied
+  document.querySelectorAll('.services_block article[id]').forEach((section) => {
+    let div_name = section.id;
+
+    log.push({
+      "div_name" : div_name,
+      "ratio" : 0
+    });
+
+    let observer = new IntersectionObserver(handleIntersect, options);    
+    observer.observe(section);
+  });
+  
+  function orderLog(a, b) {
+    let comparison = 0;
+    if (a.ratio > b.ratio) {
+      comparison = -1;
+    } else {
+      comparison = 1;
+    }
+    return comparison;
+  }
+});
+</script> 
+
+{embed=a/f}

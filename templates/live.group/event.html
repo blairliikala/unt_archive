@@ -1,0 +1,28 @@
+{exp:channel:entries 
+  channel="live" 
+  status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio|scheduled|closed"
+  show_future_entries="yes" 
+  show_expired="yes" 
+  limit="1" 
+  disable="member_data|pagination|categories"
+  cache="yes"
+  refresh="1000"
+  entry_id="{segment_3}"
+}
+
+{if status != "closed"}
+
+  {if live_stream}
+  	{embed=live/_event_featured}
+  {if:else}
+  	{embed=live/_event_recital}
+  {/if}
+
+{/if}
+
+
+{if status=="closed"}
+  {embed=live/_event_cancelled}
+{/if}
+
+{/exp:channel:entries}

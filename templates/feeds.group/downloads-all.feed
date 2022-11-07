@@ -1,0 +1,129 @@
+{!--
+
+  Access:       Entry Link.
+  For:          Students, Faculty.
+  Description:  Lists all archive entries.
+
+--}
+{exp:ce_cache:it for="7 days" trim="yes" global="yes" id="rss-all" tags="rss"}
+
+{preload_replace:root="downloads"}
+{preload_replace:entry="item"}
+
+{exp:rss:feed channel="live" show_expired="yes" show_future_entries="no" dynamic_start="yes"}
+
+<?xml version="1.0" encoding="{encoding}"?>
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:admin="http://webns.net/mvcb/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/">
+
+    <channel>
+    
+    <title><![CDATA[UNT Archive - All]]></title>
+    <link>{site_url}/downloads</link>
+    <description>All added concerts and recitals</description>
+    <dc:language>{channel_language}</dc:language>
+    <dc:creator>recordingservices@unt.edu</dc:creator>
+    <dc:rights>Copyright {gmt_date format="%Y"}</dc:rights>
+    <dc:date>{gmt_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+    <admin:generatorAgent rdf:resource="{site_url}" />
+    
+{exp:channel:entries
+  channel="live" 
+  status="open" 
+  dynamic_start="on" 
+  disable="member_data|pagination" 
+  show_future_entries="no" 
+  show_expired="yes" 
+  orderby="date" 
+  sort="desc"
+  limit="50"
+}
+    <item>
+      <title><![CDATA[{entry_date format="%M %d, %Y"} {exp:ce_str:ing remove_html}{title}{/exp:ce_str:ing}]]></title>
+      <link>{entry_id_path='downloads/item'}</link>
+      <guid>{entry_id_path='downloads/item'}</guid>
+      <description><![CDATA[
+        <a href="{entry_id_path=downloads/item}">
+          {if ondemand_image}
+              {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif archive_default_image}
+              {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{related_ensembles_v2:default_picture}' }
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+              {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{room:room_primary_image:server_path}' }
+              {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:else}
+              {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {/if}
+        </a> 
+
+        <ol>
+          {ondemand_chapters_grid}
+          <li>
+            {exp:ce_str:ing remove_html}{exp:xml_encode}
+              {ondemand_chapters_grid:name_of_piece}
+            {/exp:xml_encode}{/exp:ce_str:ing}
+            
+            {if ondemand_chapters_grid:name_of_composer}
+              {exp:ce_str:ing remove_html}{exp:xml_encode}by {ondemand_chapters_grid:name_of_composer}{/exp:xml_encode}{/exp:ce_str:ing}
+            {/if}
+
+            {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing remove_html}{exp:xml_encode}arr. {ondemand_chapters_grid:name_of_arranger}{/exp:xml_encode}{/exp:ce_str:ing}{/if}
+          </li>
+          {/ondemand_chapters_grid}
+        </ol>
+
+
+        {if archive_concert_notes}<p>{exp:xml_encode}{archive_concert_notes}{/exp:xml_encode}</p>{/if}
+
+
+
+
+        <p><strong>Type</strong><br />
+        {archive_recital_type backspace="2"}{archive_recital_type:title}, {/archive_recital_type}
+        </p>
+
+        <p>
+          {exp:tag:tags orderby="tag_name" sort="desc" tag_group_id="3" entry_id="{entry_id}"}
+            {if '{tag_count}'=='1'}<p><strong>Performers</strong><br />{/if} 
+              {tag}, 
+            {if '{tag_total_results}' == '{tag_count}'}</p>{/if}
+          {/exp:tag:tags}
+        </p>
+
+        {room}
+          <p><strong>{room:title}</strong></p>
+          <p>{room:room_description}</p>
+        {/room}
+
+      ]]></description>
+      <dc:subject><![CDATA[{categories backspace="1"}{category_name}, {/categories}]]></dc:subject>
+      <dc:date>{gmt_entry_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+    </item>
+{/exp:channel:entries}
+    
+    </channel>
+</rss>
+
+{/exp:rss:feed}
+
+
+{exp:ce_cache:it}

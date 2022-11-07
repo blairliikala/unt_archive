@@ -1,0 +1,9 @@
+<nav class="thirds_nav">
+  <a href="{site_url}/me" class="{if segment_2=="" AND segment_1=="me"}current{/if}"><span class="fa fa-user"></span> Account</a>
+  {if logged_in_member_id=='1'}
+    <a href="{site_url}/events" class="{if segment_1=="events"}current{/if}"><span class="fa fa-book"></span> Your Events</a>
+  {/if}  
+  <!--<a href="{site_url}/me" class="{if segment_2==""}current{/if}"><span class="fa fa-download"></span> Saved</a>-->
+  <a href="{site_url}/me/purchased" class="{if segment_2=="purchased"}current{/if}"><span class="fa fa-download"></span> Purchased</a>
+  <a href="{site_url}/me/orderhistory" class="{if segment_2=="orderhistory"}current{/if}"><span class="fa fa-book"></span> Order History</a>
+</nav>

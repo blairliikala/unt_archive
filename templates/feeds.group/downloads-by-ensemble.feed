@@ -1,0 +1,82 @@
+{!--
+
+  Access:       Entry Link.
+  For:          Students, Faculty.
+  Description:  Lists all entries for an ensemble.
+
+--}
+{preload_replace:root="downloads"}
+{preload_replace:entry="item"}
+{if segment_3!=""}
+
+{exp:rss:feed channel="ensembles" show_future_entries="no" dynamic_start="yes"}
+<?xml version="1.0" encoding="{encoding}"?>
+  <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    
+    <title><![CDATA[{exp:channel:entries channel="ensembles" disable="category_fields|pagination|categories|custom_fields" cache="yes" refresh="500"}{exp:xml_encode}{title}{/exp:xml_encode}{/exp:channel:entries}]]></title>
+    <link>{site_url}/me</link>
+    <description>Concerts by ensemble, {exp:channel:entries channel="ensembles" disable="category_fields|pagination" cache="yes" refresh="500"}{title}, {conductor_name}, conductor{/exp:channel:entries}</description>
+    <atom:link href="httpss://recording.music.unt.edu/{segment_1}/{segment_2}/{segment_3}" rel="self" type="application/rss+xml" />
+
+    
+{exp:channel:entries channel="ensembles" disable="category_fields|pagination" cache="yes" refresh="500" show_expired="yes"}
+    {parents show_expired="yes"}
+    <item>
+      <title><![CDATA[{parents:entry_date format="%M %d, %Y"} {title}]]></title>
+      <link>httpss://recording.music.unt.edu/downloads/item/{parents:entry_id}</link>
+      <dc:creator xmlns:dc="https://purl.org/dc/elements/1.1/">recording.music.unt.edu</dc:creator>
+      <pubDate>{entry_date format="{DATE_RFC1123}"}</pubDate>
+      <dc:date>{parents:gmt_entry_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>      
+      <guid>httpss://recording.music.unt.edu/downloads/item/{parents:entry_id}</guid>
+
+      <description><![CDATA[
+
+        {exp:ce_img:pair src="{parents:ondemand_image}" width="300" crop="yes" save_type="jpg"}
+          <a href="httpss://recording.music.unt.edu/downloads/item/{parents:entry_id}"><img src="{site_url}{made}" alt="" /></a>
+        {/exp:ce_img:pair}
+
+        <br />
+        {if conductor_name}
+          {exp:xml_encode}{conductor_name}{/exp:xml_encode}, conductor
+          <br />
+        {/if}
+
+        <table>
+          {parents:ondemand_chapters_grid:}
+            <tr>
+              <td>{exp:xml_encode}{parents:ondemand_chapters_grid:audio_file:name_of_piece}{/exp:xml_encode}</td>
+              <td>{exp:xml_encode}{parents:ondemand_chapters_grid:audio_file:name_of_composer}{/exp:xml_encode}</td>
+            </tr>
+          {/parents:ondemand_chapters_grid}
+        </table>
+
+        <p>Perfomers: {exp:tag:tags entry_id='{parents:entry_id}' tag_group_id='3' orderby='tag_name' sort='desc' backspace='2'}{tag}, {/exp:tag:tags}.</p>
+
+       	{if parents:global_streaming}
+      		<a href="{parents:entry_id_path=media/playvideo}">Stream Available</a><br />
+      	{/if}
+
+        {if parents:global_video_download}
+          <a href="{parents:entry_id_path='{root}/{entry}'}">Video Download Available</a>
+        {/if}
+      	
+      	{if parents:archive_concert_notes}<br />
+          {exp:ce_str:ing remove_html}{parents:archive_concert_notes}{/exp:ce_str:ing}
+        {/if}<br />
+
+      	{parents:room:title}
+
+      ]]></description>
+    </item>
+    {/parents}
+{/exp:channel:entries}
+    </channel>
+</rss>
+
+{/exp:rss:feed}
+{/if}
+
+{if segment_3 ==""}
+Pick an ensemble!
+{/if}

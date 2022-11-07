@@ -1,0 +1,17 @@
+WEBVTT
+{exp:channel:entries
+		channel="live" 
+		show_expired="yes" 
+		status="open|pending|waitingforreview|LiveStream|pendingvideo" 
+		disable="member_data|category_fields|pagination|categories" 
+		show_future="no" 
+		limit="1" 
+		cache="yes" 
+		refresh="360" 
+		entry_id="{segment_3}"
+}
+{ondemand_chapters_grid backspace="0"}
+Chapter {ondemand_chapters_grid:field_row_count}
+{if ondemand_chapters_grid:chapter_location_human!=""}{ondemand_chapters_grid:chapter_location_human}.000 --> {ondemand_chapters_grid:chapter_location_human}.999{if:else}{exp:video_length seconds="{ondemand_chapters_grid:chapter_location}"}.000 --> {exp:video_length seconds="{ondemand_chapters_grid:chapter_location}"}.999{/if}
+{exp:ce_str:ing trim}{ondemand_chapters_grid:field_row_count}. {ondemand_chapters_grid:name_of_piece} by {ondemand_chapters_grid:name_of_composer}{/exp:ce_str:ing}
+{ical_space}{/ondemand_chapters_grid}{/exp:channel:entries}

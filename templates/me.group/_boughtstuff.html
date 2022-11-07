@@ -1,0 +1,47 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{exp:channel:entries
+	channel="purchased_items" 
+	status="open|Complete" 
+	disable="member_data|category_fields|categories|pagination" 
+	dynamic="off" 
+	author_id="CURRENT_USER"
+	search:service_sorting="IS_EMPTY"
+}
+
+{if count=='1'}
+  <section class="scroll_group">
+    <header class="scroll_group_header">
+      <h2 class="scroll_group_title">Purchased Downloads</h2>
+      <p>Licensed video downloads.</p>
+    </header>
+    <div class="scroll_group_items">    
+{/if}   
+
+{embed=me/_boughtstuff-entry entry_id="{purchased_id}"}
+
+		Purchased: 
+			{if '{entry_date format="%d-%Y"}' == '{current_time format="%d-%Y"}'}
+				Today
+			{if:else}
+				{entry_date format="%n/%d/%Y"}
+			{/if}
+			, 
+			Expires
+			{if '{expiration_date format="%d-%Y"}' == '{current_time format="%d-%Y"}'}
+				Today
+			{if:else}
+				{expiration_date format="%n/%d/%Y"}
+			{/if}
+        </section>
+      </a>      
+    </div>
+
+{if count==total_results}
+  </div>
+  </section>
+{/if}
+
+{if no_results}
+<!--No Purchases-->
+{/if}
+{/exp:channel:entries}

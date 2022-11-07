@@ -1,0 +1,38 @@
+<html>
+
+<head>
+    <title>Regenerate Waveforms</title>
+</head>
+
+<script>
+
+const entry_ids = [
+
+{exp:channel:entries
+  channel="live" 
+  status="open|pending|WaitingForReview|LiveStream|pendingvideo|pendingaudio|scheduled|needspayment" 
+  show_expired="yes" 
+  show_future_entries="yes" 
+  cache="yes"
+  refresh="86400" 
+  disable="categories|pagination" 
+  dynamic="off"
+  limit="10"
+}
+
+
+{/exp:channel:entries}
+]
+
+
+for (const track in chaptermarkers.items) {
+
+    let createURL = '/downloads/_waveform/create/'+track.entry_id+'/'+track.waveformFileID+'/'+track+'/'+track.year+'/'+track.month;
+    console.log(createURL);
+}
+
+
+</script>
+
+
+</html>

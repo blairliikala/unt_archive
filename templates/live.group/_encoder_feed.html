@@ -1,0 +1,42 @@
+{!-- Do not add caching to Low_Search tag! --}
+{!-- This contains the stream key, dont make it public. --}
+[
+{exp:low_search:results
+  query="{segment_3}"
+  keywords:inflect="yes"
+  collection="1"
+}
+{!--   child:room="3269|3268|3267|3266" --}
+{if no_results}{/if}
+{
+  {if count==1}
+  "performance"     : "{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.",
+  {/if}
+  "entry_id"        : "{entry_id}",
+  "status"          : "{status}",
+  "title"           : {exp:ce_str:ing json_encode html_entity_decode}{title}{/exp:ce_str:ing},
+  "start"           : "{entry_date format="{DATE_ISO8601}"}",
+  "end"             : "{expiration_date format="{DATE_ISO8601}"}",    
+  "date_start_human"        : "{entry_date format='%F %j, %Y'} ",
+  "date_start_human_time"   : "{entry_date format='%g:%i%a'} CST",
+  "date_end_human"          : "{expiration_date format='%Y %F %j'}",
+  "date_end_human_time"     : "{expiration_date format='%g:%i%a'} CST",
+
+  "featured"    : {if live_stream}true{if:else}false{/if},
+
+  {room}
+  "helo_url"                  : "{room:room_helo_url}",
+  "room_elemental_event_id"   : "{room:room_elemental_event_id}",
+  "room_haivision_channel_id" : "{room:room_haivision_channel_id}",
+  "hall"                      : "{room:title}",
+  "room_entry_id"             : "{room:entry_id}",
+  {/room}
+
+  "archive_mux_id"           : "{archive_mux_id}",
+  "archive_mux_stream_key"   : "{archive_mux_stream_key}",
+  "archive_mux_playback_key" : "{archive_mux_playback_key}"
+
+}{if count < total_results},{/if}
+{/exp:low_search:results}
+]
+

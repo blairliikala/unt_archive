@@ -1,0 +1,411 @@
+{preload_replace:checkout_root="chargecheckout"}
+
+{embed=a/h title="Recording Request" meta="Request audio and video recordings for recitals and concerts."}
+<div id="content">
+
+  <nav id="bread">
+    <p><a href="{path=events/index}">Services</a> - <strong>Create a Recital Request</strong></p>
+  </nav>
+
+  <h1>Create a Recital Request</h1>
+  <span id="loadingIndicator" class="hidden"><div></div></span>
+
+  <section id="entryform2" class="new_event">
+
+{exp:channel:form 
+  channel="live"
+  entry_id="{segment_3}"
+  status="open|pending|closed"
+  datepicker="no"
+  include_jquery="no"
+  include_assets="no"
+  unique_url_title="yes"
+  id="event_form"
+  json="yes"
+}
+
+  <!--
+  secure_action="yes"
+  secure_return="yes"
+  return="submit/entry/ENTRY_ID"   
+  -->
+  <article class="form_block">
+    <label for="roomview_date_select"><strong>1. Import from Roomview</strong> Select the day of your recital and we will grab basic information from Roomview.</label><br />
+    <small>This requires that the event be approved.  Event must be 2 weeks out.</small></p>
+
+    <input type="text" id="roomview_date_select" placeholder="Select Date..." />
+
+    <!--
+    <article class="date_select_header">
+      <section class="cal_date_select">
+        <select id="month">
+            <option value="00" {if '{current_time format='%m'}' == '01'}selected{/if}>January</option>
+            <option value="01" {if '{current_time format='%m'}' == '02'}selected{/if}>February</option>
+            <option value="02" {if '{current_time format='%m'}' == '03'}selected{/if}>March</option>
+            <option value="03" {if '{current_time format='%m'}' == '04'}selected{/if}>April</option>
+            <option value="04" {if '{current_time format='%m'}' == '05'}selected{/if}>May</option>
+            <option value="05" {if '{current_time format='%m'}' == '06'}selected{/if}>June</option>
+            <option value="06" {if '{current_time format='%m'}' == '07'}selected{/if}>July</option>
+            <option value="07" {if '{current_time format='%m'}' == '08'}selected{/if}>August</option>
+            <option value="08" {if '{current_time format='%m'}' == '09'}selected{/if}>September</option>
+            <option value="09" {if '{current_time format='%m'}' == '10'}selected{/if}>October</option>
+            <option value="10" {if '{current_time format='%m'}' == '11'}selected{/if}>November</option>
+            <option value="11" {if '{current_time format='%m'}' == '12'}selected{/if}>December</option>
+        </select>
+        <select id="day">
+            <option value="01">01</option>
+        </select>            
+        <select id="year">
+            {!-- Plugin that displays the last x years in a option dropdown. --}
+            {exp:year_options years="-1"}
+        </select>
+      </section>
+    </article>  
+
+    <button id="pingRoomview" class="basic_button">Get Recitals</button>
+    -->
+
+      <div id="roomviewResults">
+        <span style="color:#ccc;display:block;padding:2em;text-align:center;background:rgba(245, 245, 245, 1)">Resutls will display here</span>
+      </div>
+
+  </article>
+
+  <article class="form_block">
+    <label for="roomview_id"><strong>Roomview ID</strong> The event ID from Roomview for syncing.</label>
+    <input type="text" id="roomview_id" name="roomview_id" minlength="3" maxlength="10" value="{roomview_id}" {if logged_in_member_group!='1'}readonly{/if}>   
+  </article>
+
+
+  <article class="form_block">
+    <label for="entry_date"><strong>Concerts Start</strong> Actual start time of event</label>
+    <input type="text" name="entry_date" id="entry_date" value="{entry_date}" maxlength="23" size="25" data-iso8601="{entry_date format='%c'}">
+    <!--<input type="datetime-local" name="" value="2018-06-12T19:30" min="2019-01-07T00:00" max="2020-06-14T00:00">-->
+  </article>
+  <article class="form_block">
+    <label for="expiration_date"><strong>Concert End</strong> Approximate End Time</label>
+    <input type="text" name="expiration_date" id="expiration_date" value="{expiration_date}" maxlength="23" size="25" readonly>
+  </article>
+  <article class="form_block">
+    <lable for="archive_change_deadline"><strong>Change Deadline</strong> The last date to make changes</lable>
+    <input type="text" name="archive_change_deadline" id="archive_change_deadline" class="deadline" value="" readonly>
+    <span id="deadline_relative_time"></span>
+  </article>
+
+
+
+  <article class="form_block">
+    <h2>3. Performance Hall</h2>
+    <div class="helper">
+      <div id="helper_kenton" class="hidden helper_message_halls">
+        <p>This hall can have up to 16 mics for recording and also be used with reinforcement.</p>
+        <p>Please contact us with details in advance for the best recital recording.</p>
+      </div>
+      <div id="helper_winspear" class="hidden helper_message_halls">
+        <p>Winspear can only be booked by ensembles and organists.</p>
+      </div>
+      <div id="helper_voertman" class="hidden helper_message_halls">
+        <p>Voertman Hall is the only space with video recording support.</p>        
+      </div>
+      <div id="helper_default" class="hidden helper_message_halls"></div>      
+    </div>
+
+    {options:room}
+      <input type="radio" id="hall_{option_value}" class="room" name="room[data][]" value="{option_value}" {checked}>
+      <label class="checkbox" for="hall_{option_value}">{option_name}</label>
+    {/options:room}
+  </article>
+
+
+
+  <article class="form_block">
+    <h2>4. Classification</h2>
+    <p>Select what kind of concert this will be.</p>
+    <div class="helper">
+
+      <div id="helper_dma" class="hidden helper_message_type">
+        <p>DMA, Faculty, GAC, Masters and Senior Recitals have audio paid for by course fees.</p>
+        <p>DMA encompasses all doctoral-level recital types.</p>
+      </div>
+      <div id="helper_faculty" class="hidden helper_message_type">
+        <p>Faculty recitals require 51% of the concert to be performed by faculty</p>
+        <p>Guest artist recitals will require written permission to record and distribute.</p>
+      </div>
+
+      <div id="helper_guest" class="hidden helper_message_type">
+        <p>Guest artist recitals will require written permission to record and distribute.</p>        
+      </div>
+
+      <div id="helper_nondegree" class="hidden helper_message_type">
+        <p>This recital classification is not covered by course fees and will require payment.</p>
+      </div>
+      
+    </div>
+    {options:archive_recital_type}
+      <input 
+        type="radio" 
+        id="type_{option_value}" 
+        class="archive_recital_type" 
+        name="archive_recital_type[data][]" 
+        value="{option_value}"
+        data-id="{option_value}"
+        {checked}
+      >
+      <label class="checkbox" for="type_{option_value}">{option_name} {option_value}</label>
+    {/options:archive_recital_type}
+  </article>
+
+
+
+  <article id="select_instrument" class="form_block hidden">
+    <h2>5. Primary Instrument</h2>
+    <select id="archive_instrument" class="archive_instrument" name="archive_instrument[data][]" style="width:100%">
+      <option value="">Choose Instrument...</option>
+    {options:archive_instrument}
+      <option id="instrument_{option_value}" value="{option_value}" {selected}>{option_name}</option>
+    {/options:archive_instrument}
+    </select>
+    {!--
+    {options:archive_instrument}
+      <input type="radio" id="instrument_{option_value}" class="archive_instrument" name="archive_instrument[data][]" value="{option_value}" {checked}>
+      <label class="checkbox" for="instrument_{option_value}">{option_name}</label>
+      <br />
+    {/options:archive_instrument}
+    --}
+  </article>
+
+
+
+  <article id="select_ensemble" class="form_block hidden">
+    <h2>5. Ensembles</h2>
+      <p>Ensembles are defined as an offical UNT regular performing group with a course number.</p>
+      <p>If the ensemble is not listed here, please contact us.</p>
+      <select id="archive_ensemble" class="select2 related_ensembles_v2" name="related_ensembles_v2[data][]" style="width:100%">
+        <option value="">Choose Ensemble...</option>
+      {options:related_ensembles_v2}
+        <option value="{option_value}" {selected}>{option_name}</option>
+      {/options:related_ensembles_v2}
+      </select>
+      {!--
+      {options:related_ensembles_v2}
+        <input type="checkbox" id="ens_{option_value}" class="related_ensembles_v2" name="related_ensembles_v2[data][]" value="{option_value}" {selected}>
+        <label for="ens_{option_value}">{option_name} {option_value}</label>
+        <br />
+      {/options:related_ensembles_v2}
+      --}
+  </article>
+
+  <article class="form_block">
+    <label for="title"><h2>Name, instrument (just as your program will say)</h2></label>
+    <input type="text" name="title" id="title" value="" size="50" minlength="5" maxlength="200">
+    {error:title}
+  </article>
+
+  <article class="form_block">
+  <label for="EUID"><strong>EUID</strong></label>
+  <input type="text" id="EUID" name="archive_euid" value="{logged_in_username}">
+  <label for="email"><strong>Email</strong> UNT addresses are reqiuired for delivery.</label>
+  <input type="text" id="email" name="" value="{logged_in_email}">
+  </article>
+
+
+
+  <!--
+  65 = Name
+  66 = short name
+  67 = cost
+  -->
+  <article class="form_block">
+  <h2>Audio Request</h2>
+  <input 
+    type="radio" 
+    id="service_audio_nofee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="0"
+    data-name="Audio-Course Fee"
+    data-shortname="audio_coursefee"
+    data-price="0"
+    {if service_audio:shortname == audio_coursefee}selected{/if}
+  >
+  <label class="checkbox" for="service_audio_nofee">Audio-only Course Fee $0.00</label>
+
+  <input 
+    type="radio"
+    id="service_audio_fee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="75"
+    data-name="Audio-only"
+    data-shortname="audio_fee"
+    data-price="75"
+    {if service_audio:shortname == audio_coursefee}selected{/if}
+    >
+  <label class="checkbox" for="service_audio_fee">Audio-only $75.00</label>
+
+  <!-- Name -->
+  <input type="{if logged_in_member_id=='1'}text{if:else}hidden{/if}" id="audio_hidden_name" name="service_audio[rows][new_row_0][col_id_65]" value="">
+
+  <!--Shortname -->
+  <input type="{if logged_in_member_id=='1'}text{if:else}hidden{/if}" id="audio_hidden_shortname" name="service_audio[rows][new_row_0][col_id_66]" value="">
+
+  <!-- Will need additional hidden fields to add more meta to the service type -->
+
+  </article>
+
+
+
+  <!-- Field 362
+  68 = Name
+  69 = short name
+  70 = cost
+  -->
+
+<article id="video_request" class="form_block">
+  <h2>Video Request</h2>
+  <input 
+    type="radio" 
+    id="service_video_novideo"
+    class="validateVideo"
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0" 
+    data-shortname="service_video_novideo" 
+    data-name="No Video"
+    data-price="0"
+    {if service_video:shortname == service_video_novideo}selected{/if}
+    checked
+  >
+  <label class="checkbox" for="service_video_novideo">No Video $0.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_center" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75"
+    data-shortname="service_video_center" 
+    data-name="Video - Center Camera"
+    data-price="75" 
+  >
+  <label class="checkbox" for="service_video_center">Video - Center Camera-only $75.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_multi" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75"
+    data-shortname="service_video_multi" 
+    data-name="Video - Multiple Cameras"  
+    data-price="75"    
+  >
+  <label class="checkbox" for="service_video_multi">Video - Multiple Cameras $75.00</label>
+
+  <!--
+  <input 
+    type="radio" 
+    id="service_video_recitallivestream" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0"
+    data-shortname="service_video_recitallivestream" 
+    data-name="Video - Recital Live Stream"         
+    data-price="0"
+  >
+  <label class="checkbox" for="service_video_recitallivestream">Video - Multiple Cameras, Live Stream $75.00</label>
+
+  <div id="video_live_ens" class="hidden">
+    <input 
+      type="radio" 
+      id="service_video_enslivestream" 
+      class="validateVideo"    
+      name="service_video[rows][new_row_0][col_id_70]" 
+      value="0"
+      data-shortname="service_video_enslivestream" 
+      data-name="Video - Ensemble Live Stream"
+      data-price="0"  
+    >
+    <label class="checkbox" for="service_video_enslivestream">Video - Ensemble Live Stream $0.00</label>
+  </div>
+  -->
+
+  <!-- Name -->
+  <input type="{if logged_in_member_id=='1'}text{if:else}hidden{/if}" id="video_hidden_name" name="service_video[rows][new_row_0][col_id_68]" value="">
+
+  <!--Shortname -->
+  <input type="{if logged_in_member_id=='1'}text{if:else}hidden{/if}" id="video_hidden_shortname" name="service_video[rows][new_row_0][col_id_69]" value="">
+
+</article>
+
+{if logged_in_member_id=='1'}
+<article class="form_block">
+  <h2>Roomview JSON Dump (will be hidden)</h2>
+  <textarea id="archive_roomview_json_dump" name="archive_roomview_json_dump"></textarea>
+</article>
+{if:else}
+  <textarea hidden id="archive_roomview_json_dump" name="archive_roomview_json_dump"></textarea>
+{/if}
+
+<article class="form_block">
+  <h2>Guest Artist Agreement</h2>
+  {options:archive_guest_artist_disclaimer}
+  <input type="checkbox" id="guestAgreement" name="archive_guest_artist_disclaimer" value="{option_value}" {checked}>
+  <label for="guestAgreement">I agree that any guest artists have given written permission for recording and distributing copies of the recording on our archive as outlined in our policies.</label>
+  {/options:archive_guest_artist_disclaimer}
+</article>
+
+
+{exp:member:custom_profile_data}
+  {if amount_due > 0}
+    <article class="form_block">
+      <label for="archive_extra_amount_due">You currently owe additional fees due to cancellations.</label>
+      <input 
+        type="text" 
+        id="archive_extra_amount_due"
+        name="archive_extra_amount_due"
+        data-price="{amount_due}"
+        class="archive_extra_amount_due"
+        value="${amount_due}.00"
+        readonly
+      >
+    </article>      
+  {/if}
+{/exp:member:custom_profile_data}
+
+
+  <article class="form_block">
+    <label for="amount_due"><strong>Amount Due</strong> Payment will be required on the next page.</label>
+    <h2 class="amount_style">$<input type="text" id="amount_due" name="archive_amount_due" value="{archive_amount_due}" readonly>.00</h2>
+  </article>
+
+  <!-- Sets to blank if payment is required.  Needed if they return to pay for video. -->
+  <input type="hidden" id="archive_charege_paid" name="archive_charege_paid" value="{archive_charege_paid}">
+
+  <!-- Required -->
+  <input type="hidden" id="url_title" name="url_title"  value="{url_title}">
+
+  <!-- JS changes if they need to pay or not -->
+  <input type="hidden" id="status" name="status" value="Scheduled" >
+
+  <button type="submit" id="submit" class="basic_button submit_button">Save Request <span class="submit_paymsg hidden">and Pay</span></button>
+
+
+{/exp:channel:form}
+
+</div><!--content-->
+
+{jquery}
+{embed=a/js}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+<script src='/js/moment/moment.2.24.0.min.js'></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!--
+<script src="/js/flatpickr/flatpickr.js"></script>
+<link href="/js/flatpickr/flatpickr.min.css">
+-->
+<link rel="stylesheet" href="{path=events/event_form_styles}" />
+<script src="{path=events/event_js2}"></script>
+{embed=a/f} 

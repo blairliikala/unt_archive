@@ -1,0 +1,63 @@
+{exp:channel:entries 
+  channel="live" 
+  show_expired="yes" 
+  status="open" 
+  entry_id="{embed:entry_id}" 
+  disable="member_data|category_fields|categories|pagination" 
+  cache="yes"
+  refresh="320"
+} 
+{if no_results}<!-- no purchases found -->{/if}
+
+{if count=="1"}
+      <section class="scroll_group">
+        <header class="scroll_group_header">
+          <h2 class="scroll_group_title">We Added <i class="fa fa-info" title="These concerts were added manually by the RS staff" class="tippy"></i></h2>
+          <!--<p><small>All new recorded events by concert date.</small></p>-->
+          <!--<button class="basic_button tippy" title="Student recitals listed by the primary instrument. This instrument category was assigned by our staff."><i class="fa fa-info"></i></button>-->
+        </header>
+        <div class="scroll_group_items">     
+{/if}
+
+      <div class="scroll_group_item"> 
+        <a href="{entry_id_path=downloads/item}" data-hjtag="link-recentlyposted">
+        <div class="scroll_group_item_img_container">
+        <div class="scroll_group_item_img_container2">
+          {if ondemand_image}
+              {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif archive_default_image}
+              {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif related_ensembles_v2 AND '{related_ensembles_v2:default_picture}' }
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+              {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{room:room_primary_image:server_path}' }
+              {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:else}
+              {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {/if}
+          </div></div>
+          <section class="scroll_group_item_meta">
+            <h4>{exp:char_limit total="30"}{title}{/exp:char_limit}</h4>
+            <p>{entry_date format="%F %j, %Y"}</p>
+          </section>
+        </a>      
+      </div>
+
+{if count==total_results}
+    </div>
+    </section>
+{/if}
+{/exp:channel:entries}

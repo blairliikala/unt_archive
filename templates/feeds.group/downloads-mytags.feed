@@ -1,0 +1,92 @@
+{!--
+
+  Access:       Only link to entry.
+  For:          Students, Faculty.
+  Description:  Shows all entries based on all tags user has subscribed to.
+
+--}
+
+{preload_replace:root="downloads"}
+{preload_replace:entry="item"}
+{if segment_3!=""}
+
+{exp:rss:feed channel="ensembles" show_future_entries="no" dynamic_start="yes"}
+
+<?xml version="1.0" encoding="{encoding}"?>
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:admin="http://webns.net/mvcb/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/">
+
+    <channel>
+    
+    <title><![CDATA[UNT Archive-My Tags]]></title>
+    <link>{site_url}/me</link>
+    <description>Concert downloads by subscribed tags</description>
+    <dc:language>{channel_language}</dc:language>
+    <dc:creator>recordingservices@unt.edu</dc:creator>
+    <dc:rights>Copyright {current_time format="%Y"}</dc:rights>
+    <dc:date>{current_time format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+    <admin:generatorAgent rdf:resource="http://recording.music.unt.edu" />
+
+    {exp:tag:subscriptions orderby="tag_name" sort="asc" member_id="{segment_3}"}
+      {exp:tag:entries tag="{tag}" orderby="entry_date" sort="asc" limit="10" show_expired="yes"}
+        <item>
+          <title><![CDATA[{entry_date format="%M %d, %Y"} {title}]]></title>
+          <link>{site_url}{entry_id_path='{root}/{entry}'}</link>
+          <guid>{site_url}{entry_id_path='{root}/{entry}'}</guid>
+          <description><![CDATA[
+            {exp:ce_img:pair src="{ondemand_image}" width="300" crop="yes" save_type="jpg" fallback_src="/images/default.png"}
+              <img src="http://recording.music.unt.edu{made}" alt="" /> 
+            {/exp:ce_img:pair}
+
+            <br />
+            {if conductor_name}
+              {exp:xml_encode}{conductor_name}{/exp:xml_encode}, conductor
+              <br />
+            {/if}
+
+            <table>
+              {ondemand_chapters_grid}
+                <tr>
+                  <td>{exp:xml_encode}{ondemand_chapters_grid:name_of_piece}{/exp:xml_encode}</td>
+                  <td>{exp:xml_encode}{ondemand_chapters_grid:name_of_composer}{/exp:xml_encode}</td>
+                </tr>
+              {/ondemand_chapters_grid}
+            </table>
+
+            <p>{exp:tag:tags entry_id='{entry_id}' tag_group_id='3' orderby='tag_name' sort='desc' backspace='2'}{tag}, {/exp:tag:tags}.</p>
+
+            {if global_streaming}
+              <a href="{entry_id_path=media/playvideo}">Stream Available</a><br />
+            {/if}
+
+            {if global_video_download}
+              <a href="{entry_id_path='{root}/{entry}'}">Video Download Available</a>
+            {/if}
+            
+            {if archive_concert_notes}<br />
+              {exp:ce_str:ing remove_html}{archive_concert_notes}{/exp:ce_str:ing}
+            {/if}<br />
+
+            {room:title}
+
+            ]]></description>
+          <dc:subject><![CDATA[{categories backspace="1"}{category_name}, {/categories}]]></dc:subject>
+          <dc:date>{gmt_entry_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+        </item>
+
+      {/exp:tag:entries}
+    {/exp:tag:subscriptions}	
+	
+    </channel>
+</rss>
+
+{/exp:rss:feed}
+
+{/if}
+{if segment_3==""}
+Yikes! Please include username in URL.
+{/if}

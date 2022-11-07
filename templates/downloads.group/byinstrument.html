@@ -1,0 +1,407 @@
+{preload_replace:template_root="downloads"}
+{preload_replace:template_entry="item"}
+{preload_replace:channel-superparent="college_areas"}
+{preload_replace:channel-subparent="college_instruments"}
+{preload_replace:channel-relationshipfield="archive_instrument"}
+
+{embed=a/h title="Archive Downloads - By Instrument" meta="Recitals by their primary instrument."}
+{embed=downloads/_nav}
+
+<div id="content" style="padding-left:0;padding-right:0">
+  <!--<article id="ensembles">-->
+
+    <nav class="g-left">
+
+    <details id="detailsContainer" class="navigation_modal_button_container" open="">
+      <summary class="basic_button navigation_modal_button">Select Instrument</summary>
+      {exp:channel:entries
+        channel="{channel-superparent}" 
+        orderby="title" 
+        sort="asc" 
+        disable="member_data|categories|pagination" 
+        dynamic="off"
+        entry_id="NOT 8619|8618|8617|8608"
+        cache="yes"
+        refresh="10000"
+      }
+      {if count=='1'}
+        <ul class="list_by_area" aria-label="List of Instruments by area, displayed for mobile.">
+      {/if}
+        <li class="area_heading"><strong>{title}</strong></li>
+          <ul>
+          {parents orderby="date" sort="asc"}
+            <li><a href="{site_url}/{segment_1}/byinstrument/{parents:entry_id}" class="tagnav {if '{segment_3}'=='{parents:entry_id}'}pickme{/if}">{parents:title}</a></li>
+          {/parents}
+        </ul>
+      {if count==total_results}</ul>{/if}
+      {/exp:channel:entries}
+    </details>
+
+    <script>
+      // Helper for the Details responsive view.
+      let div = document.querySelector('#detailsContainer');
+      let touched = false;
+      div.addEventListener('click', e => {touched=true;});
+      document.body.clientWidth <= 500 ? div.removeAttribute('open') : div.setAttribute('open', '');
+      window.addEventListener("resize", function(event) {
+        if (document.body.clientWidth <= 500) {
+          if (!touched) {
+            div.removeAttribute('open');
+          }
+        } else {
+          div.setAttribute('open', '');
+        }
+      });     
+    </script>
+  </nav>
+
+
+
+
+{exp:ce_cache:it for="1 day" id="byinstrument" tags="byensemble"}
+<section id="ensembleEntries" class="g-right">
+
+{if segment_3 ==""}
+<!--*********************** If there isn't an ID specified ***********************-->
+  {exp:low_search:results
+    orderby_sort="date|desc"
+    channel="live"
+    child:archive_recital_type="not ensemble"
+    show_expired="no"
+    show_future_entries="yes"
+    cache="yes"
+    refresh="10000"
+    limit="25"
+  }
+
+  {if count=='1'}
+  <h2>Upcoming Recitals Concerts:</h2>
+  <section class='vertical_listing onecolumn'>
+  {/if}
+  {if '{room:room_enable_live_streaming}' == true}
+  <section class='each'>
+    <a href="{site_url}/{segment_1}/item/{entry_id}" class="each_link">
+      {if ondemand_image}
+          {exp:ce_img:pair src="{ondemand_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif archive_default_image}
+          {exp:ce_img:pair src="{archive_default_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{related_ensembles_v2:default_picture}' }
+          {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+          {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{room:room_primary_image:server_path}' }
+          {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:else}
+          {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {/if}
+    <div class='each_meta'>
+      <strong>{exp:char_limit total='50'}{title}{/exp:char_limit}</strong><br />
+      {entry_date format='%Y %F %j'}
+    </div>
+    </a>
+    <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+    <div class='full_track_listing'>
+      {ondemand_chapters_grid}
+        <article class="tracks_row">
+          <span class="tracks_count">{ondemand_chapters_grid:count}.</span>
+          <span class="tracks_name">{exp:char_limit total="50"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+          <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+        </article>
+      {/ondemand_chapters_grid}
+    </div>
+    </section>
+  {/if}
+  {if count==total_results}
+  </section>
+  {/if}
+{/exp:low_search:results}
+
+
+
+
+<h2>Recent Recitals Concerts:</h2>
+  {exp:low_search:results
+    orderby_sort="date|desc"
+    channel="live"
+    child:archive_recital_type="not ensemble"
+    show_expired="yes"
+    cache="yes"
+    refresh="10000"
+    limit="25"
+  }
+
+  {if count=='1'}
+  <section class='vertical_listing onecolumn'>
+  {/if}
+  <section class='each'>
+    <a href="{site_url}/{segment_1}/item/{entry_id}" class="each_link">
+      {if ondemand_image}
+          {exp:ce_img:pair src="{ondemand_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif archive_default_image}
+          {exp:ce_img:pair src="{archive_default_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{related_ensembles_v2:default_picture}' }
+          {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+          {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{room:room_primary_image:server_path}' }
+          {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+          <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:else}
+          {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+            <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {/if}
+
+  {!--
+    {if ondemand_image}
+      <img 
+        srcset="
+                {exp:ce_img:pair src="{ondemand_image}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                {exp:ce_img:pair src="{ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                {exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                {exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+        sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+        src="{exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="each_image"
+      />
+    {if:else}
+        {if '{related_ensembles_v2:default_picture}' }
+          <img srcset="
+                    {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                    {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                    {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                    {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+            sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+            src="{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="each_image" width="480" height="270"
+          />
+        {if:else}
+          {if '{room:room_primary_image:server_path}' }
+          <img srcset="
+                    {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                    {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                    {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                    {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+            sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+            src="{exp:ce_img:pair src="{room:room_primary_image:server_path}" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="each_image" width="480" height="270"
+          />
+          {if:else}
+            {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+              <img src="{site_url}{made}" alt="{title}" title="Open {title}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+          {/if}
+        {/if}
+    {/if}
+  --}
+    <div class='each_meta'>
+      <strong>{exp:char_limit total='50'}{title}{/exp:char_limit}</strong><br />
+      {entry_date format='%Y %F %j'}
+    </div>
+    </a>
+    <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+    <div class='full_track_listing'>
+      {ondemand_chapters_grid}
+        <article class="tracks_row">
+          <span class="tracks_count">{ondemand_chapters_grid:count}.</span>
+          <span class="tracks_name">{exp:char_limit total="50"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+          <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+        </article>
+      {/ondemand_chapters_grid}
+    </div>
+    </section>
+  {if count==total_results}
+  </section>
+  {/if}
+  {/exp:low_search:results}
+
+
+
+<!--*********************** ID [instrument] specific *********************** -->
+{if:else}
+
+  {exp:channel:entries
+    channel="{channel-subparent}"
+    disable="category_fields|categories|pagination|member_data"
+    entry_id="{segment_3}"
+    limit="20"
+    cache="yes"
+    refresh="10000"    
+  }
+    <header class="ens_head">
+      <h1>{title}</h1>
+    </header>
+
+    <!-- Upcoming -->
+    {parents show_expired='no' show_future_entries="yes" status="scheduled|livestream" orderby="date" sort="asc"}
+      {if parents:count=='1'}
+      <h3>Upcoming</h3>
+      <section class='vertical_listing onecolumn'>
+      {/if}
+      <section class='each'>
+        <a href="/live/events/{parents:entry_id}" class="each_link">
+        {if parents:ondemand_image}
+            {exp:ce_img:pair src="{parents:ondemand_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {if:elseif parents:archive_default_image}
+            {exp:ce_img:pair src="{parents:archive_default_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {if:elseif '{parents:related_ensembles_v2:default_picture}' }
+            {exp:ce_img:pair src="{parents:related_ensembles_v2:default_picture}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {if:elseif '{parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+            {exp:ce_img:pair src="{parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {if:elseif '{parents:room:room_primary_image:server_path}' }
+            {exp:ce_img:pair src="{parents:room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {if:else}
+            {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+              <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+            {/exp:ce_img:pair}
+        {/if}    
+      <div class='each_meta'>
+        <strong>{exp:char_limit total='50'}{parents:title}{/exp:char_limit}</strong><br />
+        Live On {parents:entry_date format='%F %j %Y %g:%i%a'}<br />
+        {parents:entry_date:relative}
+      </div>
+      </a>
+      <!--
+      <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+      <div class='full_track_listing'>
+        {parents:ondemand_chapters_grid}
+          <article class="tracks_row">
+            <span class="tracks_count">{parents:ondemand_chapters_grid:count}.</span>
+            <span class="tracks_name">{exp:char_limit total="50"}{parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+            <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+          </article>
+        {/parents:ondemand_chapters_grid}
+      </div>
+      -->
+      </section>
+      {if parents:count==parents:total_results}
+      </section>
+      {/if}
+
+    {/parents}
+
+
+    {parents show_expired="yes" orderby="date" sort="desc" field="archive_instrument"}
+    {if parents:count=='1'}
+    <section class='vertical_listing onecolumn'>
+    {/if}
+    <section class='each'>
+      <a href="{parents:entry_id_path=downloads/item}" class="each_link">      
+      {if parents:ondemand_image}
+          {exp:ce_img:pair src="{parents:ondemand_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif parents:archive_default_image}
+          {exp:ce_img:pair src="{parents:archive_default_image}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{parents:related_ensembles_v2:default_picture}' }
+          {exp:ce_img:pair src="{parents:related_ensembles_v2:default_picture}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+          {exp:ce_img:pair src="{parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="544" height="306" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+          <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:elseif '{parents:room:room_primary_image:server_path}' }
+          {exp:ce_img:pair src="{parents:room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+          <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {if:else}
+          {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+            <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="each_image" />
+          {/exp:ce_img:pair}
+      {/if}
+      
+    <div class='each_meta'>
+      <strong>{parents:title}</strong><br />
+        {parents:entry_date format='%F %j, %Y'}
+       <br />{parents:archive_recital_type backspace="2"}{parents:archive_recital_type:title}, {/parents:archive_recital_type}, {parents:room}{parents:room:title}{/parents:room}
+    </div>
+    </a>
+    <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+    <div class='full_track_listing'>
+      {parents:ondemand_chapters_grid}
+        <article class="tracks_row">
+          <span class="tracks_count">{parents:ondemand_chapters_grid:count}.</span>
+          <span class="tracks_name">{exp:char_limit total="50"}{parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+          <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+        </article>
+      {/parents:ondemand_chapters_grid}
+    </div>
+    </section>
+  {if parents:count==parents:total_results}
+  </section>
+  {/if}
+  {/parents}
+
+  {if no_results}
+    <p>No Results.</p>
+  {/if}
+
+  {parents
+      show_expired="yes" 
+      orderby="title" 
+      sort="desc" 
+      field="faculty_view_instruments"
+  }
+    {if parents:count == '1'}
+      <h2>Faculty</h2>
+      <article class="flex_image_grid">
+    {/if}
+    <div class="flex_image_grid-link tippy">      
+      {if '{parents:faculty_photo}' != ''}
+        <img src="{exp:ce_img:pair src="{parents:faculty_photo}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="flex_image_grid-image" width="480" height="270" />
+      {if:else}
+        {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+          <img src="{site_url}{made}" alt="{title}" title="Open {parents:title}" width="{width}" height="{height}" class="flex_image_grid-image" />
+        {/exp:ce_img:pair}
+      {/if}
+      <p class="flex_image_grid-title">{parents:title}</p>
+    </div>
+    {if parents:count == parents:total_results}
+    </article><!-- Flex layout -->  
+    {/if}
+  {/parents}
+
+  {/exp:channel:entries}
+{/if}
+
+</section><!-- Right -->
+
+<!--</article>--><!-- ensembles-->
+
+</div>
+
+
+
+{embed=a/js}
+{embed=a/f}

@@ -1,0 +1,55 @@
+<h4 style="text-align:center">The stream begins about 10 minutes prior.</h4>
+
+{exp:channel:entries
+  channel="live"
+  status="LiveStream|Scheduled"
+  search:live_stream="yes"
+  show_future_entries="yes"
+  show_expired="no"
+  limit="1"
+  orderby="date"
+  sort="asc"
+  disable="member_data|trackbacks|categories|category_fields"
+  cache="yes"
+  refresh="60"
+}
+
+
+{ondemand_chapters_grid}
+
+{if ondemand_chapters_grid:count==1}<section class="program_order">{/if}
+
+  {!-- Needed to remove blank first row. --}
+  {if ondemand_chapters_grid:name_of_piece}
+
+  <article class="piece_{ondemand_chapters_grid:count}">
+    <div class="live_program_count">{ondemand_chapters_grid:count}.</div>
+    <div class="live_program_piece">{if ondemand_chapters_grid:name_of_piece}{ondemand_chapters_grid:name_of_piece}{/if}</div>
+    <div class="live_program_composer">{if ondemand_chapters_grid:name_of_composer}{ondemand_chapters_grid:name_of_composer}{/if}</div>
+    <div class="live_program_arranger">{if ondemand_chapters_grid:name_of_arranger}arr. {ondemand_chapters_grid:name_of_arranger}{/if}</div>
+  </article> 
+
+  {/if}
+
+  {if ondemand_chapters_grid:count==1}
+  {if "{ondemand_chapters_grid:name_of_composer}" ==''}
+  <article>
+    <p style="text-align:center;margin:0 auto"><i>Additional program information may show here at the time of the event.</i></p>
+  </article>  
+  {/if}
+  {/if}
+
+{if ondemand_chapters_grid:field_total_rows==ondemand_chapters_grid:count}</section>{/if}
+
+{/ondemand_chapters_grid}
+  
+<section class="program_buttons">
+  {if concert_program}
+    <a href="{site_url}{concert_program}" target="_blank" class="basic_button" style="background-color:#FB5A4E;color:white;border-bottom-color:#C0453D" data-hjtag="live-program-pdf"><i class="fa fa-file-pdf-o"></i> Program PDF</a>
+  {/if}
+
+  <a href="/live/_event_recital/{entry_id}" class="basic_button tippy" title="Youtube compresses video, this is the feed right from our encoders."><i class="fa fa-video-camera" aria-hidden="true"></i> Watch Original</a>
+
+</section>
+
+{/exp:channel:entries}

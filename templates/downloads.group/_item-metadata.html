@@ -1,0 +1,282 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{preload_replace:template_root="downloads"}
+{preload_replace:template_item="item"}
+
+{exp:channel:entries
+  channel="live" 
+  status="open|pending|WaitingForReview|LiveStream|pendingvideo|pendingaudio|scheduled|needspayment" 
+  show_expired="yes" 
+  show_future_entries="yes" 
+  disable="category_fields|pagination" 
+  entry_id="{segment_3}"
+  cache="yes"
+  refresh="90000"
+}
+    <section class="meta_left">
+
+
+    <ul class="meta_lists">
+      <li>Last Edit Date
+        <ul>
+          <li>{edit_date format="%F %j, %Y"}</li>
+        </ul>
+      </li>
+
+      <!-- DMA, Ensemble, Masters...etc -->
+      {archive_recital_type}
+        {if count==1}
+        <li>Degree/Concert Type:
+          <ul>
+        {/if}
+            <li>{archive_recital_type:title}</li>
+        {if count==total_results}
+          </ul>
+        </li>
+        {/if}
+      {/archive_recital_type}
+
+      <!-- Hall -->
+      {room}
+        {if count==1}
+          <li>Room:
+            <ul>
+        {/if}
+              <li>{room:title}</li>
+        {if count==total_results}
+            </ul>
+          </li>
+        {/if}
+      {/room}
+
+      <!-- Instrument -->
+      {archive_instrument}
+        {if count==1}
+        <li>Primary Instrument:
+          <ul>
+        {/if}
+            <li><a href="{site_url}/{template_root}/byinstrument/{archive_instrument:entry_id}" data-hjtag="item-relationship-click">{archive_instrument:title}</a></li>
+        {if count==total_results}
+          </ul>
+        </li>
+        {/if}
+      {/archive_instrument} 
+
+      {exp:tag:tags orderby="tag_name" sort="asc" tag_group_id="3"}
+        {if tag_count=='1'}
+          <li>Performers:
+            <ul>
+        {/if}
+          <li><a href="{site_url}/{template_root}/tag/{websafe_tag}" data-hjtag="item-tag-click">{tag}</a></li>
+        {if tag_count==tag_total_results}
+            </ul>
+          </li>
+        {/if}
+      {/exp:tag:tags}
+
+    </ul>
+
+    </section><!-- meta left-->
+
+
+    <section class="meta_right">
+
+
+      {if
+        archive_conductor_camera !='' AND 
+        logged_in_member_group != '10' AND
+        logged_in_member_group != "11"
+        }
+
+        {archive_conductor_camera}
+              <p><a id="cc-download"
+                class="basic_button videoDownload" 
+                data-videodownload 
+                data-hj="video-download-cc" 
+                data-videotype="cc"
+                type="video/mp4"
+                  href="{exp:link_vault:download_url
+                    file_path="{server_path}"
+                    entry_id="{entry_id}"
+                    title="{filename}"
+                    parse="inward"
+                    cf:title="{entry_date format="%F %j, %Y"} {title}"
+                    cf:album="{entry_date format="%M %d, %Y"} {title}"
+                    cf:artist="{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                    cf:year="{entry_date format="%Y"}"
+                    cf:member_group="{logged_in_group_id}"
+                    cf:page="{segment_1}/item/{entry_id}"
+                    cf:type="video_download_cc"
+                    cf:recitaltype="{archive_recital_degree_type_tag}"
+                    cf:category="{categories backspace="2"}{category_name}, {/categories}"
+                    cf:accesstime="{current_time format='%Y-%m-%d'}"                  
+                }" title="Conductor camera view only for selected concerts."> Conductor Camera Download</a><br />
+          </p>
+        {/archive_conductor_camera}
+
+      {/if}
+
+{!--      
+      {if '{archive_recital_type:entry_id}' == '8783'}
+
+        {related_ensembles_v2 show_expired="yes"}
+          <h3><a href="{site_url}/{template_root}/byensemble/{related_ensembles_v2:entry_id}" class="ens_name" data-hjtag="item-relationship-click">{related_ensembles_v2:title}</a></h3>
+          <section class="vertical_listing onecolumn">
+          {related_ensembles_v2:parents field="related_ensembles_v2" show_expired="yes" limit="8" orderby="date" sort="desc"}
+            {if '{related_ensembles_v2:parents:entry_id}' != '{entry_id}'}
+              <section class="each">
+                <a href="{site_url}/{template_root}/item/{related_ensembles_v2:parents:entry_id}" class="each_link">
+                    {if '{related_ensembles_v2:parents:ondemand_image}' }
+                      {exp:ce_img:pair src="{related_ensembles_v2:parents:ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}
+                      <img src="{made}" title="{title}" alt="{title}" class="each_image" width="{width}" height="{height}" />
+                      {/exp:ce_img:pair}
+                    {if:else}
+                      {if '{related_ensembles_v2:default_picture}' }
+                        {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="320" height="180" crop="yes" save_type="jpg"}
+                        <img src="{made}" title="{title}" alt="{title}" class="each_image" width="{width}" height="{height}" />
+                        {/exp:ce_img:pair}
+                      {if:else}
+                        {exp:ce_img:pair src="/images/temp_images/noimage.png" width="320" height="180" crop="yes" save_type="jpg"}
+                        <img src="{made}" title="{title}" alt="{title}" class="each_image" width="{width}" height="{height}" />
+                        {/exp:ce_img:pair}
+                      {/if}
+                    {/if}
+                  <div class="each_meta">
+                  {related_ensembles_v2:parents:entry_date format="%F %d, %Y"}<br />
+                    {exp:char_limit total="50"}{related_ensembles_v2:parents:title}{/exp:char_limit}
+                  </div>
+                </a>
+                <a class="popup_trigger tippy" title="View Program" data-hj="verticalnav-programclick"><i class='fa fa-file-text-o'></i></a>
+                <div class="full_track_listing">
+                  {related_ensembles_v2:parents:ondemand_chapters_grid}
+                   <section class="tracks_row">
+                    <span class="tracks_count">{related_ensembles_v2:parents:ondemand_chapters_grid:count}.</span>
+                    <span class="tracks_name">{exp:char_limit total="50"}{related_ensembles_v2:parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+                    <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{related_ensembles_v2:parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+                    </section>
+                  {/related_ensembles_v2:parents:ondemand_chapters_grid}
+                </div>
+              </section>
+            {/if}
+          {/related_ensembles_v2:parents}
+          </section>
+        {/related_ensembles_v2}
+
+
+      {if:else}
+
+      <!-- Degree relationship.  DMA, faculty, senior recital...etc -->
+      {archive_recital_type}
+        <h3>Other {archive_recital_type:title} Recitals:</h3>
+        {archive_recital_type:parents show_expired="yes" orderby="date" sort="desc" field="archive_recital_type" limit="10"}
+          {if archive_recital_type:parents:count=='1'}
+          <section class='vertical_listing twocolumn'>
+          {/if}
+          <section class="each">
+            <a href="{site_url}/downloads/item/{archive_recital_type:parents:entry_id}" class="each_link">
+              {if archive_recital_type:parents:ondemand_image}
+                <img srcset="
+                  {exp:ce_img:pair src="{archive_recital_type:parents:ondemand_image}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                  {exp:ce_img:pair src="{archive_recital_type:parents:ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                  {exp:ce_img:pair src="{archive_recital_type:parents:ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                  {exp:ce_img:pair src="{archive_recital_type:parents:ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+                  sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+                  src="{exp:ce_img:pair src="{archive_recital_type:parents:ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="each_image" width="640" height="360"
+                />
+              {if:else}
+                {if '{archive_recital_type:parents:room:room_primary_image:server_path}' != ''}
+                  {exp:ce_img:pair src="{archive_recital_type:parents:room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"}
+                    <img src="{site_url}{made}" alt="{title}" title="Open {title}" class="each_image" width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+                {if:else}
+                  {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+                    <img src="{site_url}{made}" alt="{title}" title="Open {title}" class="each_image" width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+                {/if}
+              {/if}
+              <div class='each_meta'>
+                <strong>{exp:char_limit total='50'}{archive_recital_type:parents:title}{/exp:char_limit}</strong><br />
+                {archive_recital_type:parents:entry_date format='%Y %F %j'}
+              </div>
+            </a>
+            <a class='popup_trigger tippy' title='View Program'><i class='fa fa-file-text-o'></i></a>
+            <div class='full_track_listing'>
+              {archive_recital_type:parents:ondemand_chapters_grid}
+                <article class="tracks_row">
+                  <span class="tracks_count">{archive_recital_type:parents:ondemand_chapters_grid:count}.</span>
+                  <span class="tracks_name">{exp:char_limit total="50"}{archive_recital_type:parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+                  <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{archive_recital_type:parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+                </article>
+              {/archive_recital_type:parents:ondemand_chapters_grid}
+            </div>
+          </section>
+          {if archive_recital_type:parents:count==archive_recital_type:parents:total_results}
+            </section>
+          {/if}
+        {/archive_recital_type:parents}
+      {/archive_recital_type}      
+
+      <!-- Instrument relationship.  Flute, piano...etc -->
+      {archive_instrument}
+        <h3>Other {archive_instrument:title} Recitals:</h3>
+        {archive_instrument:parents show_expired="yes" orderby="date" sort="desc" field="archive_instrument" limit="10"}
+          {if archive_instrument:parents:count=='1'}
+          <section class='vertical_listing twocolumn'>
+          {/if}
+          <section class="each">
+            <a href="{site_url}/downloads/item/{archive_instrument:parents:entry_id}" class="each_link">
+              {if archive_instrument:parents:ondemand_image}
+                <img srcset="
+                  {exp:ce_img:pair src="{archive_instrument:parents:ondemand_image}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                  {exp:ce_img:pair src="{archive_instrument:parents:ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                  {exp:ce_img:pair src="{archive_instrument:parents:ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                  {exp:ce_img:pair src="{archive_instrument:parents:ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+                  sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+                  src="{exp:ce_img:pair src="{archive_instrument:parents:ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="each_image" loading="lazy" width="640" height="360"
+                />
+              {if:else}
+                {if '{archive_instrument:parents:room:room_primary_image:server_path}' != ''}
+                  {exp:ce_img:pair src="{archive_instrument:parents:room:room_primary_image:server_path}" width="544" height="306" crop="yes" save_type="jpg"}
+                    <img src="{site_url}{made}" alt="{title}" title="Open {title}" class="each_image" width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+                {if:else}
+                  {exp:ce_img:pair src="/images/default.png" width="544" height="306" crop="yes" save_type="jpg"}
+                    <img src="{site_url}{made}" alt="{title}" title="Open {title}" class="each_image" width="{width}" height="{height}" />
+                  {/exp:ce_img:pair}
+                {/if}
+              {/if}
+              <div class='each_meta'>
+                <strong>{exp:char_limit total='50'}{archive_instrument:parents:title}{/exp:char_limit}</strong><br />
+                {archive_instrument:parents:entry_date format='%Y %F %j'}
+              </div>
+            </a>
+            <a class='popup_trigger tippy' title='View Program' data-hj='verticalnav-programclick'><i class='fa fa-file-text-o'></i></a>
+            <div class='full_track_listing'>
+              {archive_instrument:parents:ondemand_chapters_grid}
+                <article class="tracks_row">
+                  <span class="tracks_count">{archive_instrument:parents:ondemand_chapters_grid:count}.</span>
+                  <span class="tracks_name">{exp:char_limit total="50"}{archive_instrument:parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</span>
+                  <span class="tracks_composer">{exp:char_limit total="50" exact="no"}{archive_instrument:parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</span>
+                </article>
+              {/archive_instrument:parents:ondemand_chapters_grid}
+            </div>
+          </section>
+            {if archive_instrument:parents:count==archive_instrument:parents:total_results}
+          </section>
+          {/if}
+        {/archive_instrument:parents}
+      {/archive_instrument}
+
+    {/if}
+  --}
+  
+    <article class="copyright_notice" style="margin-top:4em">
+      <h4><i class="fa fa-copyright"></i> Copyright Notice</h4>
+      <p><small>Many of the materials stored in this electronic archive are protected by copyright.   Federal copyright law prohibits the reproduction, distribution, public performance, or public display of copyrighted materials without the express written permission of the copyright owner, unless fair use or another legal exemption applies.</small></p>
+      <p><small>Materials from this site are provided to students, faculty, and staff pursuant to the fair use exemption of the Copyright Act for educational, research, scholarly and private study uses.   Other uses may require the permission of the copyright owner.   It is the responsibility of the user to determine when the permission of the copyright owner is needed and to obtain that permission.   The user may not use or disseminate material received from this electronic archive for any purpose except for those permitted by the fair use exemption or another legal exemption to the Copyright Act, unless permission from the copyright owner has been obtained.</small></p>
+      <p><small>The University tries to provide identifying information for all material stored in this electronic archive, but this is not always possible.  If you have additional information about something you see or hear that comes from this electronic archive, please let us know.  Contact the University of North Texas College of Music at 940 565 2791.</small></p>
+      <p><small>Students, faculty or staff who use university equipment or services to access, copy, display, perform or distribute copyrighted works for any purpose except as permitted under copyright law or with permission of the copyright owner may be subject to disciplinary action by the University as well as to civil and criminal penalties provided by federal law.</small></p>
+    </article>
+  
+  </section>
+
+{/exp:channel:entries}

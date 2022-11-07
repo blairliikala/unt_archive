@@ -1,0 +1,22 @@
+{exp:channel:entries
+	channel="orders" 
+	status="open|closed|Complete" 
+	disable="member_data|category_fields|pagination" 
+	dynamic="off" 
+	entry_id="{embed:item_id}"
+}
+{if no_results}{!--Does not fire if no results --}{/if}
+	{order_items}
+		{!-- Show entries that have "service" tagged in them --}
+		{if service_sorting !=""}
+			<tr>
+				<td>{exp:char_limit total="30"}{title}{/exp:char_limit}</td>
+				<td>{embed:item_date}</td>
+				<td>{recital_date}</td>
+				<td>{quantity}</td>
+				<td>{price}</td>
+				<td>{if product_late_fee =="latefee"}<span class="fa fa-check" style="color:red"> $25</span> {if:else} - {/if}</td>
+			</tr>
+		{/if}
+	{/order_items}
+{/exp:channel:entries}

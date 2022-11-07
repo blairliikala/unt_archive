@@ -1,0 +1,88 @@
+BEGIN:VCALENDAR
+PRODID:UNT Recording Services
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:/citadel.org/20180922_1/America/Chicago
+X-LIC-LOCATION:America/Chicago
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0500
+TZNAME:CDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYDAY=2SU;BYMONTH=3
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0600
+TZNAME:CST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11
+END:STANDARD
+END:VTIMEZONE
+{exp:low_search:results
+	query="{segment_3}"
+	collection="1"
+	show_future_entries="yes"
+	show_expired="yes"
+	status="Scheduled"
+	disable="pagination|categories|member_data" 
+	orderby="date"
+	sort="asc"
+	limit="50"
+}
+BEGIN:VEVENT
+SEQUENCE:1
+UID:{entry_id}
+SUMMARY:{title} {room}{room:room_abbreviation}{/room}
+DTSTART;TZID=UTC:<?php print( gmdate('Ymd\THis', strtotime('-5 minutes', strtotime( '{entry_date timezone="UTC" format='{DATE_ISO8601}'}' ))) ) ?>Z
+DTEND;TZID=UTC:{expiration_date timezone="UTC" format="%Y%m%dT%H%i%s"}Z
+DTSTAMP;TZID=UTC:{if edit_date}{edit_date timezone="UTC" format="%Y%m%dT%H%i%s"}{if:else}20190701T110000{/if}Z
+END:VEVENT
+{ical_space}{/exp:low_search:results}
+END:VCALENDAR
+
+{!--
+SEQUENCE:{if archive_ical_increment}{archive_ical_increment}{if:else}1{/if}
+search:live_stream="yes"
+https://calendar.google.com/calendar/ical/puhgmce5r1tcb6893srq7tuc0o%40group.calendar.google.com/public/basic.ics
+--}
+
+
+
+
+
+
+
+{!--
+	DTSTART;TZID=UTC:{entry_date timezone="UTC" format="%Y%m%dT%H%i%s"}Z
+
+BEGIN:VCALENDAR
+PRODID:UNT Recording Services
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Upcoming Concerts
+X-WR-TIMEZONE:UTC
+{exp:low_search:results
+	query="{segment_3}"
+	collection="1"
+	show_future_entries="yes"
+	show_expired="yes"
+	status="Scheduled"
+	disable="pagination|categories|member_data" 
+	orderby="date"
+	sort="asc"
+	limit="50"
+}
+BEGIN:VEVENT
+UID:{entry_id}
+SEQUENCE:{if archive_ical_increment}{archive_ical_increment}{if:else}1{/if}
+SUMMARY:{title} {room}{room:room_abbreviation}{/room}
+DTSTART:<?php print( date('Ymd\THis', strtotime('-5 minutes', strtotime( '{entry_date timezone="UTC" format='{DATE_ISO8601}'}Z' )))) ?>
+{ical_space}
+DTEND:{expiration_date timezone="U" format="%Y%m%dT%H%i%s"}Z
+DTSTAMP:{if edit_date}{edit_date timezone="UTC" format="%Y%m%dT%H%i%s"}{if:else}20190701T110000{/if}Z
+END:VEVENT
+{ical_space}{/exp:low_search:results}
+END:VCALENDAR
+--}

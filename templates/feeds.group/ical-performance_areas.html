@@ -1,0 +1,68 @@
+{!-- Shows iCal formatted events for upcoming live streams.  Events are removed afterwards.
+	For use, /feeds//ical-livestream/anything.ics
+--}BEGIN:VCALENDAR
+METHOD:PUBLISH
+VERSION:2.0
+X-WR-CALNAME:UNT - {exp:channel:entries channel="performance_categories" disable="member_data|pagination|categories|custom_fields|relationships" cache="yes" refresh="500" limit="1" status="open|livestream" orderby="date"}{title}{/exp:channel:entries}
+X-WR-CALDESC:UNT College of Music Performance Areas
+X-APPLE-CALENDAR-COLOR:#2952A3
+X-WR-TIMEZONE:America/Chicago
+CALSCALE:GREGORIAN
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0600
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+DTSTART:20070311T020000
+TZNAME:CDT
+TZOFFSETTO:-0500
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0500
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+DTSTART:20071104T020000
+TZNAME:CST
+TZOFFSETTO:-0600
+END:STANDARD
+END:VTIMEZONE
+{exp:channel:entries channel="performance_categories" disable="member_data|pagination|categories" cache="yes" refresh="500"}
+{parents}
+{parents:parents show_expired="yes" show_future_entries="yes" status="open|waitingforreview|pendingaudio|pendingvideo|livestream" orderby="date"}
+BEGIN:VEVENT
+TRANSP:OPAQUE
+DTEND;TZID=America/Chicago:{parents:parents:expiration_date format="%Y%m%dT%H%i%s"}
+UID:{parents:parents:entry_id}
+LOCATION:Music Building\, 415 Ave C\, Denton, TX 76201\, USA
+URL;VALUE=URI:{site_url}/{if parents:parents:status=="LiveStream" OR OR parents:parents:live_stream=="yes"}live{if:else}downloads/item{/if}/{parents:parents:entry_id}
+DESCRIPTION:{if parents:parents:archive_concert_notes}{exp:ce_str:ing remove_html}{exp:ce_str:ing trim}{parents:parents:archive_concert_notes}{/exp:ce_str:ing}{/exp:ce_str:ing}\n{/if}{parents:parents:ondemand_chapters_grid backspace="2"}{exp:ce_str:ing remove_html}{parents:parents:ondemand_chapters_grid:name_of_piece}{/exp:ce_str:ing} {exp:ce_str:ing remove_html}by {parents:parents:ondemand_chapters_grid:name_of_composer}{/exp:ce_str:ing}\n{/parents:parents:ondemand_chapters_grid}
+SEQUENCE:{if parents:parents:archive_ical_increment}{parents:parents:archive_ical_increment}{if:else}1{/if}
+SUMMARY:{parents:parents:title}
+{parents:parents:concert_program}ATTACH;FILENAME={parents:parents:concert_program:filename}.{parents:parents:concert_program:extension};FMTTYPE=text/pdf;MANAGED-ID=100000{parents:parents:concert_program:source_id}
+ 65539ff;SIZE={parents:parents:concert_program:size unformatted="yes"};VALUE=URI:{site_url}{parents:parents:concert_program:url}{/parents:parents:concert_program}
+DTSTART;TZID=America/Chicago:{parents:parents:entry_date format="%Y%m%dT%H%i%s"}
+{if parents:parents:status=="livestream" OR parents:parents:live_stream=="yes"}
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:parents:entry_id}{parents:parents:entry_id}
+UID:{parents:parents:entry_id}{parents:parents:entry_id}
+TRIGGER;VALUE=DATE-TIME:{parents:parents:entry_date format="%Y%m%dT%H%i%s"}Z
+ACTION:NONE
+END:VALARM
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:parents:entry_id}{parents:parents:entry_id}
+UID:{parents:parents:entry_id}{parents:parents:entry_id}
+TRIGGER:-PT1M
+ATTACH;VALUE=URI:Basso
+ACTION:AUDIO
+END:VALARM
+{/if}
+END:VEVENT
+{parents:parents:ical_space}{/parents:parents}{/parents}{/exp:channel:entries}
+END:VCALENDAR
+
+{!--
+
+X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=2100 N Interstate 35 E\\
+ nDenton TX 76205;X-APPLE-RADIUS=99;X-TITLE=2100 N Interstate 35 E:geo:33
+ .208022,-97.159236
+
+ --}

@@ -1,0 +1,428 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    entry_id="{if segment_4 ==""}{segment_3}{/if}{if segment_4 !=""}{segment_4}{/if}"
+    status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio"
+    disable="pagination|categories|member_data"
+    show_future="no"
+    limit="1"
+    cache="yes"
+    refresh="9000"
+}
+
+{!--     search:global_streaming="yes"
+--}
+{if no_results}
+<body><p>Not available or no entries found.</p></body>
+{/if}
+
+<html>
+<head>
+	<title>{entry_date format="%M %j, %Y"} {title}</title>
+	<meta name="description" content="On Demand Video Content" />
+	<meta name="copyright" content="{current_time format='%Y'} University of North Texas College of Music" /> 
+	<meta name="viewport" content="width=device-width, user-scalable=yes, maximum-scale=1.0" >
+	<link rel="shortcut icon" href="/favicon.ico">
+  <base href="{site_url}">
+  <link rel="canonical" href="{site_url}/{segment_1}{if segment_2!=''}/{segment_2}{/if}{if segment_3!=''}/{segment_3}{/if}" />  
+
+	<!-- Stylesheets-->
+	<link rel="stylesheet" href="{stylesheet=site/css_site}" rel="preload" />
+	<link rel="stylesheet" href="{stylesheet=media/styles}" />
+
+</head>
+
+</head>
+
+<body>
+
+<!--<div id="message_board"><p>Streaming is currently down.</p></div>-->
+
+{if logged_in_member_group =='12'}
+  <h2>Restricted.</h2>
+  <p>Unfortunately your access level does not allow you to view entries.</p>
+{if:else}
+
+{if status != "open"}
+    <div id="message_board"><p>This entry is not live yet.</p></div>
+{/if}
+
+<div id="percentage_complete" style="position: absolute;color:white;z-index:99;font-size:2em;padding:.8em 1em;"></div>
+
+
+<div class="theoplayer-container video-js theoplayer-skin vjs-16-9"></div>
+
+<!--
+<div class="videoWrapper_outside">
+<div id="player_container" class="player_container videoWrapper_inside">
+</div>
+</div>
+-->
+
+<section id="meta">
+
+  <header>
+	  <h4>{entry_date format="%M %j, %Y"} {title}</h4>
+
+    <div class="header_menu">
+      {if logged_in_member_id == 1}
+      <a href="/comstreaming/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/{entry_date format='%Y-%m-%d-'}{entry_id}-1.mp4" download="{entry_date format="%M %j, %Y"} {title}">Download[adminonly]</a>
+      {/if}      
+      <button id="pipButton" class="header_button tippy" hidden title="Picture-in-Picture">PiP</button>
+      <a href="{entry_id_path=downloads/item}" class="backtoentry" title="Return to this Entry">Back to Entry</a>
+    </div>
+  </header>
+
+  <!--{!-- Check if there are actually chapters --} -->
+  {ondemand_chapters_grid limit="1"}
+    {if ondemand_chapters_grid:chapter_location_human}
+      <div id="chapterlist"></div>
+    {if:else}
+      <p style="color:#616161">No track markers set for this concert.</p>
+    {/if}
+  {/ondemand_chapters_grid}
+
+  <p class="legal_notice">Subject to the requirements set forth in Section 108(f)(1) of the Copyright Act, making a copy or the subsequent distribution of material accessed through this electronic reserve is strictly prohibited.</p>
+
+
+</section><!-- meta -->
+
+{embed=a/js}
+
+ <!-- Chromecast SDK -->
+<script type="text/javascript" src="//www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+
+<!-- THEOplayer library and css -->
+<script type="text/javascript" src="https://cdn.myth.theoplayer.com/38e4443f-204c-4e8e-a0f6-f217e7245699/THEOplayer.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.myth.theoplayer.com/38e4443f-204c-4e8e-a0f6-f217e7245699/ui.css" />
+
+
+  <style>
+    .bmpui-ui-watermark {display:none;}
+
+    .videoWrapper_outside {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+    }
+    .videoWrapper_inside {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+
+
+/* Customization css style */
+.theo-primary-color,
+.vjs-selected {
+    color: #0dba1e !important;
+}
+
+.theo-primary-background {
+    color: #000000 !important;
+    background-color: #008710 !important;
+}    
+
+  </style>
+
+
+
+<script>
+
+
+//*********************************** Global
+const vDebug = false;
+const archive_playtime_duration = {if archive_playtime_duration}{archive_playtime_duration}{if:else}0{/if} // EE generated.
+
+const meta = {
+  "year"      : "{entry_date format='%Y'}",
+  "month"     : "{entry_date format='%m'}",
+  "entry_id"  : "{entry_id}",
+  "status"    : "{status}",
+  "ondemand"  : {if global_streaming}true{if:else}false{/if},
+}
+//**/
+
+/** Jump to a specific time when the page loads. **/
+const urlParams = new URLSearchParams(window.location.search);
+const requestedTimeJump = urlParams.get('t') * 1;
+
+const wowza_base = 'https://54edc27ad2b3c.streamlock.net:443/vod/website/';
+
+var playback_list_count = 0;
+const playback_list = [
+  wowza_base + meta.year + '/' + meta.month + '/' + meta.entry_id + '/smil:'+ meta.entry_id + '.smil/playlist.m3u8', // Newer, sorted by year/month.
+  wowza_base + meta.entry_id + '/smil:'+meta.entry_id+'.smil/playlist.m3u8', // Primary, flat entry id folders
+  wowza_base + meta.entry_id + "/smil:{entry_date format='%Y-%m-%d'}.smil/playlist.m3u8", // Much older, before SMIL used entry_id.
+  "{video_download_link limit='1'}{url}{/video_download_link}" // mp4 on RS site.
+]
+const playback_list_length = playback_list.length;
+
+
+if(vDebug){console.log('Debug Enabled.');}
+
+
+
+/************************ Tracking Event ******************/
+function logEvent(eventType, eventObj) {
+
+  FS.event(eventType);
+  ga('send', {
+    hitType: 'event',
+    eventCategory: 'VOD',
+    eventAction: eventType,
+    eventLabel: {entry_id}
+  });
+
+}
+//* End */
+
+
+//*********************************** Helper functions /***********************************/
+
+
+
+//***************** Chapter List JSON ***************/
+const chaptermarkers = {
+  "items" : [
+    {ondemand_chapters_grid backspace="1"}
+    {
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "marker"        : "{exp:timetoseconds:convert time='{ondemand_chapters_grid:chapter_location_human}'}",
+      "markerhuman"   : "{ondemand_chapters_grid:chapter_location_human}",
+      "rowid"         : "{ondemand_chapters_grid:field_row_count}",
+      "prefixedrowid" : "row-{ondemand_chapters_grid:field_row_count}"
+    },{/ondemand_chapters_grid}
+  ]
+}
+//* color formatting break. *//
+
+//*****************  Show Chapter Marker List ***************/
+function displayChapterMarks() {
+
+  if (chaptermarkers.items.length > 0) {
+
+    // Create the chapter list HTML markup and assign it to a var.
+    var chapterlist="<section class='programlist clickable'>";
+
+    for (var i=0; i<chaptermarkers.items.length; i++) {
+      chapterlist+="<article data-playercontrol='"+chaptermarkers.items[i].marker+"' data-track='"+i+"' class='program_row "+chaptermarkers.items[i].prefixedrowid+"'><div class='row'>"+chaptermarkers.items[i].rowid+".</div><div class='time'>"+chaptermarkers.items[i].markerhuman+"</div><div class='piece'>"+chaptermarkers.items[i].piece+"</div><div class='composer'>"+chaptermarkers.items[i].composer+"</div><div class='arranger'>"+chaptermarkers.items[i].arranger+"</div></article>";
+    }
+    chapterlist+="</section>";
+
+    // Put the chapter list in the DOM.
+    try {
+      document.querySelector('#chapterlist').innerHTML = chapterlist;
+    } catch {
+      console.log('No Chapters.');
+    }
+    
+  }
+}
+
+
+
+/************** Restart where last left off based on local storage ***************/
+function updateSavedPosition(player) {
+  window.setInterval(updatePosition, 6000);
+
+  function updatePosition() {
+    localStorage.setItem('{entry_id}-position', player.getPosition() );
+  }
+}
+
+
+//******************************  JW Player internal streaming ********************************
+
+function bootPlayer() {
+
+  iniPlayer();
+
+}
+
+
+async function iniPlayer() {
+  if(vDebug){console.log('Starting Player...');}
+  var currentChapter = 0;
+
+  console.log(playback_list[0]);
+  
+  // Start O Player
+  var element = document.querySelector(".theoplayer-container");
+  var player = new THEOplayer.Player(element, {
+    libraryLocation: "https://cdn.myth.theoplayer.com/38e4443f-204c-4e8e-a0f6-f217e7245699"
+  });
+
+  // OPTIONAL CONFIGURATION
+  // Customized video player parameters
+  player.source = {
+      sources: [{
+          "src": playback_list[0]
+      }],
+      textTracks : [{
+              label : 'Chapters',
+              kind : 'chapters',
+              src : '/media/webvtt/{entry_id}/chapters.vtt',
+              srclang : 'en',
+              default : true
+      }]
+  };
+  player.poster   = '{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{/if}';
+  player.preload  = 'auto';
+
+
+
+
+  // Update Current Track Visually.
+  let div_row = document.querySelectorAll('.program_row');
+
+  player.addEventListener('timeupdate', function(event) {
+
+    // Find the chapter in the JSON list, and pull the time.
+    var results = chaptermarkers.items.filter(function (el) {
+      return el.marker < event.currentTime + 1; // +1 for better highlighting.
+    });
+    // Make sure the search finds something otherwise Console lights up with undefined var errors.
+    if(results.length != 0) {
+      var activeRow = results[results.length - 1].prefixedrowid;
+      // returns chapter number.
+      currentChapter = results.length - 1;
+      
+      //$('.programlist').find('.program_row').removeClass('active');
+      div_row.forEach( item => {
+        item.classList.remove('active');
+      });
+
+      //$('.programlist').find('.'+activeRow).addClass('active');
+      try {
+        document.querySelector('.programlist .'+activeRow).classList.add('active');
+      } catch(error) {}
+    }
+
+  });
+
+  enableChapterSeeking();
+
+  // Seek to chapter when clicked.
+  // This should be fired after the player is ready to accept a seek.
+  function enableChapterSeeking() {
+    document.querySelectorAll('[data-playercontrol]').forEach( item => { 
+      item.addEventListener('click', function(event) {
+
+        // Get current track from HTML dataset.  Zero-index, so add one.
+        currentChapter = this.dataset.track;
+
+        //currentChapter = $('#chapterlist').find('.program_row').index(this);
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+
+        // change var to a number type.
+        seekTime = seekTime * 1;
+
+        // Seek player to time.
+        player.currentTime = seekTime;
+        player.play();
+      });
+    });
+  }
+
+  // Error Handling??
+
+
+
+
+} // function.
+
+
+
+if (meta.status == "PendingVideo") {
+  encodingStatus();
+} else {
+  displayChapterMarks();
+  bootPlayer();
+}
+
+
+
+
+//******************************************************************************
+
+</script>
+{/if}{!-- member group is 12 --}
+{/exp:channel:entries}
+
+</body>
+
+
+<!--//////////////////// GA ////////////////////-->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-442990-23', 'auto', {
+    {if logged_in} userId: {logged_in_member_id} {/if}
+  });
+  ga('send', 'pageview');
+  // {if logged_in}
+  ga('set', 'userId', '{logged_in_member_id}'); // Set the user ID using signed-in user_id.
+  // {/if}
+</script>
+
+<!--//////////////////// FS ////////////////////-->
+<script>
+window['_fs_debug'] = false;
+window['_fs_host'] = 'fullstory.com';
+window['_fs_script'] = 'edge.fullstory.com/s/fs.js';
+window['_fs_org'] = 'E0RT2';
+window['_fs_namespace'] = 'FS';
+(function(m,n,e,t,l,o,g,y){
+    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+    g=m[e]=function(a,b,s){g.q?g.q.push([a,b,s]):g._api(a,b,s);};g.q=[];
+    o=n.createElement(t);o.async=1;o.crossOrigin='anonymous';o.src='https://'+_fs_script;
+    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+    g.identify=function(i,v,s){g(l,{uid:i},s);if(v)g(l,v,s)};g.setUserVars=function(v,s){g(l,v,s)};g.event=function(i,v,s){g('event',{n:i,p:v},s)};
+    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+    g.log = function(a,b){g("log",[a,b])};
+    g.consent=function(a){g("consent",!arguments.length||a)};
+    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+    g.clearUserCookie=function(){};
+    g._w={};y='XMLHttpRequest';g._w[y]=m[y];y='fetch';g._w[y]=m[y];
+    if(m[y])m[y]=function(){return g._w[y].apply(this,arguments)};
+})(window,document,window['_fs_namespace'],'script','user');
+
+{if logged_in}
+  {if
+    logged_in_member_group=='1' OR
+    logged_in_member_group=='9' OR 
+    logged_in_member_group=='11'
+  }
+  // For faculty/staff, and educators
+    FS.identify('{if logged_in_member_id == 1}99999{if:else}{logged_in_member_id}{/if}', {
+      displayName: '{logged_in_screen_name}',
+      email: '{logged_in_email}',
+      memberGroup_str: "{logged_in_group_title}",
+      memberGroupID_int: {logged_in_group_id}
+    });
+  {if:else}
+    {exp:member:custom_profile_data member_id="{logged_in_member_id}"}
+      {if ldap_directory_withdraw ==""}
+        FS.identify('{logged_in_member_id}', {
+          displayName: '{logged_in_group_title}-{logged_in_member_id}',
+          memberGroup_str: "{logged_in_group_title}",
+          memberGroupID_int: {logged_in_group_id}
+        });
+      {/if}
+    {/exp:member:custom_profile_data}
+ {/if}
+{/if}
+</script>
+
+{/if}
+</body>
+</html>

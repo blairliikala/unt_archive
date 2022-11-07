@@ -1,0 +1,130 @@
+{preload_replace:ct_checkout_root="ctcheckout"}
+
+{embed=a/h title="Me - Order History" meta="Video downloads, invoices, and service payments."}
+<h1 style="margin:1em">Account</h1>
+<div class="thirds_container">
+{embed=me/_nav}
+
+<div class="thirds_content">
+
+<article id="purchased">
+	<h2>Services</h2>
+  <p>If you paid for a recital or session recording, those will show here.</p>
+	<table>
+		<thead>
+			<td>Type</td>
+			<td>Purchase Date</td>
+			<td>Est Recital Date</td>
+			<td>Quantity/Hours</td>
+			<td>Price/hr</td>
+			<td>Late Fee</td>
+			<!--<td>Service Option</td>  See notes in embedded template. -->
+		</thead>
+		<tbody>
+		{exp:channel:entries 
+			channel="purchased_items" 
+			search:service_sorting="service" 
+			status="Complete" 
+			disable="member_data|category_fields|pagination" 
+			dynamic="off" 
+			author_id="CURRENT_USER" 
+			cache="yes" refresh="500"
+		}
+
+			{embed=me/_orders_loop item_id="{purchased_order_id}" item_date="{entry_date format="%n/%d/%Y"}"}
+
+			{if no_results}<td>No Services Ordered</td><td></td><td></td><td></td><td></td><td></td>{/if}
+
+		{/exp:channel:entries}
+		</tbody>
+	</table>
+</article>
+
+
+<article id="orders">
+	<h2>Orders</h2>
+  <p>Credit card transactions of services (recitals/sessions) and downloads will display here.</p>
+	<table>
+		<thead>
+			<tr>
+				<td>ID</td>
+				<td>Purchased Date</td>
+				<td>Total</td>
+				<td>Coupons</td>
+			</tr>
+		</thead>
+		<tbody>
+		{exp:channel:entries 
+      channel="orders" 
+      status="open|Complete|closed" 
+      author_id="CURRENT_USER" 
+      disable="member_data|categories|category_fields|pagination"
+    }
+		<tr>
+			{if no_results}<td>No Orders to Display<td><td></td><td></td><td></td><td></td>{/if}
+			<td><a href="{entry_id_path='{ct_checkout_root}/receipt'}">#{entry_id}</a></td>
+			<td>{entry_date format="%n/%d/%Y"}</td>
+			<td>{order_total}</td>
+			<td>{if order_coupons}{order_coupons} {order_discount}{if:else}- - -{/if}</td>
+		</tr>
+		{/exp:channel:entries}
+		</tbody>
+	</table>
+</article>
+
+{!---------- Charge module ------------}
+
+{exp:charge:customer member_id="{logged_in_member_id}"}
+{if count=="1"}
+	<table>
+		<thead>
+			<tr>
+				<td>ID</td>
+				<td>Paid</td>
+				<td>Amount</td>
+				<td>Item</td>
+				<td>Status</td>
+			</tr>
+		</thead>
+		<tbody>
+{/if}			
+			{charges}
+			<tr>
+				<td><a href="/chargecheckout/receipt/{hash}">Receipt</a></td>
+				<td>{stripe_created format="%n/%d/%Y %g:%i%a"}</td>
+				<td>{amount_currency_formatted}</td>
+				{exp:channel:entries
+					channel="live"
+					show_future_entries="yes"
+					show_expried="yes"
+					status="open|closed|scheduled"
+					disable="categories|pagination|member_data"
+					search:archive_charge_hash_receipt="={hash}"
+					dynamic="off"
+					cache="yes"
+					refresh="60000"
+					limit="1"
+				}
+					<td>{title}</td>
+					<td>
+						{if status=="open"}
+							<a href="/downloads/item/{entry_id}" class="tippy" title="Go to recording.">{status}</a>
+						{if:else}
+							{status}
+						{/if}
+					</td>
+				{/exp:channel:entries}
+			</tr>
+			{/charges}
+{if count==total_results}			
+		</tbody>
+	</table>
+{/if}	
+{/exp:charge:customer}	
+
+</div><!--content-->
+
+</div>
+{embed=a/js}
+
+{embed=a/f}

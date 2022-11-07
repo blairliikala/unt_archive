@@ -1,0 +1,254 @@
+ {!-- Engineering Homepage--}
+{embed=a/h title="Engineers" meta="Internal Training Guide"}
+
+<div id="content">
+
+<nav class="engineer_content_nav">
+
+<p><a href="/sys/" class="basic_button" target="_blank" rel="noopener noreferrer" style="color:var(--text); margin-top:3em">Admin Login</a></p>
+
+<h3>Guides:</h3>
+  {exp:channel:category_archive channel="engineers" style="nested"}
+    {categories}{category_name}{/categories}
+    {entry_titles}
+	    <a href="{site_url}/engineers/pages/{entry_id}" {if '{segment_3}'=='{entry_id}'}class="active"{/if}>{title}</a>
+    {/entry_titles}
+  {/exp:channel:category_archive}
+
+	<h3>Calendar</h3>
+	<ul>
+		<li><a href="https://www.google.com/calendar/embed?src=19sckb9510vpifrnrldb87jfvs%40group.calendar.google.com&ctz=America/Chicago" class="tippy" title="HTML Web view.">Google Calendar Web</a></li>
+		<li><a href="https://www.google.com/calendar/ical/19sckb9510vpifrnrldb87jfvs%40group.calendar.google.com/public/basic.ics" class="tippy" title="iCal/Outlook feed.">Google Calendar Feed</a></li>
+		<li><a href="http://calendar.music.unt.edu" class="tippy" title="Concert Hall books by hour.">Roomview</a></li>
+	</ul>
+</ul>
+
+</nav>
+
+<section class="engineer_content">
+	
+	<h1>Recording & Streaming Checklist</h1>
+
+  <h3>Pre-Show</h3>
+	<ol>
+    <li>Clock In.</li>
+    <li>Enter Program into ExpressionEngine.</li>
+    <li>Open Logic, create folders on desktop and recall preset. <a href="{site_url}/engineers/pages/17">How?</a></li>
+    <li>Adjust mic preamp gain levels.  Preamps are bookedmarked in Chrome, Grace m108.<br />
+      Most gain amount is between 30-40.  Percussin should be 25, classical guitar 40.</li>
+    <li>Open live streaming page and Helo to verify stream starts correctly.</li>
+    <!--<li>Erase/format Ki Pro drives.</li>-->
+  </ol>
+
+
+  <h3>Start of Concert</h3>
+  <ol>
+    <li>Frame-up video camera shot.</li>
+    <li>Start recording in <strong>Logic</strong>.</li>
+    <!--<li>Start recording <strong>Ki Pro</strong>.</li>-->
+  </ol>
+  <p>Note Denon's will automatically start. This is the backup recorder. </p>
+
+
+
+  <h3>End of Concert</h3>
+  <ol>
+    <li>Change ExpressionEngine entry from <strong>Scheduled</strong> to <strong>Pending</strong>.<br />
+    This should shut down the livestream, and stop the video encoders within 1min or less.</li>
+    <li>Stop recording in Logic.</li>
+  </ol>
+  <p>Note the Denon's will continue recording till the end of the recital timeslot.</p>
+
+
+
+  <h2>Post Production</h2>
+
+  <!--
+  <h3>Video</h3>
+  <ol>
+    <li>Ki Pro: <strong>Unmount drive</strong>, and put into dock.</li>
+    <li>Cut and Paste to the Concerts drive.  <kbd>command &#8984</kbd>+<kbd>drag</kbd></li>
+    <li>Edit video in Final Cut: 
+        <li>Create new Event. Name it the same as the file.</li>
+        <li>The Project (timeline) will be named Untitled Project. Change it to the filename.</li>
+        <li>Drag and drop raw video file into Bin.</li>
+        <li><strong style="color:hotpink">MAKE STEREO</strong>.</li>
+        <li>Drag file into the timeline and begin editing.</li>
+        <li>Comman + T for fades.</li>
+    </li>
+    <li>Add chapter markers (each piece) to the EE entry.</li>      
+    <li>Export ("share master file in Final Cut") to /Concerts/Processing/streaming/Center Cameras <i>or multicamera</i><br />
+    Remember filename includes ExpressionEngine ID (YYYY-MM-DD-EE ID-Title.mov)</li>
+    <li><strong>Put drive back into Ki Pro.</strong></li>
+  </ol>
+  <p>*Note, let Final Cut complete the export before playing back other files.</p>
+	-->
+
+  <h3>Audio (Edit in Logic as normal)</h3>
+  <ol>
+    <li><a href="/engineers#files">Organize</a> your project folder. <a href="/engineers#abbreviations">Abbreviations</a></li>    
+    <li>No Special Characters in filenames.wav, like accent marks or double spaces.</li>
+  </ol>
+
+
+  <h3>After content is uploaded:</h3>
+  <ol>
+    <li>When finished, Change from Pending to <strong style="color:red">Waiting for Review</strong>.</li>    
+    <li>Cut and paste <kbd>command &#8984</kbd>+<kbd>drag</kbd> project to "Filestore" <br />
+    /music.nas.unt.edu/comstreaming/Audio Archive Raw/[current semester]/</li>
+    <li>Quit all open applications <kbd>cmd</kbd>+<kbd>Q</kbd></li>
+  </ol>
+
+
+
+  <h3>When Leaving</h3>
+  <ol>
+    <li>Turn speakers down to zero.</li>
+    <li>COVID: try to wipe down the keyboard and area.</li>
+    <li>Turn Off: Any Hall TV monitors</li>
+    <li>Turn Off: Soundcraft console</li>
+    <li>Turn Off: Lights</li>
+    <li>Computers stay powered on</li>
+    <li><strong>CLOCK OUT</strong></li>
+  </ol>
+
+
+<h2>General Policies</h2>
+<p>This department <span style="color:green">is</span> a Professional Service, <span style="color:red">not</span> a classroom.</p>
+	<ul>	
+		<li><b>Missing a concert is an immediate termination unless an understandable excuse exists that I can tell the administration.</b></li>
+		<li>If you wish to make alt. mixes with automation...etc... we can <b>not</b> pay you beyond what is asked for archiving, but you are allowed to create them off the clock during off-peak hours.</li>
+		<li>CoM Project files can not leave University hard drives.  You can make a copy of the final mix-down, but not track-breakouts.</li>
+		<li>No student/personal projects on University drives.  Bring your own, off-peak time only.</li>		
+		<li><b>Gear</b>: I need to approve anything not RS-related.  Borrowing without approval is <b style="color:red">stealing</b>.</li>
+	</ul>
+
+	<ul>
+		<li>Do not install programs, software, or <b>software update</b>.</li>
+		<li>Do not re-wire anything.</li>
+		<li>Computer drives are not a safe location for any data long-term.</li>
+		<li>Set Correct Expectations:<br />
+			- Don't promise anything to faculty or students. Say "Let me check" or "I will have to talk with Blair."  "probably, maybe, and usually" are close enough to YES and are not acceptible.</li>
+		<li>Food and Drinks stay away from equipment.</li>
+		<li>Recordings should be completed the night of, or next morning, and posted online within 48 hours.  We tell performers and the public "within the week."</li>
+	</ul>
+
+	
+  <h2>Recording Locations</h2>
+  <p>Be familiar with our recording locations:</p>
+  <ul>
+  	<li><a href="https://music.unt.edu/about/facilities">Main Music</a> <a href="http://music.unt.edu/pdf/UNT%20Music%20Building%20Map.pdf">Map</a></li>
+  		<ul>
+    		<li>MU 149, MU 147 Control Rooms</li>
+    		<li>Recital Hall: RH</li>
+    		<li>Paul Voertman Hall: VH</li>
+    		<li>Lab West [Kenton] Hall: West [KH]</li>
+    		<li>Organ Recital Hall: ORH</li>
+    		<li>Main Music Office's display case for program info</li>
+  		</ul>
+      <li>Murchison Performing Arts Center <a href="https://music.unt.edu/mpac">(MPAC)</a></li>
+  		<ul>
+    		<li>Murchison Annex (audio and video for Winspear)</li>
+    		<li>Winspear Hall: WPH</li>
+    		<li>Lyric Theater</li>
+  		</ul>
+  </ul>
+  <p>Campus map:<a href="http://www.unt.edu/pais/map/campusmap.htm">http://www.unt.edu/pais/map/campusmap.htm</a><br />
+  	<strong style="color:orange">There is a map by the elevator.</strong></p>
+
+
+	<h3>Phone Numbers</h3>
+	<table width="100%">
+		<tbody>
+  		<tr>
+  			<td>149 Studio</td>
+  			<td><a href="tel:9405653780">940-565-3780</a></td>
+  		</tr>
+  		<tr>
+  			<td>Blair</td>
+  			<td><a href="tel:9408916710">940-891-6710</a> Office, redirects to Cell<br />
+  				<a href="tel:5178626778">517-862-6778</a> actual cell for txt.
+  			</td>
+  		</tr>
+        <tr>
+  			<td>Austin</td>
+  			<td><a href="tel:3256693797">325-669-3797</a> actual cell for txt.</td>
+  		</tr>
+  		<tr>
+  			<td>Copy Room</td>
+  			<td><a href="tel:9405653770">940-565-3770</a></td>
+  		</tr>
+  		<tr>
+  			<td>Main Office</td>
+  			<td><a href="tel:9405652791">940-565-2791</a></td>
+  		</tr>
+		</tbody>
+	</table>
+	
+	<h2 name="files">File Structure</h2>
+	<p>The final audio folder should have these assets in them:</p>
+	<ul>
+		<li>"yyyy-mm-dd name of concert and Type"</li>
+			<ul>
+			<li>"Labels"</li>
+				<ul>
+					<li>mmddyyNameOfEnsemble.pdf</li>
+				</ul>
+				<li>"Raw"</li>
+				<ul>
+					<li>Anything relating to creating the audio, including mixdowns and alt takes. Raw file must be labeled well.</li>
+					<li>Alternate mixes must be clearly labeled if located in the project folder.</li>
+				</ul>
+				<li>"Tracks"</li>
+				<ul>
+					<li>01 Name</li>
+					<li>02 Name pt1</li>
+					<li>03 Name pt2</li>
+					<li>04 Name pt1</li>
+					<li>05 Name</li>
+				</ul>
+			</ul>
+	</ul>
+
+
+	<h2 nane="abbreviations">Abbreviations</h2>
+	<table style="width:60%">
+		<tr>
+			<td>Ensembles</td>
+			<td>~no abbreviation~</td>
+		<tr>
+			<td>Doctoral</td>
+			<td>DMA</td>
+		</tr>
+		<tr>
+			<td>Masters</td>
+			<td>MM</td>
+		</tr>
+		<tr>
+			<td>Senior</td>
+			<td>SR</td>
+		</tr>
+		<tr>
+			<td>Artist Certificate</td>
+			<td>GAC</td>
+		</tr>
+		<tr>
+			<td>Faculty</td>
+			<td>Faculty</td>
+		</tr>
+		<tr>
+			<td>Guest Artist</td>
+			<td>Guest</td>
+		</tr>
+	</table>
+
+	</table>
+</section>
+
+<!-- Clear's the menu float...still --->
+<div class="clear"></div>
+
+</div><!--content-->
+{embed=a/js}
+	
+{embed=a/f}

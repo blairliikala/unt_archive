@@ -1,0 +1,393 @@
+<div class="clear"></div>
+<div class="interactionObserver">
+<div class="toes_hidden hidden">
+<article class="toes" aria-label="Standard Footer" >
+  <section aria-label="Contact and Mailing">
+    <address>
+    <p>Main Music Building Room 149, 147 <a class="no_underline" href="https://www.google.com/maps/preview#!q=Main+Music+Building+Room+149&data=!1m4!1m3!1d5746!2d-97.1504148!3d33.215708!4m22!1m9!4m8!1m3!1d367638!2d-97.1451514!3d33.2375905!3m2!1i1219!2i1322!4f13.1!5m11!1m10!1sMain+Music+Building+Room+149!4m8!1m3!1d367638!2d-97.1451514!3d33.2375905!3m2!1i1219!2i1322!4f13.1" title="Google Maps link to our studios"><span class="icon-map-marker"></span></a><br />
+      Murchison Performing Arts Center Annex</p>
+    <p><a href="mailto:recordingservices@unt.edu">recordingservices@unt.edu</a><br /><i class="fa fa-phone"> </i> <a href="tel:1-940-565-3780">(940) 565 3780</a><br />415 Avenue C<br />Denton, TX 76201</p>
+    </address>
+  </section>
+  
+  <section class="bottom_col" aria-label="Services Links">
+    <h4>Services</h4>
+    <ul>
+      <li><a href="{site_url}/services">Services</a></li>
+      <li><a href="{site_url}/services#tab-1">Classical Recording</a></li>
+      <li><a href="{site_url}/services#tab-2">Jazz Recording</a></li>
+      <!--<li><a href="{site_url}/services#tab-3">Video</a></li>-->
+      <li><a href="{site_url}/services#tab-4">Sessions</a></li>
+      <li><a href="{site_url}/services#tab-5">Archive Policies</a></li>
+      <li><a href="{site_url}/services#tab-6">Copyrights</a></li>
+      <li><a href="{site_url}/me/register">Educator Access</a></li>
+    </ul>
+  </section>
+
+  <section aria-label="Media Archive Links">
+    <h4>Archive</h4>
+    <ul>
+      <li><a href="{site_url}/downloads/byensemble">Ensembles</a></li>
+      <li><a href="{site_url}/downloads/byinstrument">Instruments</a></li>
+      <li><a href="{site_url}/downloads/filter">Search</a></li>
+      <li><a href="{site_url}/downloads/calendar">Calendar</a></li>
+      <li><a href="{site_url}/me">Account</a></li>
+    </ul>
+  </section>
+
+  <section aria-label="About Us and Misc links,">
+    <ul>
+      <li><a href="{site_url}/pages/about_us">About Us</a></li>
+      <!--<li><a href="{site_url}/stats">Archive Stats</a></li>-->
+    </ul>
+
+    {if logged_out}
+      <ul>
+        <li><a href="{path=a/login}">Login</a></li>
+      </ul>
+    {/if}
+    {if logged_in}
+      <ul>
+        <li><a href="{path="logout"}">Logout</a></li>
+      </ul>
+    {/if}
+
+  </section>
+  
+  <section aria-label="Social Media links">
+    <p><a href="http://youtube.com/untrecserv" style="text-decoration:none;color:black" title="Our Youtube Channel"><i class="fa fa-youtube fa fa-4x" aria-hidden="true"></i></a><br /></p>
+    <p>
+      <p class="social">
+        <a href="https://www.facebook.com/untcollegeofmusic" style="text-decoration:none" title="UNT College of Music on THE Facebook">CoM <span class="fa fa-facebook-square"> </span></a>
+        <a href="https://twitter.com/UNTCoM" title="UNT College of Music on Twitter" style="text-decoration:none"><span class="fa fa-twitter"></span></a>
+      </p>
+    </p>
+    <p>© {current_time format="%Y"} University of North Texas College of Music.</p>
+  </section>
+</article><!--/toes-->
+</div>
+</div>
+
+<script>
+
+/*** Show footer when in view to avoid layout jank Google penalties.  So Dumb. **/
+window.addEventListener('DOMContentLoaded', () => {
+
+let observer = new IntersectionObserver( (entries, observer) => { 
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelector(".toes_hidden").classList.remove("hidden");
+      //entry.target.classList.remove('hidden');
+    }
+  });
+}, { rootMargin: '50px', threshold: .01} );
+
+document.querySelectorAll('.interactionObserver').forEach(div => { observer.observe(div) });
+
+});
+
+
+
+/**************** Algolia Vue Instant Search ****************/
+
+// Get current value before Vue overwrites.
+const currentSearchValue = document.querySelector('#ag_search_field').value;
+// Mostly for Item page where space bar is used for Play.
+let searchHasControl = false;
+
+window.onload = function() {
+
+var algolia_search = new Vue({
+  el: '#search_app',
+  data: {
+    logged_in                   : {if logged_in}true{if:else}false{/if}, // EE Set.
+    reduce_data                 : {if global:saveData}true{if:else}false{/if}, // EE Set.
+    now_unix                    : 0,
+    resultsbox_isVisable        : false,
+    searchboxtext               : '',
+    willis_Library_link         : '',
+    ag_results_box_styles       : {},
+    submit_attempt_using_enter  : 0,
+    selected_result             : -1,
+    number_of_results           : 0,
+    searchClient                : algoliasearch('ND3P8O9Q5R', '2c1d66a58248af6d4fc32a82947cf845'),
+    searchHasKeyControl         : false,
+    returnDateType              : 'all',  // Past, Future, Both
+  },
+
+  mounted() {
+   this.searchboxtext = currentSearchValue; // Get previous search term when using back butotn on browser.
+   this.updateTime(); // Get the current time every x seconds.
+  },
+
+  watch: {
+    searchboxtext: function(value, oldValue) {
+      if(value.length > 0) {
+        this.resultsbox_isVisable = true;
+        this.willis_Library_link = "https://digital.library.unt.edu/explore/partners/UNTML/browse/?q=%27"+encodeURIComponent(this.searchboxtext)+"%27&t=fulltext&fq=untl_collection%3ACOMR"
+      }
+    },
+    searchHasKeyControl : function() {
+      // True or False the variable outside of Vue on keyboard control.
+      try {
+        searchHasControl = this.searchHasKeyControl;
+        //console.log('Vue searchHasKeyControl vaule is: ',searchHasControl);
+      } catch(error) {}
+    }
+  },
+
+  methods: {
+
+    // Switch between upcoming/past/both by returning the filter rule.
+    searchDateFilter() {
+      let currentTime = (Math.round((new Date()).getTime() / 1000));
+      switch(true) {
+        case this.returnDateType == 'all' :
+        return;
+
+        case this.returnDateType == 'futureOnly' :
+        return 'date > ' + currentTime;
+
+        case this.returnDateType == 'pastOnly' :
+        return 'date < ' + currentTime;
+      }
+    },
+
+    updateTime() {
+      let self = this;
+      this.now_unix = Math.round((new Date()).getTime() / 1000);
+      setTimeout(self.updateTime, 6000);
+    },
+
+    // When input field changes from key press.  Show results box, or hide for ESC.
+    search_input_keypress(e) {
+      if (e.keyCode != 13) { // Bypass Enter.
+        if(this.searchboxtext.length > 0) {
+          this.resultsbox_isVisable = true;
+          this.toggleAgResults();
+        }
+        if(e.keyCode == '27') {
+          e.preventDefault();
+          this.resultsbox_isVisable = false;
+          this.toggleAgResults();
+        }
+      }
+    },
+
+    // When the button to show/hide results area is clicked.
+    toggle_resultsbox(event) {
+      event.preventDefault();
+      if (this.resultsbox_isVisable) {
+        this.resultsbox_isVisable = false;
+        this.toggleAgResults();
+      } else {
+        this.resultsbox_isVisable = true;
+        this.toggleAgResults();
+      }
+    },
+
+    // What actually shows/hides results area.
+    toggleAgResults() {
+      let resultsContainer = this.$refs.ag_results_box; // Results box div.
+      if (this.resultsbox_isVisable) {
+        this.$refs.search_icon.classList.add('fa-caret-down');
+        this.$refs.search_icon.classList.remove('nav_search_icon_rotation');
+
+        resultsContainer.removeAttribute('hidden');
+        resultsContainer.style.visibility = "visible";
+        resultsContainer.style.opacity = "1";
+        resultsContainer.style.transform = "translate(0,0)";
+        resultsContainer.style.clip = "auto";
+
+      } else {
+        this.$refs.search_icon.classList.add('nav_search_icon_rotation');
+
+        resultsContainer.style.opacity = "0";
+        resultsContainer.style.transform = "translate(0,-.5%)"        
+
+        setTimeout( () => { 
+          //resultsContainer.setAttribute('hidden', true);
+          resultsContainer.style.visibility = "hidden";
+          resultsContainer.style.clip = "rect(0 0 0 0)";
+        }, 400);
+        //resultsContainer.style.transform = "translate(-105%, 0)";
+      }
+    },
+
+    // Button shown for mobile that adds/removes classes to show refiments.
+    toggle_refinement(event) {
+      event.preventDefault();
+
+      // The area with the refinement list.
+      this.$refs.refinement_block.classList.toggle('pushed_to_side');
+
+      // The button that will show/hide refiment list.
+      this.$refs.refinement_button.classList.toggle('refinement_button_active');
+
+    },
+    isEmptyPerf(agArray) {
+      let isEmpty = true;
+
+      if(agArray){
+        for(var i = 0; i < agArray.length; i++) {
+
+          if(agArray[i].matchLevel != 'none'){
+            //console.log(agArray[i].value);
+            isEmpty = false;
+          }
+
+        }
+      }
+      return isEmpty;
+    },
+    isEmptyTrack(agArray) {
+
+      let isEmpty = true;
+
+      // Sometimes agArray.lengh errors. Not sure why.
+      try {
+
+        for(var i = 0; i < agArray.length; i++) {
+
+          if(agArray[i].name_of_piece.matchLevel != 'none'){
+            isEmpty = false;
+          };
+          if(agArray[i].name_of_composer.matchLevel != 'none'){
+            isEmpty = false;
+          };
+          if(agArray[i].name_of_arranger.matchLevel != 'none'){
+            isEmpty = false;
+          };
+
+        }
+      } catch(error) {}
+      return isEmpty;
+    },
+
+    // Hits down arrow.
+    navigate_down() {
+      let length = document.querySelectorAll('.ag_each_link').length;
+
+      if (this.selected_result < length){
+        this.selected_result = this.selected_result + 1;
+
+        document.querySelectorAll('.ag_each_link').forEach( (element,index) => {
+          if (index == this.selected_result) {
+            element.classList.add('ag-highlited');
+          } else {
+            element.classList.remove('ag-highlited');            
+          }
+        });
+        this.event_tracking('navigate_keyboard');
+      }
+    },
+    // Hits up arrow.
+    navigate_up() {
+      if (this.selected_result > -1) {
+        this.selected_result = this.selected_result - 1;
+
+        document.querySelectorAll('.ag_each_link').forEach( (element,index) => {
+          if (index == this.selected_result) {
+            element.classList.add('ag-highlited');
+          } else {
+            element.classList.remove('ag-highlited');            
+          }
+        });
+        this.event_tracking('navigate_keyboard');
+      }
+    },
+    // Navigate to the entry based on which element is highlighted.
+    navigate_enter(event) {
+      event.preventDefault();
+      if (this.selected_result > -1) {
+        this.event_tracking('navigate_enter');
+        try {
+          let link = document.querySelector('.ag-highlited');
+          let link_href = link.getAttribute('href');
+          window.location.href = link_href;
+        } catch (error) {
+          console.debug("No Entry selected with keyboard.", error);
+        }
+      } else {
+        if (this.submit_attempt_using_enter > 1) {
+          this.$refs.searchform.submit()
+        } else {
+          this.submit_attempt_using_enter++
+        }
+      }
+    },
+
+    getEventLink(item) {
+      let isInFuture;
+
+      // For entries that do not have the expiration field.
+      if ( item.expiration === undefined || !item.hasOwnProperty('expiration') ) {
+        isInFuture = this.isEventInFuture(item.date);        
+      } else {
+        isInFuture = this.isEventInFuture(item.expiration);
+      }
+
+      if (isInFuture) {
+        return '/live/event/'+item.objectID;
+      } else {
+        return '/downloads/item/'+item.objectID;
+      }
+    },
+
+    // Check if date is in the future.  Only on start time, should be changed to expiration.
+    isEventInFuture(event_date) {
+      if (event_date > this.now_unix) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+
+    event_tracking(event) {
+      let prefixed_event = "agsearch_"+event;
+    }
+
+  },  
+
+}); // Vue
+
+let onlinestatus;
+
+window.addEventListener('offline', () => { 
+
+ onlinestatus = new Noty({
+      text: 'You may be offline...',
+      type: 'error',
+      theme: 'nest',
+      timeout: false
+  }).show();
+
+});
+
+window.addEventListener('online', () => {
+
+  if (onlinestatus) {
+    onlinestatus.close();
+  }
+
+});
+
+}// On Load.
+</script>
+
+{/if}
+
+<!--//////////////////// GA ////////////////////-->
+{!--
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('send', 'pageview');
+</script>
+--}
+
+</body>
+</html>
+

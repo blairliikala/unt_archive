@@ -1,0 +1,29 @@
+{exp:charge:info
+    hash="{segment_3}" 
+    status="open|closed|needspayment|paid"
+}
+{if no_results}{/if}
+
+{
+    "amount_currency_formatted" : "{amount_formatted}",
+    "customer_id"               : "{customer_id}",
+    "payment_id"                : "{payment_id}",
+    "mode"                      : "{mode}",
+    "type"                      : "{type}",
+    "card_last4"                : "{card_last4}",
+    "hash"                      : "{segment_3}",
+
+    {exp:channel:entries
+        channel="live"
+        status="open|closed"
+        show_expired="yes"
+        show_future_entries="yes"
+        search:archive_hash_receipt="{segment_3}"
+    }
+    "concert_title"             : "{title}"
+    {/exp:channel:entries}
+
+}
+
+
+{/exp:charge:info}

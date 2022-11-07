@@ -1,0 +1,1629 @@
+{!--
+{if segment_2 !=""}
+{redirect='live/event/{segment_2}'}
+{/if}
+--}
+
+{embed=a/h
+  title="UNT College of Music - Live Concert Streaming"
+  meta="Live Recital Streaming"
+  og-title="UNT College of Music - Live Concert Streaming"
+  og-type="article"
+  og-url="{site_url}/live"
+  og-image=""
+}
+
+<style>
+
+
+   #content {
+    --color_live          : rgb(210, 166, 166);
+    --color_today         : hotpink;
+    --color_featured      : rgba(150,195,110, .1);  
+    --item_background     : rgba(255,255,255,.03);
+    
+    --paragraph_size : 1rem;
+    
+    padding:0 1%;
+  }
+
+  /***************************  General ***************************/
+  .now_area_header {
+    display:flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .now_area_header h1 {
+    font-weight: normal;
+  }
+  .now_area_header > :first-child {
+    margin:1em 0 .5em 0;
+    display:flex;
+    align-items:center;
+  }
+  .now_area_header > :last-child {
+    margin-left: auto;
+  }
+  .now_area_header .week_sort {
+    font-size:16px;
+    border:2px solid var(--midgray);
+    padding:.4em;
+  }
+  .now_area_header select {
+    font-size:clamp(16px, 0vw + 1rem, 25px);
+    margin:0 1em;
+    background:var(--darkone);
+    text-decoration: none;
+    padding: 0.5em 1em;
+    font-weight: bold;
+    background: var(--midgray);
+    color: var(--text);
+    white-space: nowrap;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 3px;
+  }
+  .no_break {
+    white-space: nowrap;
+  }
+  @media (max-width:500px) {
+    .now_area_header {
+      padding:0 1%;
+    }
+  }
+
+  /********/
+
+  .now_area {
+    display: grid;
+    grid-gap: 3rem;
+    --auto-grid-min-size: 13rem;
+    grid-template-columns: repeat(auto-fill, minmax(var(--auto-grid-min-size), 1fr));
+    margin: 1em auto 8vh auto;
+  }
+  @media (max-width:500px) {
+    .now_area {
+      grid-gap:.5em;
+      grid-template-columns: initial;
+    }
+  }
+
+  .now_item {
+    text-decoration: none;
+    width:100%;
+    transition: all 200ms;
+    border:2px solid rgba(0,0,0,.05);
+    border-radius:5px;
+    grid-row-end: span 2;  
+    background:var(--item_background);
+    font-size:var(--paragraph_size);
+    margin:1em 0 2em 0;
+    overflow: hidden;
+  }
+  .now_item h4.title {
+    padding:.5em 0;
+  }
+  .now_item img {
+    width:100%;
+    display:block;
+  }
+
+  .now_item.today {border-color:var(--color_today);}
+
+  .now_item .time_sticker {
+    display:block;
+    background-color:rgba(0,0,0,.06);
+    color:var(--text);
+    padding:.5em 1em;
+    font-weight: bold;
+    z-index:2;
+    transition: all 200ms;
+  }
+  .now_item .time_sticker.hasphoto {
+    position: absolute;
+    background-color:rgba(0,0,0,.9);
+    color:var(--textinverted);
+  }
+
+  /*
+  .now_item.today:before {
+    content: "Today";
+    position: absolute;
+  }
+  */
+
+  .no_events_message {
+    padding:.5em 0;
+    font-size:clamp(12px, .1vw + 1.2em, 25px);
+    color:var(--midgray);
+    white-space: nowrap;
+    min-height:3em;
+  }
+  .now_item .meta {
+    padding:0 1em .5em 1em;
+  }
+  .now_item .meta > * {
+    padding:0;
+    margin:.5em 0;
+    font-size:var(--paragraph_size);
+  }
+  .now_item .tags {
+    overflow: hidden;
+  }
+  .now_item .tags > * {
+    border:1px solid var(--midgray);
+    border-radius:5px;
+    padding:.07em .4em;
+    color:var(--text);
+    opacity: .7;
+    line-height: 1.5rem;
+    font-size:clamp(12px, .1vw + .7em, 15px);
+  }
+
+
+  @media(hover: hover) and (pointer: fine) {
+    .now_item:hover {
+      border-color:var(--greenfour);
+      background:rgba(0,0,0,.01);
+      /*
+      transform: scale(1.01);
+      box-shadow:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+        0 12.5px 10px rgba(0, 0, 0, 0.06),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+        0 100px 80px rgba(0, 0, 0, 0.12);  
+      */
+    }
+    .now_item:hover .time_sticker {
+      border-color:var(--greenfour);
+      background:var(--greenfour);
+      color:black;
+    }
+  }
+
+
+  /**************************** Featured ****************************/
+  .now_item.featured {
+    display: flex;
+    grid-column: auto / span 2;  
+    border-color:var(--color_featured);
+    background:var(--color_featured); 
+  }
+  .now_item.featured .image {
+    width:65%;
+    overflow: hidden;
+    display: grid;
+    align-items: center;
+    background:black;
+  }
+  .now_item.featured img {
+  }
+  .now_item.featured .meta {
+    width:30%;
+    display: grid;
+    align-items: center;
+  }
+  @media (max-width:400px) {
+    .now_item.featured {display:inline;}
+    .now_item.featured .image {width:100%;}
+    .now_item.featured .meta {width:100%;}
+  }
+  @media(hover: hover) and (pointer: fine) {
+    .now_item.featured:hover {
+      border-color:var(--greenfour);
+      transform: scale(1.01);
+      box-shadow:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+        0 12.5px 10px rgba(0, 0, 0, 0.06),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+        0 100px 80px rgba(0, 0, 0, 0.12);  
+    }
+    .now_item.featured:hover .time_sticker {
+      border-color:var(--greenfour);
+      background:var(--greenfour);
+      color:black;
+    }
+  }
+
+  /****************************  Live ***************************/
+  .now_live .now_area {
+    --auto-grid-min-size: 16rem;
+    /*grid-template-columns: repeat(4, 1fr);*/
+    grid-template-columns: repeat(auto-fill, minmax(var(--auto-grid-min-size), 1fr));
+    min-height: 0;
+  }
+
+
+
+
+  .now_live .now_item {
+    border-color:var(--live);
+    animation: pulseBorder 1s alternate infinite;
+    background-color:var(--item_background) !important;
+  }
+
+  .now_live .sticker {
+    position: absolute;
+    background-color:rgba(255,105,180,1);
+    will-change: border-color, background-color;
+    animation: pulseBackground 1s alternate infinite;
+    color:var(--purewhite);
+  }
+  .now_live .now_item:before {
+    content:"Live";
+    position: absolute;
+    background-color:rgba(255,105,180,1);
+    will-change: border-color, background-color;
+    animation: pulseBackground 1s alternate infinite;
+    color:var(--purewhite);
+    padding:.2em .8em;
+    border-bottom-right-radius:5px; 
+    z-index: 2;
+  }
+  .now_live .image {
+    background: url(/images/default.png) no-repeat;
+    background-size: cover; 
+  }
+  @media (prefers-color-scheme: dark) {
+    .now_live .image {
+        background: url(/images/default_dark.png) no-repeat;
+      }
+  }
+
+  @keyframes pulseBorder {
+    0% {
+      border-color: rgb(210, 166, 166);
+    }
+    100% {
+      border-color: rgb(253, 26, 26);
+    }  
+  }
+  @keyframes pulseBackground {
+    0% {
+      background-color: rgb(210, 166, 166);
+    }
+    100% {
+      background-color: rgb(253, 26, 26);
+    }  
+  }
+
+  /*************************** Week View ***************************/
+  .now_this_week {
+    transition:all 300ms opacity;
+    /*content-visibility: auto;*/
+  }
+  /** Column Header **/
+  .weekday_column > :first-child {
+    display:grid;
+    grid-auto-flow:dense;
+    grid-template-columns:auto-fill;
+    padding:.4em 0 .4em .2em;
+    margin:0;
+    border-bottom:3px solid var(--text);
+    white-space: nowrap;
+    -webkit-line-clamp: 2;
+    position: sticky;
+    top:0;  
+    z-index: 9;
+    background:var(--purewhite);
+  }
+  .weekday_column > :first-child :last-child {
+  }
+  @media (prefers-color-scheme: dark) {
+    .weekday_column > :first-child {background:var(--offwhite)}
+  }
+  @media (max-width:1200px) {
+    .weekday_column > :first-child :last-child {
+     grid-column: 2 / 2;
+     margin-left:auto;
+    }
+  }
+  .weekday_column h2 {
+    line-height: 1em;
+  }
+  .weekday_column .header_date {
+    color:var(--midgray);
+    font-style: normal;
+    white-space: nowrap;
+  }
+  .weekday_column > :first-child:first-letter {text-transform:uppercase}
+
+  /** Each event **/
+  .weekday_column .now_item {display:block;}
+  .weekday_column.overflow {
+    max-height:141vh;
+    overflow-y: auto;  
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+  }
+  .weekday_column:nth-child(even) {background:rgba(0,0,0,.02)}
+
+  .weekday_column .now_item:before {/*! content:attr(data-banner); */}
+
+  .weekday_column .today {border-color:var(--color_today);}
+  /*
+  .weekday_column .today:before {
+    content:attr(data-relative);
+    position: absolute;
+  }*/
+    
+
+  /*
+  .weekday_column:nth-child(1) h2 {
+    color:var(--color_today);
+    border-color:var(--color_today);
+  }
+  */
+
+  @media (max-width:500px) {
+     .weekday_column > div {  
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 2%;
+    }
+    .weekday_column:nth-child(even) {background:none;}
+  }
+
+  /** to Undo styles above.  Should be removed when layout is decided. */
+  .weekday_column .now_item.featured .image {width:auto;display: block;}
+  .weekday_column .now_item.featured .meta {width:auto;}
+
+
+
+  .loadingIcon {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size:3vw;
+  }
+
+
+
+  /*************** Tippy Things ****************/
+  .tippy-tooltip.rs_theme-theme {
+    border:1px solid rgba(0,0,0,.05);
+    box-shadow:
+      0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+      0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+      0 12.5px 10px rgba(0, 0, 0, 0.06),
+      0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+      0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+      0 100px 80px rgba(0, 0, 0, 0.12);    
+  }
+  .tippy-tooltip.rs_theme-theme > *  {background-color:var(--purewhite);}
+  .tippy-tooltip.rs_theme-theme .tippy-content * {
+  }
+  .tippy-tooltip.rs_theme-theme .tippy-content {
+    text-align:left;
+    font-size:.8em;
+  }
+  .tippy-tooltip.rs_theme-theme .tippy-content table td {padding:.3em;}
+
+
+
+
+
+
+  /********** Subtle Loading ***********/
+  .subtle_spinner {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: .1rem;
+    display: block;
+  }
+  .subtle_spinner::before {
+    content: '';
+    position: absolute;
+    left: -96%;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+    background: rgba(0, 0, 0, 0.6);
+    -webkit-animation: subtle_progress 10s cubic-bezier(.21,.85,.34,.98) infinite;
+            animation: subtle_progress 10s cubic-bezier(.21,.85,.34,.98) infinite;
+  }
+  @-webkit-keyframes subtle_progress {
+    0%, 85%, 65% {
+      transform:translate(0, 0);
+    }
+    25%, 50% {
+      transform:translate(190%, 0);
+    }
+  }
+  @keyframes subtle_progress {
+    0%, 85%, 65% {
+      transform:translate(0, 0);
+    }
+    15%, 50% {
+      transform:translate(190%, 0);
+    }
+
+  }
+
+  .slide-fade-enter-active {
+    transition: all 500ms ease;
+  }
+  .slide-fade-leave-active {
+    transition: all 500ms ease;
+  }
+  .slide-fade-enter, .slide-fade-leave-to {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  .slide-fade-move {
+    transition: transform 500ms;
+  }
+
+
+  /*********  Featured Hero  *********/
+  .featured_event_hero {
+    margin:1em 0;
+    overflow:hidden;
+    width:100%;
+    height:21em;
+    display:block;
+  }
+  .featured_event_hero .hero_image_container {
+    position: relative;
+    width:100%;
+    height:12em;
+    overflow: hidden;
+  }
+  .featured_event_hero img.event_hero {
+    width:100%;
+    margin-top:-15%;
+  }
+  .featured_event_hero .featured_item {
+    font-size:clamp(16px, 1em + 1vw, 30px);
+    line-height:clamp(1em, 1em + 1vw, 50px);
+  }
+  .featured_event_hero .featured_item_meta {
+      padding:0 1em 1em 1em;
+      z-index: 5;
+      position: absolute;
+      backdrop-filter: saturate(130%) blur(4px);
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom-right-radius:5px;
+  }
+  .featured_event_hero .featured_item_meta h3 {
+    margin:1em 0 1em 0;
+    padding:.2em 0;
+    color: var(--purewhite);
+  }
+  .featured_event_hero .featured_item a {
+    color:var(--purewhite);
+    text-decoration: none;
+  }
+  .featured_event_hero .featured_item time {
+    color: var(--purewhite);
+  }
+  .featured_event_hero .featured_item a:hover,
+  .featured_event_hero .featured_item a:focus {
+    text-decoration: underline;
+  }
+
+
+
+
+  /**********************  List **********************/
+  .featured_list a {
+    color:var(--text);
+    text-decoration: none;
+  }
+  @media(pointer:fine) and (hover:hover) {
+    .featured_list a:hover {
+      text-decoration: underline;
+    }
+    .featured_list .basic_button:hover {
+      text-decoration: none;
+    }  
+  }
+  .featured_list .item {
+    display: flex;
+    margin-bottom:.5em;
+  }
+  .featured_list .time_block {
+    padding: 1em;
+    background:var(--greenone);
+    color:white;
+    border-top-left-radius:4px;
+    border-bottom-left-radius:4px;
+    min-width:10em;
+  }
+  .featured_list .image {
+    background:var(--darkone);
+    line-height:0;
+    overflow:hidden;
+    width:25em;
+  }
+  .featured_list .image img {
+    position:absolute;
+    top:-3%;
+    left:-5%;
+    width:110%;
+    border:1px solid transparent;
+  }
+  @media(pointer:fine) and (hover:hover) {
+    .featured_list .image img:hover {
+      border-color:var(--greenfour);
+      transform: scale(1.05);
+    }
+  }
+
+  .featured_list .title {
+    padding:.5em 0 0 1em;
+    background:rgba(0,0,0,.03);
+    width:100%;
+  }
+  .featured_list .title p {
+    margin:0 0 .7em 0;
+  }
+  @media (max-width:550px) {
+    .featured_list .item {
+      flex-wrap:wrap;
+      margin-bottom:3em;
+    }
+    .featured_list .time_block {
+      width:30%;
+      border-radius:0;
+    }
+    .featured_list .image {
+      flex-grow: 2;
+      width:auto;
+    }
+    .featured_list .title {
+      display: flex;
+      order:1;
+    }
+    .featured_list .title > *:nth-child(1) {width:70%;}
+    .featured_list .title > *:nth-child(2) {
+      width:30%;
+      text-align: center;
+    } 
+    .featured_list .item p {
+      font-size:1.3em;
+      font-weight: bold;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    input {
+      background:rgba(0,0,0,.3);
+      border-color:rgba(0,0,0,.1);
+    }
+  }
+
+  [v-cloak] {
+    opacity: 0;
+    display:none;
+  }
+
+
+
+
+
+
+/************** Today v2 ************/
+.now_today .time_column {
+  display:flex;
+  flex-direction: row;
+  margin:0 0 4em 0;
+  padding:.5em;
+  border-top:1px solid var(--color_today);
+}
+
+.now_today .time_header {
+  display:flex;
+  flex-direction:row-reverse;
+  white-space: nowrap;
+  padding-right:1em;
+  padding-left:2em;
+
+}
+.now_today .time_header h2 {color:var(--color_today);}
+
+.now_today .time_events {width:100%;}
+.now_today .time_events > * {
+    display: grid;
+    grid-gap: 1rem;
+    --auto-grid-min-size: 14rem;
+    grid-template-columns: repeat(auto-fill, minmax(var(--auto-grid-min-size), 1fr));
+    margin:0;
+}
+.now_today .time_events > div * {
+}
+
+.now_today .now_item {margin:0;}
+
+
+</style>
+
+
+<main id="content">
+<section id="livestream_landing">
+
+
+  <div id="firstLoadingIcon" class="loadingIcon" ref="loadingIcon">
+    <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
+  </div>
+
+
+  <!---------------- Live Now ------------>
+  <section class="now_live" ref="now_live" style="opacity: 0">
+
+    <header class="now_area_header">
+      <h1>Live Now</h1>
+      <div><p><small>Refreshes Automatically</small><span class="subtle_spinner"></span></p></div>
+    </header>
+
+    <transition name="slide-fade">
+      <div v-if="entries_now.length == 0" class="no_events_message">No Events are Live</div>
+    </transition>
+
+    <transition-group name="slide-fade" tag="div" v-bind:class="{now_area : entries_now.length > 0}">
+
+      <!-- 
+      <a href="#" class="now_item featured" v-bind:key="'1234'">
+        <section class="image">
+          <img src="/cache/img/local/images/ensembles/baroque_orchestra_640_360_80_c1.jpg">
+        </section>
+        <section class="meta">
+          <h4>Featured Test Event Title</h4>
+          <p>Ends at 9:00pm CST</p>
+        </section>
+      </a>
+     
+      <a href="#" class="now_item">
+        <section class="image">
+          <img src="/cache/img/local/images/rooms/recital_hall_pan_640_360_80_c1.jpg">
+        </section>
+        <section class="meta">
+          <h4>Not Featured Event Title</h4>
+          <p>Ends at 9:00pm CST</p>
+        </section>
+      </a>
+      <a href="#" class="now_item">
+        <section class="image">
+          <img src="/cache/img/local/images/rooms/recital_hall_pan_640_360_80_c1.jpg">
+        </section>
+        <section class="meta">
+          <h4>Not Featured Event Title</h4>
+          <p>Ends at 9:00pm CST</p>
+        </section>
+      </a>
+      -->
+      
+      <a 
+        class="now_item" 
+        v-bind:href="printURL(event)" 
+        v-bind:class="{ featured: event.featured }"
+        v-for="(event, index) in entries_now" 
+        v-bind:key="index"
+      >
+        <section class="image">
+          <!--<img v-bind:src="event.thumbURL_med" v-bind:alt="event.title" width="400" height="225">-->
+          <!--<img v-bind:src="getThumbImage(event)" v-bind:alt="event.title" width="400" height="225">-->
+          <video
+            ref="video"  
+            muted
+            width="100%"
+            autoplay
+            v-bind:poster="getThumbImage(event)"
+            v-bind:src="'https://stream.mux.com/'+event.archive_mux_playback_key+'.m3u8'"
+          >            
+          </video>
+          <!--v-bind:src="'https://stream.mux.com/'+event.archive_mux_playback_key+'.m3u8'"-->
+
+        </section>
+        <section class="meta">
+          <h4>{{event.title}}</h4>
+          <p><time v-bind:datetime="event.start">Ends at {{event.date_end_human_time}}</time><br />
+          <article class="tags">
+            <span class="no_break" v-for="type in event.recitaltype">{{type}}</span> 
+            <span class="no_break" v-for="instrument in event.instrument">{{instrument}}</span> 
+            <span class="no_break" v-for="ensemble in event.ensemble">{{ensemble}}</span>
+            <span class="no_break">{{event.hall}}</span>
+          </article>
+        </section>
+      </a>
+    
+    </transition>
+
+  </section>
+
+
+
+  <!---------------- Today, Columns by Time ---------->
+  <!--
+  <section class="now_this_week" ref="now_today1" >
+    <header class="now_area_header">
+      <h1>Today v1</h1>
+      <div></div>
+    </header>
+
+    <transition name="slide-fade">
+      <div v-if="todayEventsLength === 0" class="no_events_message">No Events Today</div>
+    </transition>        
+
+    <div class="now_area this_week">
+
+      <article
+        class="weekday_column"
+        {!-- v-bind:class="{ column_empty: todayByTime.events.length == 0}" --}
+        v-for="time in todayByTime"
+        >
+
+        <h2>{{time.time}}</h2>
+
+        <transition-group name="slide-fade" tag="div">
+        <a 
+          v-bind:id="'event_'+event.entry_id"
+          class="now_item" 
+          v-bind:key="event.entry_id"
+          v-for="event in time.events"
+          v-bind:href="printURL(event)" 
+          v-bind:class="{ featured: event.featured }" 
+          v-bind:data-relative="event.date_relative"
+        >
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="!isEventToday(event.start)">{{event.date_start_human_time}}</div>
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="isEventToday(event.start)">{{event.date_relative}}</div>
+          <section class="image" v-if="event.thumbFeatured_360 !=''">
+            <img v-bind:src="event.thumbFeatured_360" v-bind:alt="event.title" width="400" height="225">
+          </section>
+
+          <section class="meta">
+            <h4 class="title">{{event.title}}</h4>
+            <time v-bind:datetime="event.start"><span class="no_break">{{ formatToLocal(event.start) }}</span> <span class="no_break">{{event.date_start_human}}</span></time>
+            <article class="tags">
+              <span class="no_break" v-for="type in event.recitaltype">{{type}}</span> 
+              <span class="no_break" v-for="instrument in event.instrument">{{instrument}}</span> 
+              <span class="no_break" v-for="ensemble in event.ensemble">{{ensemble}}</span>
+              <span class="no_break">{{event.hall}}</span>
+            </article>
+          </section>
+        </a>
+        </transition-group>
+      </article>
+    </div>  
+  </section>
+  -->
+
+
+  <!---------------- Today, Columns by Time ---------->
+  <section class="now_today" ref="now_today2">
+    <header class="now_area_header">
+      <h1>Today</h1>
+      <div></div>
+    </header>
+
+    <transition name="slide-fade">
+      <div v-if="areThereEventsToday" class="no_events_message">No Events Today</div>
+    </transition>    
+
+
+    <div class="today_area this_week">
+
+      <article
+        class="time_column"
+        {!-- v-bind:class="{ column_empty: todayByTime.events.length == 0}" --}
+        v-for="time in todayByTime"
+        >
+
+        <header class="time_header">
+          <div>
+            <h2>{{time.time}}</h2>
+            <p>{{ message_timeTillOpen(time.events[0].start) }}</p>
+          </div>
+        </header>
+
+
+        <section class="time_events">
+        <transition-group name="slide-fade" tag="div">
+        <a 
+          v-bind:id="'event_'+event.entry_id"
+          class="now_item" 
+          v-bind:key="event.entry_id"
+          v-for="event in time.events"
+          v-bind:href="printURL(event)" 
+          v-bind:class="{ featured: event.featured }" 
+          v-bind:data-relative="event.date_relative"
+          >
+
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="!isEventToday(event.start)">{{message_timeTillOpen(event.start) }}</div>
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="isEventToday(event.start)">{{message_timeTillOpen(event.start) }}</div>
+          <section class="image" v-if="event.thumbFeatured_360 !=''">
+            <img v-bind:src="event.thumbFeatured_360" v-bind:alt="event.title" width="400" height="225">
+          </section>
+
+          <section class="meta">
+            <h4 class="title">{{event.title}}</h4>
+            <time v-bind:datetime="event.start"><span class="no_break">{{ formatToLocal(event.start) }}</span> <span class="no_break">{{event.date_start_human}}</span></time>
+            <article class="tags">
+              <span class="no_break" v-for="type in event.recitaltype">{{type}}</span> 
+              <span class="no_break" v-for="instrument in event.instrument">{{instrument}}</span> 
+              <span class="no_break" v-for="ensemble in event.ensemble">{{ensemble}}</span>
+              <span class="no_break">{{event.hall}}</span>
+            </article>
+          </section>
+        </a>
+        </transition-group>
+      </article>
+    </div>
+
+  </section>
+
+
+
+  <!---------------- Upcoming by Week ------------>
+  <section class="now_this_week" ref="now_this_week" style="opacity: 0">
+    <header class="now_area_header">
+      <h1>
+        Upcoming
+        <select v-model="days_to_fetch" id="days_to_fetch">
+          <option value="7" selected>1 Week</option>
+          <option value="14">2 Weeks</option>
+          <option value="21">3 Weeks</option>
+          <option value="28">4 Weeks</option>
+          <!--<option value="35">5 Weeks</option>-->
+        </select>
+      </h1>
+      <div>
+        <label for="week_sort">Filter These Events:</label><br />
+        <input 
+          id="week_sort"
+          type="search" 
+          class="week_sort"
+          data-tippy-content="Filter events by title, ensemble, event, performers."
+          v-model="searchWeekTerm" 
+          v-on:input="searchWeekday"
+        >
+      </div>
+    </header>
+
+    <div class="now_area this_week">
+      <article
+        class="weekday_column"
+        v-bind:class="{ column_empty: weekday.data.length == 0}"
+        v-for="weekday in entriesByWeekday_results"
+      >
+        <h2><i class="header_date">{{weekday.date}}</i>{{weekday.name}}</h2>
+
+        <transition name="slide-fade">
+          <div v-if="weekday.data.length == 0" class="no_events_message">No Events</div>
+        </transition>
+
+        <transition-group name="slide-fade" tag="div">
+        <a 
+          v-bind:id="'event_'+event.entry_id"
+          class="now_item" 
+          v-bind:key="event.entry_id"
+          v-for="event in weekday.data"
+          v-bind:href="printURL(event)" 
+          v-bind:class="{ featured: event.featured, today: isEventToday(event.start) }" 
+          v-bind:data-relative="event.date_relative"
+        >
+        <!--
+          <section class="image">
+            <img v-bind:src="event.thumbURL_med" v-bind:alt="event.title" width="400" height="225">
+          </section>        
+        -->
+
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="!isEventToday(event.start)">{{event.date_start_human_time}}</div>
+          <div class="time_sticker" v-bind:class="{ hasphoto: event.thumbFeatured_360 !='' }" v-if="isEventToday(event.start)">{{event.date_relative}}</div>
+          <section class="image" v-if="event.thumbFeatured_360 !=''">
+            <img v-bind:src="event.thumbFeatured_360" v-bind:alt="event.title" width="400" height="225">
+          </section>
+
+          <section class="meta">
+            <h4 class="title">{{event.title}}</h4>
+            <time v-bind:datetime="event.start"><span class="no_break">{{ formatToLocal(event.start) }}</span> <span class="no_break">{{event.date_start_human}}</span></time>
+            <article class="tags">
+              <span class="no_break" v-for="type in event.recitaltype">{{type}}</span> 
+              <span class="no_break" v-for="instrument in event.instrument">{{instrument}}</span> 
+              <span class="no_break" v-for="ensemble in event.ensemble">{{ensemble}}</span>
+              <span class="no_break">{{event.hall}}</span>
+            </article>
+          </section>
+        </a>
+        </transition-group>
+      </article>
+    </div>  
+  </section>
+
+
+
+
+  <!---------------- Featured Event Hero ------------>
+  <section class="featured_event_hero" ref="featured_event_hero" v-cloak>
+      {exp:channel:entries 
+        channel="live" 
+        status="LiveStream|Scheduled"
+        search:live_stream="yes" 
+        show_future_entries="yes" 
+        show_expired="no" 
+        sort="asc"
+        dynamic="no" 
+        disable="member_data|pagination|categories"
+        cache="yes"
+        refresh="10000"
+        limit="1"
+        }
+        <!--<section class="featured_item" v-for="concert in nextFeaturedEntry">-->
+          <section class="featured_item">
+          <div class="featured_item_meta">
+            <h3>Up Next...</h3>
+            <a href="{site_url}/live/event/{entry_id}">{title} <br />
+              <time datetime="{entry_date format='%c'}">{entry_date format="%F %d %g:%i %A"} CST</time>
+              <div data-time>{entry_date:relative}</div>
+            </a>
+          </div>
+          <div class="hero_image_container">
+
+            <picture>
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <source srcset="{made}" media="(max-width:400px)" title="{title}" alt="{title}" class="event_hero" loading="lazy" width="{width}" height="{height}">    
+              {/exp:ce_img:pair}
+
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="600" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <source srcset="{made}" media="(max-width:600px)" title="{title}" alt="{title}" class="event_hero" loading="lazy" width="{width}" height="{height}">    
+              {/exp:ce_img:pair}
+
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="800" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <source srcset="{made}" media="(max-width:800px)" title="{title}" alt="{title}" class="event_hero" loading="lazy" width="{width}" height="{height}">         
+              {/exp:ce_img:pair}
+
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1000" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <source srcset="{made}" media="(min-width:801px)" title="{title}" alt="{title}" class="event_hero" loading="lazy" width="{width}" height="{height}">
+              {/exp:ce_img:pair}
+
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1000" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" width="{width}" height="{height}" class="event_hero" loading="lazy" />
+              {/exp:ce_img:pair}
+             </picture>
+
+          </div>          
+        </section>
+        {/exp:channel:entries}
+  </section>
+
+
+
+
+
+
+
+
+ <!---------------- Featured Event List ------------>
+  <section class="featured_list_container" ref="featured_list" v-cloak>
+
+
+
+    <section class="featured_list">
+    <!-- Schedule -->
+    {exp:channel:entries 
+      channel="live" 
+      status="Scheduled"
+      search:live_stream="yes" 
+      show_future_entries="yes" 
+      show_expired="no" 
+      sort="asc"
+      dynamic="no" 
+      disable="member_data|pagination|categories"
+      cache="yes"
+      refresh="10000"
+      offset="1"
+      }
+        
+      {if count==1}
+      <header class="featured">
+        <h1>Featured Concerts</h1>
+      </header>
+
+      <div class="group">
+      {/if}
+
+        {if count < 6}
+          <article class="item" aria-label="Event: {title}">            
+              
+            <time class="time_block" datetime="{entry_date format='%c'}"><!--{entry_date format="%F %d %g:%i %A"} CST-->
+                <div class="day">{entry_date format="%M"} {entry_date format="%d"}</div>
+                <div class="time">{entry_date format="%g:%i %A CST"}</div>
+                <div class="rel">{entry_date:relative}</div>
+            </time>              
+
+            <a href="{site_url}/live/event/{entry_id}" aria-label="Link to the event {title} page." class="image" >
+                {if ondemand_image}
+                    {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                      <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {if:elseif archive_default_image}
+                    {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                      <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {if:elseif '{related_ensembles_v2:default_picture}' }
+                    {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                    {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {if:elseif '{room:room_primary_image:server_path}' }
+                    {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {if:else}
+                    {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                      <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                    {/exp:ce_img:pair}
+                {/if}
+              </a>
+
+            <div class="title">
+              <p><a href="{site_url}/live/event/{entry_id}">{title}</a></p>
+              <p><a href="{site_url}/live/event/{entry_id}" class="basic_button">Watch Live</a></p>
+            </div>
+
+          </article>
+
+
+        {/if}
+
+        {if:else}
+
+        {!--
+          {if count == 6}
+          </div>
+            <details class="">
+              <summary class="basic_button details_button" style="margin-top:1em">See All</summary>
+              <div class="group">
+          {/if}
+          <article class="item" aria-label="Event: {title}">
+            <time class="time_block" datetime="{entry_date format='%c'}"><!--{entry_date format="%F %d %g:%i %A"} CST-->
+              <div class="day">{entry_date format="%M"} {entry_date format="%d"}</div>
+              <div class="time">{entry_date format="%g:%i %A CST"}</div>
+              <div class="rel" ref="updateTime">{entry_date:relative}</div>
+            </time>              
+
+            <a href="{site_url}/live/event/{entry_id}" aria-label="Link to the event {title} page." class="image" >
+              {if ondemand_image}
+                  {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {if:elseif archive_default_image}
+                  {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{related_ensembles_v2:default_picture}' }
+                  {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                  {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {if:elseif '{room:room_primary_image:server_path}' }
+                  {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {if:else}
+                  {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                    <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" class="ensemble_image_actual" />
+                  {/exp:ce_img:pair}
+              {/if}
+            </a>
+
+            <div class="title">
+              <p><a href="{site_url}/live/event/{entry_id}">{title}</a></p>
+              <p><a href="{site_url}/live/event/{entry_id}" class="basic_button">Watch Live</a></p>
+            </div>
+          </article>
+          {if count == total_results}
+            </div>
+            </details>
+          {/if}
+        --}
+
+        {/if}
+
+    {if count == total_results}
+      </article>
+    {/if}
+
+    {/exp:channel:entries}   
+
+    </section> 
+
+  </section>
+
+
+
+
+
+
+
+
+</section><!--main-->
+</main>
+
+{embed=a/js}
+
+<script src="/js/moment/moment.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js"></script>
+
+<script async>
+
+/********* Load the inital entries faster *************/
+//   /live/_now_feed?child:room_enable_live_streaming=yes&show_future_entries=yes&status=scheduled&orderby=date&sort=asc&range-to:entry_date=+20%21days
+
+const initial_event_data = [
+{exp:low_search:results
+  keywords:inflect="yes"
+  collection="1"
+  child:room_enable_live_streaming="yes"
+  show_future_entries="yes"
+  status="scheduled"
+  orderby="date"
+  sort="asc"
+  range-to:entry_date="+8 days"
+  cache="yes"
+  refresh="300"
+}
+{
+  {if count==1}
+  "performance"     : "{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.",
+  {/if}
+  "entry_id"        : "{entry_id}",
+  "status"          : "{status}",
+  "title"           : {exp:ce_str:ing json_encode html_entity_decode}{title}{/exp:ce_str:ing},
+  "start"           : "{entry_date format="{DATE_ISO8601}"}",
+  "end"             : "{expiration_date format="{DATE_ISO8601}"}",    
+  "date_start_human"        : "{entry_date format='%F %j, %Y'} ",
+  "date_start_human_time"   : "{entry_date format='%g:%i%a'} CST",
+  "date_end_human"          : "{expiration_date format='%Y %F %j'}",
+  "date_end_human_time"     : "{expiration_date format='%g:%i%a'} CST",
+
+  "archive_mux_id"           : "{archive_mux_id}",
+  "archive_mux_playback_key" : "{archive_mux_playback_key}",
+
+  {room}
+  "room_enable_live_streaming": "{room:room_enable_live_streaming}",
+  "helo_url"                  : "{room:room_helo_url}",
+  "room_elemental_event_id"   : "{room:room_elemental_event_id}",
+  "room_haivision_channel_id" : "{room:room_haivision_channel_id}",
+  "hall"                      : "{room:title}",
+  "room_entry_id"             : "{room:entry_id}",
+  {/room}  
+
+  "day_of_week"     : "{entry_date format='%l'}",
+  "date_relative"   : "{entry_date:relative}",
+  "ensemble"        : [{related_ensembles_v2 backspace='2'}"{related_ensembles_v2:title}", {/related_ensembles_v2}],
+  "instrument"      : [{archive_instrument backspace='2'}"{archive_instrument:title}", {/archive_instrument}],
+  "recitaltype"     : [{archive_recital_type backspace='2'}"{archive_recital_type:title}", {/archive_recital_type}],
+  "featured"        : {if live_stream}true{if:else}false{/if}, 
+  "program"         : "{concert_program}",
+  "thumbURL_small" : "{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{if:else}{if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{if '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{/if}{/if}{/if}",
+  "thumbURL_med" : "{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{if:else}{if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{if '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{/if}{/if}{/if}",
+  "thumbFeatured_360" : "{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{/if}{/if}",
+  "thumbFeatured_1080" : "{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="1920" height="1080" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{/if}{/if}"
+
+
+}{if count < total_results},{/if}
+{/exp:low_search:results}
+]
+
+//**/
+
+
+
+
+var now = new Vue({
+
+  el: '#livestream_landing',
+  data: {
+    days_to_fetch: 7,
+
+    entries: initial_event_data, // Fetched. Master entry list.
+
+    entriesByWeekday    : [], // a list of events sorted by weekday.
+    todayByTime         : [], // A list of events sorted by time.
+
+    // Search.
+    searchWeekTerm : "",
+    entriesByWeekday_results: [], // Post Search
+
+    entries_now : [], // Created
+  },
+
+  mounted() {
+    this.startPrimaryInterval();
+
+    // Get Entries on load.
+    this.fetchentries(); 
+    this.entriesByWeekday = this.createWeekdayList();
+
+    this.sortByWeekDay(); // Add events by week.
+    this.searchWeekday();
+    this.findLiveEntries();
+    this.sortByToday();
+
+    this.applyVideo();
+
+    this.$refs.now_this_week.style.opacity = 1;
+    this.$refs.now_live.style.opacity = 1;
+
+    this.$refs.loadingIcon.classList.add('fadeOut');
+    setTimeout( ()=> { this.$refs.loadingIcon.remove() }, 300);
+
+  },
+
+  watch: {
+    days_to_fetch: function() {
+      this.fetchentries();
+      this.entriesByWeekday = this.createWeekdayList();
+    }
+  },
+
+  computed: {
+    nextFeaturedEntry() {
+      // Find next featured entry.
+      return this.entries.find( item => {
+        item.featured == true;
+      });
+    },
+    areThereEventsToday() {
+
+      return (Object.keys(this.todayByTime).length === 0 && this.todayByTime.constructor === Object);
+
+    }
+  },
+
+  methods: {
+    startPrimaryInterval() {
+
+      setInterval(this.fetchentries, 10000);
+      setInterval(this.findLiveEntries, 5000);
+      setInterval(this.getPrettyTime, 1000);
+      setInterval(this.sortByToday, 10000);
+
+    },
+    fetchentries() {
+      // console.debug('fetching entries.', "/live/_now_feed?child:room_enable_live_streaming=yes&show_future_entries=yes&status=scheduled&orderby=date&sort=asc&range-to:entry_date=+"+(this.days_to_fetch*1+1)+"%20days");
+      fetch("/live/_now_feed?child:room_enable_live_streaming=yes&show_future_entries=yes&status=scheduled&orderby=date&sort=asc&range-to:entry_date=+"+(this.days_to_fetch*1+1)+"%20days")
+        .then ( response => { return response.json()})
+        .then ( response => {
+
+          // Filter out rooms that are not live streaming.  Could not get EE to filter these out in the query above.
+          this.entries = response.filter( event => event.room_enable_live_streaming == "true" );
+
+          this.entriesByWeekday = this.createWeekdayList(); // Empty the var each time.
+          this.sortByWeekDay(); // Add events by week.
+          this.searchWeekday();
+          this.findLiveEntries();
+
+          this.$refs.now_this_week.style.opacity = 1;
+          this.$refs.now_live.style.opacity = 1;
+
+          this.$refs.loadingIcon.classList.add('fadeOut');
+          setTimeout( ()=> { this.$refs.loadingIcon.remove() }, 300);
+
+        })
+        .catch(error => {
+          console.debug('Error getting feed.', error);
+        });
+    },
+
+    fetchEntries_upcoming () {
+      fetch("/live/_now_feed?child:room_enable_live_streaming=yes&show_future_entries=yes&status=scheduled&orderby=date&sort=asc&limit=15")
+        .then ( response => { return response.json()})
+        .then ( response => {
+          this.entries_upcoming = response;
+          this.searchUpcoming();
+        })
+        .catch(error => {
+          console.debug('Error getting feed.', error);
+        });        
+    },
+
+    isEventToday(start_iso) {
+
+      const start = new Date(start_iso);// get ISO date from JSON feed.
+      const start_day = start.toLocaleDateString("en-US", {month:"2-digit", day:"2-digit"}); // get the day number.
+
+      const today = new Date(); // get today.
+      const today_day = today.toLocaleDateString("en-US", {month:"2-digit", day:"2-digit"}); // get today's day number.
+
+      if (start_day == today_day) {
+        return true;
+      } else {
+        return false
+      }
+    },
+
+    createWeekdayList() {
+      /* Create a Weekday list but start on the current day instead of Sunday. */
+      let today = new Date();
+      let weekday = {};
+
+      /***** Do first Day [today] *****/
+        let todayName = today.toLocaleDateString("en-US", { weekday: 'long' }); //Get the weekday name.
+
+        let todayFullDate      = today.toLocaleDateString("en-US", {month:"short", day:"numeric"});
+        let todayMonth_day     = today.toLocaleDateString("en-US", {month:"2-digit", day:"2-digit"});      
+
+        // Start object with today.
+        /*
+        weekday[todayMonth_day] = {
+          "name" : "Today",
+          "date" : todayFullDate,
+          "data" : []
+        }
+        */
+
+      //******* Loop through the next days (starts with tomorrow), creating the object structure.
+      for (let i=0; i < this.days_to_fetch; i++) {
+        let newDateObj    = new Date(today.setDate(today.getDate() + 1)); // This works, not sure how.
+        let weekName      = newDateObj.toLocaleDateString("en-US", {weekday:'long'}); //Get the weekday name.
+        //let weekName_lowercase = weekName.toLowerCase();// make lowercase for using in conditional.
+        let fullDate      = newDateObj.toLocaleDateString("en-US", {month:"short", day:"numeric"}); // Feb 5
+        let month_day     = newDateObj.toLocaleDateString("en-US", {month:"2-digit", day:"2-digit"}); // 02/05
+
+        weekday[month_day] = {
+          "name" : weekName,
+          "date" : fullDate,
+          "data" : []
+        };  
+      }
+      return weekday; // overwrite the global var.
+    },
+
+    sortByWeekDay() {
+      /* Add each entry to the correct weekday name in the array made in "createWeekdayList" */
+      this.entries.forEach( event => {
+
+        let eventDate = new Date(event.start);
+        let date_month_day = eventDate.toLocaleDateString("en-US", {month:"2-digit", day:"2-digit"});
+
+        for (day_column in this.entriesByWeekday) {        
+          if (day_column == date_month_day) {
+            this.entriesByWeekday[day_column].data.push(event);
+          }
+        }
+      });
+    },
+
+    sortByToday() {
+
+      // Reduce event list to just today.
+      let todaysEvents = this.entries.filter( event => { return this.isEventToday(event.start) });
+
+      // Get just the dates from the entries.
+      let allTimes = todaysEvents.map( event => { 
+      
+        let options = {
+           hour:'numeric',
+           minute: 'numeric',
+        }
+
+        let newTime = new Intl.DateTimeFormat('en-US', options).format( new Date(event.start) );
+
+        return newTime;
+
+      });
+      
+      // Remove duplicate times.  Converts to Set which auto removes duplicates, then back to array.
+      let times = [...new Set(allTimes)];
+
+      // Create the data object with times.
+      let todayObj = {};
+      times.forEach( time => {
+          todayObj[time] = {
+              "time" : time,
+              "events" : []
+          }
+      });
+
+      todaysEvents.forEach( event => {
+
+        let options = {
+           hour:'numeric',
+           minute: 'numeric',
+        }
+
+        // get 6:30 PM
+        let eventTime = new Intl.DateTimeFormat('en-US', options).format( new Date(event.start) );
+
+        // Add the event if it matches the time.
+        for (time in todayObj) {
+
+          if (eventTime == time) {
+            todayObj[time].events.push(event);
+          }
+        }
+
+
+      });
+
+      this.todayByTime = todayObj;
+    },
+
+    findLiveEntries() {
+      let now_unix  = new Date().getTime() / 1000; // get current seconds.
+      let live_entries = this.entries.filter( (el, index, array) => {
+        let start_unix = new Date(el.start).getTime() / 1000; // Get the entry Unix time.
+        let end_unix = new Date(el.end).getTime() / 1000; // Get the entry Unix time.
+        return start_unix < now_unix && end_unix > now_unix;
+      });
+      this.entries_now = live_entries;
+      this.applyVideo();
+    }, 
+
+    searchWeekday() {
+      let keyword = this.searchWeekTerm.trim().toLowerCase();
+
+      if (keyword.length < 2) {
+        this.entriesByWeekday_results = JSON.parse(JSON.stringify(this.entriesByWeekday)); //Duplicate object without dependancy.
+        return;
+      }
+
+      for (var day in this.entriesByWeekday) {
+          this.entriesByWeekday_results[day].data = this.entriesByWeekday[day].data.filter( item => {
+            let string = JSON.stringify(item);
+            string = string.toLowerCase();
+            let result = string.search(keyword);
+            if (result > 0) {
+              return true;
+             } else {
+              return false;
+             }
+          });
+      }
+      return;
+    },
+
+    printURL(event) {
+      if (event.featured) {
+        return '/live/event/'+event.entry_id;
+      } else {
+        return '/live/event/'+event.entry_id;
+      }
+    },
+
+    formatToLocal(time) {
+      return new Date(time).toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
+    },
+
+    message_timeTillOpen(time) {
+      const offset      = 0;
+      const diff        = new Date(time) - new Date(offset) - new Date();
+      const momentTime  = moment().to(time);
+
+      const d = Math.floor(diff / 1000 / 60 / 60 / 24);
+      const h = Math.floor(diff / 1000 / 60 / 60) % 24;
+      const m = Math.floor(diff / 1000 / 60) % 60;
+      const s = Math.floor(diff / 1000) % 60;
+
+      let days = d;
+      let hours = h < 10 ? '' + h : h;
+      let minutes = m < 10 ? '' + m : m;
+      let seconds = s < 10 ? '' + s : s;        
+
+      let string = '';
+
+      switch(true) {
+        case d > 0 :
+          string = momentTime;
+          break;
+        case h > 0 :
+          string = "in " + hours + " hrs";
+          break;
+        case h == 01 :
+          string = "in " + hours + " hr, " + minutes + " mins";
+          break;
+        case m > 0 :
+          string = "in " + minutes + " min";
+          break;
+        case s > 0 :
+          string = "in " + seconds + " sec";
+          break;
+        case s < 0 :
+          string = 'Now';
+      }
+
+      return string;
+
+    },   
+
+    getThumbImage(event) {
+      if (event.archive_mux_playback_key !='') {
+
+        let rounding              = 1000 * 60 * 2; // Round to nearest 2mins.
+        let current_time          = new Date();
+        let current_time_rounded  = new Date(Math.round(current_time.getTime() / rounding) * rounding);
+        let start_time            = new Date(event.start);
+
+        let seconds_offset        = Math.floor( (current_time - start_time - 10)/1000 );
+        let seconds_offset_rounded= Math.floor( (current_time_rounded - start_time - 10)/1000 - 30 );
+        
+        let end         = seconds_offset + 5;    
+        let end_rounded = seconds_offset_rounded + 5;
+
+        //return "https://image.mux.com/"+event.archive_mux_playback_key+"/thumbnail.jpg?time="+seconds_offset_rounded;
+        
+        /* Use GIF. */
+        if (seconds_offset > 60) {
+          return "https://image.mux.com/"+event.archive_mux_playback_key+"/animated.gif?fps=15&start="+seconds_offset_rounded+"&end="+end_rounded;
+        } else {
+          // return "https://image.mux.com/"+event.archive_mux_playback_key+"/thumbnail.jpg?time="+seconds_offset;
+          return "https://image.mux.com/"+event.archive_mux_playback_key+"/thumbnail.jpg";
+        }
+
+
+      } else {
+        return event.thumbURL_med;
+      }
+    },
+
+    applyVideo() {
+      // console.log('Trying to play video.');
+
+      const video = this.$refs['video'];
+      // console.debug({video});
+      
+      for (vid_index in video) {
+        
+        let videoElm = video[vid_index];
+        let videoSrc = videoElm.getAttribute('src');
+
+        // console.debug({videoElm, videoSrc})
+
+        if (!videoElm.paused) {
+          // console.log('video is playing');
+          return;
+        }
+        
+        if (Hls.isSupported()) {
+
+          var config = {
+            // startLevel: 1,
+            capLevelToPlayerSize : true
+          }
+
+          var hls = new Hls(config);
+          hls.loadSource(videoSrc);
+          hls.attachMedia(videoElm);
+
+          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+            // console.log('video and hls.js are now bound together !');
+            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+              // console.log('manifest loaded, found ' + data.levels.length + ' quality level');
+              // console.log("First Level: "+data.firstLevel);
+            });
+          });
+
+          hls.on(Hls.Events.LEVEL_SWITCHING, function(event,data) {
+            //  console.log(event,data);
+            // console.log("Auto level Enabled: " +hls.autoLevelEnabled);
+          });
+
+        }
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          videoElm.src = videoSrc;
+          console.log('Native HLS playback.');
+        }
+
+      }
+
+    },
+   
+  }
+});
+</script>
+
+{embed=a/f}

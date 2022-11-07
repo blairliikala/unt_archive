@@ -1,0 +1,12 @@
+{exp:channel:entries channel="pages" limit="1"}
+
+{embed=a/h title="{title}" meta="{page_meta}"}
+  <section class="shorter_margin" style="margin-top:5em">
+    <h1>{title}</h1>
+    {page_code}
+    <p class="shorter_margin_edit">Last Edited: {edit_date format="%F %j %Y"}</p>
+  </section>
+{embed=a/js}  
+{embed=a/f}
+
+{/exp:channel:entries}

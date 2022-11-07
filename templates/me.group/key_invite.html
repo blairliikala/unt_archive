@@ -1,0 +1,65 @@
+{embed=a/h
+    title="Educator Invite"
+    meta="Invite an educator"
+}
+
+<div id="content">
+{if logged_in}
+
+{exp:user:key
+    template="me/register"
+    html="no"
+    parse="none"
+    word_wrap="no"
+}
+
+<h2>Educator Key Creation</h2>
+<p>Use this form to create and send an invite key to an educator.</p>
+<div id="login_form">
+<ul>
+
+    <li>
+        <label>Recipient Email:</label>
+        <input name="recipient_email" />
+    </li>
+
+    <li>
+        <label>Member Group</label>
+            <select name="group_id">
+            {member_groups}
+            <option value="{group_id}">{group_title}</option>
+            {/member_groups}
+            </select>
+    </li>
+    <li>
+        <label>From Name:</label>
+        <input name="sender_name" disabled value="UNT College of Music Archive" />
+    </li>
+    <li>
+        <label>From Email:</label>
+        <input name="sender_email" disabled value="{webmaster_email}" />
+    </li>
+    <li>
+        <label>Subject:</label>
+        <input name="subject" disabled value="University of North Texas Streaming Archive Invite" />
+    </li>
+    <li>
+        <label>Message:</label>
+        <textarea name="message"></textarea>
+    </li>
+
+     <li><button name="Send Invite" value="Submit" class="login_submit" id="submit" tabindex="3">Submit</button></li>
+    </ul>
+
+</div>
+
+{/exp:user:key}
+
+{if:else}
+    <p>You must be logged in to view this page.</p>
+{/if}
+
+</div>
+{embed=a/js}
+
+{embed=a/f}

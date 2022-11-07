@@ -1,0 +1,64 @@
+{!-- Shows iCal formatted events for upcoming live streams.  Events are removed afterwards.
+	For use, /feeds//ical-livestream/anything.ics
+--}{exp:ce_cache:it global="yes" seconds="604800" tags="ical"}{exp:channel:entries channel="ensembles" disable="member_data|pagination" require_entry="yes" limit="1" cache="yes" refresh="500" entry_id="{segment_3}"}
+{if count==1}BEGIN:VCALENDAR
+METHOD:PUBLISH
+VERSION:2.0
+X-APPLE-CALENDAR-COLOR:#2952A3
+X-WR-TIMEZONE:America/Chicago
+CALSCALE:GREGORIAN
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0600
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+DTSTART:20070311T020000
+TZNAME:CDT
+TZOFFSETTO:-0500
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0500
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+DTSTART:20071104T020000
+TZNAME:CST
+TZOFFSETTO:-0600
+END:STANDARD
+END:VTIMEZONE{/if}
+X-WR-CALNAME:UNT {title}
+X-WR-CALDESC:UNT College of Music Events
+{parents show_expired="yes" show_future_entries="yes" orderby="date" sort="desc" status="livestream|open"}
+BEGIN:VEVENT
+TITLE:{parents:entry_date format="%F %j, %Y"} {parents:title}
+TRANSP:OPAQUE
+DTEND;TZID=America/Chicago:{parents:expiration_date format="%Y%m%dT%H%i%s"}
+UID:{parents:entry_id}
+LOCATION:{if parents:room:entry_id=="3266" OR parents:room:entry_id=="3270"}Murchison Performing Arts Center\, 2100 Interstate 35E Frontage Rd\, Denton\, TX 76201
+{if:else}Music Building\, 415 Ave C\, Denton, TX 76201\, USA
+{/if}
+URL;VALUE=URI:http://recording.music.unt.edu{if status="livestream"}/live/{parents:entry_id}{if:else}/downloads/item/{parents:entry_id}{/if}
+DESCRIPTION:{parents:room:title}{if status=="livestream"} \nLive events start 15 minutes beforehand.{/if}\n{if parents:archive_concert_notes}{parents:archive_concert_notes}\n{/if}{parents:ondemand_chapters_grid backspace="2"}{exp:ce_str:ing remove_html}{parents:ondemand_chapters_grid:name_of_piece}{/exp:ce_str:ing} -  {exp:ce_str:ing remove_html}{parents:ondemand_chapters_grid:name_of_composer}{/exp:ce_str:ing}\n{/parents:ondemand_chapters_grid}
+SEQUENCE:{if parents:archive_ical_increment}{parents:archive_ical_increment}{if:else}1{/if}
+SUMMARY:{parents:title}
+{if parents:concert_program}{parents:concert_program}ATTACH;FILENAME={parents:concert_program:filename}.{parents:concert_program:extension};FMTTYPE=text/pdf;MANAGED-ID=100000{parents:concert_program:source_id}
+ 65539ff;SIZE={parents:concert_program:size unformatted="yes"};VALUE=URI:http://recording.music.unt.edu{parents:concert_program:url}{/concert_program}{/if}
+DTSTART;TZID=America/Chicago:{parents:entry_date format="%Y%m%dT%H%i%s"}
+{if parents:status=="livestream"}
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:entry_id}{parents:entry_id}
+UID:{parents:entry_id}{parents:entry_id}
+TRIGGER;VALUE=DATE-TIME:{parents:entry_date format="%Y%m%dT%H%i%s"}Z
+ACTION:NONE
+END:VALARM
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:entry_id}{parents:entry_id}
+UID:{parents:entry_id}{parents:entry_id}
+TRIGGER:-P15M
+ATTACH;VALUE=URI:Basso
+ACTION:AUDIO
+END:VALARM
+{/if}
+END:VEVENT
+{ical_space}{/parents}
+{if count=='{total_results}'}END:VCALENDAR{/if}
+{/exp:channel:entries}
+{/exp:ce_cache:it}

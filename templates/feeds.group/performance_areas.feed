@@ -1,0 +1,83 @@
+{!--
+
+  Access:       Entry Link.
+  For:          Students, Faculty.
+  Description:  Lists all archive entries.
+
+--}
+{exp:ce_cache:it seconds="0" trim="yes" global="yes" id="rss-all" tags="rss"}
+
+{preload_replace:root="downloads"}
+{preload_replace:entry="item"}
+
+{exp:rss:feed channel="performance_categories" dynamic_start="yes" debug="yes"}
+
+<?xml version="1.0" encoding="{encoding}"?>
+<rss version="2.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:admin="http://webns.net/mvcb/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/">
+
+    <channel>
+
+    <title><![CDATA[{exp:channel:entries channel="performance_categories" disable="member_data|pagination|categories|custom_fields" cache="yes" refresh="500"}{exp:xml_encode}{title}{/exp:xml_encode}{/exp:channel:entries}]]></title>
+    <link>{site_url}/downloads</link>
+    <description>Events by Performance Area</description>
+    <date>{gmt_date format="%Y-%m-%dT%H:%i:%s%Q"}</date>
+    <atom:link href="httpss://recording.music.unt.edu/{segment_1}/{segment_2}/{segment_3}" rel="self" type="application/rss+xml" />    
+    
+{exp:channel:entries
+  channel="performance_categories" 
+  dynamic_start="on" 
+  disable="categories|member_data|pagination" 
+}
+  {parents orderby="title"}
+    {parents:parents show_expired="yes" show_future_entries="yes" orderby="date" limit="6"}
+    <item>
+      <title><![CDATA[{parents:parents:entry_date format="%M %d, %Y"} {exp:ce_str:ing remove_html}{parents:parents:title}{/exp:ce_str:ing}]]></title>
+      <link>{parents:parents:entry_id_path='downloads/item'}</link>
+      <guid>{parents:parents:entry_id_path='downloads/item'}</guid>
+      <description><![CDATA[
+        <a href="{parents:parents:entry_id_path=downloads/item}">
+              {if parents:parents:ondemand_image}
+                {exp:ce_img:pair src="{parents:parents:ondemand_image}" width="544" height="306" crop="yes" save_type="jpg"}
+                    <img src="{site_url}{made}" alt="{title}" title="Preview" />
+                {/exp:ce_img:pair}
+              {/if}
+        </a>
+
+        <ol>
+          {parents:parents:ondemand_chapters_grid}
+          <li>
+            {exp:ce_str:ing remove_html}{exp:xml_encode}
+              {parents:parents:ondemand_chapters_grid:name_of_piece}
+            {/exp:xml_encode}{/exp:ce_str:ing}
+            
+            {if parents:parents:ondemand_chapters_grid:name_of_composer}
+              {exp:ce_str:ing remove_html}{exp:xml_encode}by {parents:parents:ondemand_chapters_grid:name_of_composer}{/exp:xml_encode}{/exp:ce_str:ing}
+            {/if}
+
+            {if parents:parents:ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing remove_html}{exp:xml_encode}arr. {parents:parents:ondemand_chapters_grid:name_of_arranger}{/exp:xml_encode}{/exp:ce_str:ing}{/if}
+          </li>
+          {/parents:parents:ondemand_chapters_grid}
+        </ol>
+
+        {if parents:parents:archive_concert_notes}<p>{exp:xml_encode}{parents:parents:archive_concert_notes}{/exp:xml_encode}</p>{/if}
+
+      ]]></description>
+      <dc:date>{parents:parents:gmt_entry_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+    </item>
+
+  {/parents:parents}    
+  {/parents}
+{/exp:channel:entries}
+    
+    </channel>
+</rss>
+
+{/exp:rss:feed}
+
+
+{exp:ce_cache:it}

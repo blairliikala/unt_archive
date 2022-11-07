@@ -1,0 +1,79 @@
+{embed=a/h title="On Demand" meta="Streaming Video Library"}
+{embed='downloads/_nav'}
+<section id="content">
+
+<h1>Streamed Events Archive</h1>
+<p>Concerts that have streaming video available.</p>
+
+	{exp:channel:entries
+		channel="live"
+		show_expired="yes" 
+		search:global_streaming="yes" 
+		status="open" 
+		disable="member_data|categories" 
+		show_future="no" 
+		paginate="both" 
+		cache="yes" refresh="500" 
+		limit="16"
+	}
+
+	{if no_results}<p>No Results</p>{/if}
+
+	{paginate}
+    {pagination_links}
+		  {if {total_pages} > 1}
+	    <ul class="pagination">
+            <li>Page {current_page} of {total_pages}</li>
+            {first_page}<li><a href="{pagination_url}" class="page-first"><i class="fa fa-angle-double-left"></i> First Page</a></li>{/first_page}
+            {previous_page}<li><a href="{pagination_url}" class="page-previous"><i class="fa fa-angle-left"></i> Previous</a></li>{/previous_page}
+            {next_page}<li><a href="{pagination_url}" class="page-next">Next <i class="fa fa-angle-right"></i> </a></li>{/next_page}
+            {last_page}<li><a href="{pagination_url}" class="page-last">Last Page <i class="fa fa-angle-double-right"></i> </a></li>{/last_page}
+	    </ul>
+	   	{/if}
+		{/pagination_links}
+  {/paginate}
+
+  {if count == '1'}
+  <article class="flex_image_grid">
+  {/if}
+
+    <a href="{entry_id_path=media/playvideo}" class="flex_image_grid-link tippy" title="Works by {ondemand_chapters_grid backspace='2'}{ondemand_chapters_grid:name_of_composer}, {/ondemand_chapters_grid}">
+    {if ondemand_image}
+      <img srcset="
+                {exp:ce_img:pair src="{ondemand_image}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+                {exp:ce_img:pair src="{ondemand_image}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+                {exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+                {exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+        sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+        src="{exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="flex_image_grid-image"
+      />
+	  {if:else}
+		  {related_ensembles_v2 limit="1"}
+		    <img srcset="
+		                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="160" height="90" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 160w,
+		                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="320" height="180" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 320w,
+		                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="480" height="270" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 480w,
+		                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair} 640w"
+		        sizes="(min-width:768px) 19vw, (max-width:768px) 26vw, 100vw"
+		        src="{exp:ce_img:pair src="{ondemand_image}" width="480" height="270" crop="yes" save_type="jpg"}{made} {/exp:ce_img:pair}" alt="{title}" class="flex_image_grid-image"
+		      />
+  		  {if related_ensembles_v2:no_results}
+  		    {exp:ce_img:pair src="/images/default.png" width="320" height="180" crop="yes" save_type="jpg"}
+  		      <img src="{site_url}{made}" alt="{title}" itemprop="image" class="flex_image_grid-image" />
+  		    {/exp:ce_img:pair}
+  		  {/if}
+		  {/related_ensembles_v2}
+	  {/if}
+    <p class="flex_image_grid-title">{entry_date format="%F %j, %Y"} <br />{exp:char_limit total="50"}{title}{/exp:char_limit}</p>
+    </a>
+
+    {if count==total_results}
+    </article>
+    {/if}
+
+  {/exp:channel:entries}
+
+
+</section>
+{embed=a/js}
+{embed=a/f}

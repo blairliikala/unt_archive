@@ -1,0 +1,17 @@
+{embed=a/h
+    title="Educator Invite - Submitted"
+    meta="Request is submitted."
+}
+<div id="content">
+
+{if logged_in_member_group=='3' OR logged_in_member_group=='4'}
+
+  <h1>Submitted</h1>
+  <p>The request has been submitted, and is usually reviewed within 24hrs or less.  You will get an email when we have approved the request, though spam blockers have been known to block it.</p>
+
+{if:else}
+	<p>You have been approved! <a href="{site_url}/downloads" class="basic_button">Start streaming</p></a></p>
+{/if}
+
+</div>
+{embed=a/f}

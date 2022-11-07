@@ -1,0 +1,89 @@
+{if segment_3==''}
+<p>Error!  An ID is needed to search this, and is probably a mistake in a link.</p>
+{if:else}
+
+
+{exp:channel:entries
+	channel="faculty" 
+	disable="member_data|category_fields|categories|pagination"
+	search:faculty_euid="{segment_3}"
+	cache="yes" refresh="500" 
+}
+  {if no_results}<!-- no instruments found -->{/if}
+
+  {faculty_view_instruments}
+  <section class="scroll_group">
+    <header class="scroll_group_header">
+      <h2 class="scroll_group_title"><a href="{site_url}/downloads/byensemble/{entry_id}">{faculty_view_instruments:title}</a></h2>
+      <button class="basic_button tippy" title="Student recitals listed by the primary instrument. This instrument category was assigned by our staff."><i class="fa fa-info"></i></button>
+    </header>
+    <div class="scroll_group_items">
+
+    {if faculty_view_instruments:parents:count=="1"}
+      {!-- This doesn't show up in v5. --} 
+    {/if}  
+
+    {faculty_view_instruments:parents
+      show_expired="yes" 
+      show_future_entries="yes"
+      field="archive_instrument" 
+      orderby="date" 
+      sort="desc"
+      limit="12"
+      status="open|scheduled"
+    }
+
+      {if faculty_view_instruments:parents:no_results}<!-- no instruments found -->{/if}
+
+      <div class="scroll_group_item {if faculty_view_instruments:parents:entry_date > current_time}upcoming_event{/if}"> 
+
+        {if faculty_view_instruments:parents:expiration_date > current_time}
+          <a href="{faculty_view_instruments:parents:entry_id_path=live/event}" data-hjtag="assigned-instruments" title="{faculty_view_instruments:parents:title}" class="tippy">
+        {if:else} 
+          <a href="{faculty_view_instruments:parents:entry_id_path=downloads/item}" data-hjtag="assigned-instruments" title="{faculty_view_instruments:parents:title}" class="tippy">        
+        {/if}
+
+        <div class="scroll_group_item_img_container">
+        <div class="scroll_group_item_img_container2">
+
+          {if faculty_view_instruments:parents:ondemand_image}
+              {exp:ce_img:pair src="{faculty_view_instruments:parents:ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif faculty_view_instruments:parents:archive_default_image}
+              {exp:ce_img:pair src="{faculty_view_instruments:parents:archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{faculty_view_instruments:parents:related_ensembles_v2:default_picture}' }
+              {exp:ce_img:pair src="{faculty_view_instruments:parents:related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{faculty_view_instruments:parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+              {exp:ce_img:pair src="{faculty_view_instruments:parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{faculty_view_instruments:parents:room:room_primary_image:server_path}' }
+              {exp:ce_img:pair src="{faculty_view_instruments:parents:room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:else}
+              {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{title}" alt="{faculty_view_instruments:parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {/if}
+          
+          </div></div>
+          <section class="scroll_group_item_meta">
+            <h4>{exp:char_limit total="30"}{faculty_view_instruments:parents:title}{/exp:char_limit}</h4>
+            <p>{faculty_view_instruments:parents:entry_date format="%F %j, %Y"} {if faculty_view_instruments:parents:entry_date > current_time}{faculty_view_instruments:parents:entry_date format="%g:%i%a"}{/if}</p>
+          </section>
+        </a>      
+      </div>
+      {/if}
+
+      {/faculty_view_instruments:parents}
+      </div>
+    </section>
+  {/faculty_view_instruments}
+{/exp:channel:entries}
+{/if}

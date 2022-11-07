@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"> 
+  <url><loc>{site_url}/</loc><changefreq>monthly</changefreq><priority>.7</priority></url>
+  <url><loc>{site_url}/services</loc><changefreq>monthly</changefreq><priority>.7</priority></url>
+  <url><loc>{site_url}/live</loc><changefreq>hourly</changefreq><priority>1</priority></url>
+  <url><loc>{site_url}/downloads/calendar</loc><changefreq>daily</changefreq><priority>.9</priority></url>
+  <url><loc>{site_url}/downloads/byensemble</loc><changefreq>daily</changefreq><priority>.8</priority></url>
+  <url><loc>{site_url}/downloads/byinstrument</loc><changefreq>daily</changefreq><priority>.8</priority></url>  
+  <url><loc>{site_url}/pages/about_us</loc><changefreq>monthly</changefreq><priority>.6</priority></url>
+
+{exp:channel:entries
+  channel="live"
+  show_future_entries="yes"
+  status="scheduled"
+  cache="yes"
+  refresh="10000"  
+  disable="categories|pagination|custom_fields|member_data"
+}{if '{room:room_enable_live_streaming}' == true}<url><loc>{site_url}/live/event/{entry_id}</loc><changefreq>weekly</changefreq><priority>.8<priority></url>{/if}{/exp:channel:entries}
+
+{exp:ce_cache:it seconds="28800" tags="sitemap" id="sitemap"}
+	{exp:channel:entries channel="ensembles|instruments" cache="no" refresh="500" disable="categories|pagination|custom_fields|member_data|relationships"}<url><loc>{site_url}/downloads/byensemble/{entry_id}</loc><changefreq>daily</changefreq><priority>.5</priority></url>{/exp:channel:entries}
+  {exp:channel:entries 
+    channel="live" 
+    show_future_entries="yes"
+    status="livestream"
+    disable="categories|pagination|custom_fields|member_data|relationships"
+  }<url><loc>{site_url}/live/event/{entry_id}</loc><changefreq>daily</changefreq><priority>.8</priority></url>{/exp:channel:entries}
+  {exp:tag:cloud channel="live" show_expired="yes" limit="10000" cache="yes" refresh="10000" tag_group="3"}<url><loc>{site_url}/downloads/tag/{websafe_tag}</loc><changefreq>monthly</changefreq><priority>.5</priority></url>{/exp:tag:cloud}
+{/exp:ce_cache:it}
+
+
+
+</urlset>

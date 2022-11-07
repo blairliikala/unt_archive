@@ -1,0 +1,898 @@
+{!--
+
+  Charge checkout with Stripe v3, set to change Media Archive entries on complete.
+
+--}
+
+<!-- Charge + Stripe Elements -->
+{preload_replace:template_root="chargecheckout"}
+{exp:channel:entries
+  channel="live"
+  show_future_entries="yes"
+  disable="pagnination"
+  limit="1"
+  status="Needspayment|Scheduled|Cancelled"
+}
+{if no_results}
+  {embed=a/h title="Payment - Not Available"}
+  <div id="content">
+    <h1>Payment Not Available</h1>
+    <p>The event you requested is not available for payment.  Please contact us if this is in error.</p>
+  </div>
+  {embed=a/f}
+{/if}
+
+{embed=a/h title="Payment and Final Checkout" meta="Payment information and Buying"}
+
+{if logged_out}
+<p>LOGIN!</p>
+{/if}
+
+{if status=="Scheduled"}
+  <div id="content">
+    <h1>No Payment Requred</h1>
+    <p>This event is scheduled for recording and does not have any pending payments needed.</p>
+  </div>
+{/if}
+
+
+{if status=="Cancelled"}
+  <div id="content">
+    <h1>Event Cancelled</h1>
+    <p>This event has been marked as cancelled either because no payment was made more than 2 weeks from the event date, or the event was marked as cancelled in Roomview.</p>
+  </div>
+{/if}
+
+{if status=="NeedsPayment"}
+
+<div id="content">
+  <!--<h1 style="color:red">This form is in active development, please wait a bit...</h1>-->
+  <h3><span class="fa fa-shopping-cart"></span> Payment</h3>
+
+  <article class="center-align">
+
+    <h1>{title}</h1>
+    <p>{entry_date format='%F %j, %Y %g:%i%a'} in  {room}{room:title}{/room}<br />
+      Classification: {archive_recital_type backspace="2"}{archive_recital_type:title}, {/archive_recital_type}<br />
+    {if archive_late_cancellation_fee > 1}
+      Late Notice Cancellation: ${archive_late_cancellation_fee}.00<br  />
+    {/if}
+    <strong>Total: <span id="display_total"></span></strong>
+
+    {!--
+    {archive_recital_type}
+      {if count=='1'}Type: {/if}{archive_recital_type:title} {if count==total_results}<br />{/if}
+    {/archive_recital_type}
+    Amount Due: 
+      {if '{archive_amount_due}' > 0 }
+        ${archive_amount_due}.00
+      {if:else}
+        {if "{service_audio limit='1'}{service_audio:cost}{/service_audio}" > 0}
+          ${service_audio limit='1'}{service_audio:cost}{/service_audio}.00
+        {if:else}
+          <!-- Error, no amount due? -->
+        {/if}
+      {/if}
+    --}
+    </p>
+  </article>
+
+
+  <div class="center-align">
+    <h2>Checkout Options:</h2>
+  </div>
+
+{exp:charge:form
+    form_id="checkout_form"
+    form_class="charge_form"
+
+    on_success:entry_id="{entry_id}"
+    on_success="recitalpayment"
+
+    on_success:archive_charege_paid="yes"
+    on_success:archive_charge_hash_receipt="{hash}"
+    on_success:archive_amount_due="0"
+
+    on_success:archive_late_cancellation_fee="0"
+
+    return="{template_root}/complete"
+    return_error="{template_root}/error"
+}
+
+
+  <!-- **************** Credit Card ************** -->
+  <section id="services_payment_column" class="services_payment_column center-align">
+
+    <article id="additional_payment_instructions" class="payment_type_block" style="display:none">
+      <h2 class="payment_type_header">Quick Pay</h2>
+      <div id="payment-request-button" style="max-width:200px;"></div>
+    </article>
+
+
+    <article class="payment_type_block">
+      <h2 class="payment_type_header">Standard Credit Card</h2>    
+      <!--<fieldset id="paymentFields" class="payment">-->
+        <!--<legend>Card Info</legend>-->
+
+        <section>
+          <article>
+            <label for="cc_name">Name</label>
+            <input 
+              id="cc_name"
+              class="field is-empty" 
+              type="text" 
+              placeholder="Name on Card" 
+              name="customer_name" 
+              value="{logged_in_screen_name}"
+              title="Name on the credit card."
+            />
+          </article>
+          
+          <article>  
+            <label for="cc_email">Receipt Email</label>
+            <input 
+              id="cc_email"
+              class="field" 
+              type="email" 
+              placeholder="" 
+              name="customer_email" 
+              value="{logged_in_email}"
+              title="Where to send a receipt email."
+            />
+          </article>       
+
+          <article>
+            <label for="phone">Phone (optional)</label>
+            <input 
+              type="tel" 
+              name="phone" 
+              id="field_phone" 
+              value="" 
+              title="Optional.  Helpful if we have a question" 
+              autocomplete="phone" 
+            />
+          </article>
+        </section>
+        
+        <section>
+          <article>
+            <!--<label>Card Details</label>-->
+            <div id="card-element" class="field is-empty"></div>
+          </article>
+        </section>
+       
+        <div id="element_CardErrors" class="cc_msg_hidden alerts alert-error" role="alert"></div>
+        <div id="element_Success" class="cc_msg_hidden alerts alert-success" role="alert"><i class="fa fa-check-circle" aria-hidden="true"></i> Card Check Verified, Attempting to charge it, please wait... <i class="fa fa-cog fa-spin" aria-hidden="true"></i></div>
+        <div id="chargeErrors" class="alerts alert-error hidden"></div>
+
+        <!-- The amount that will actually get charged through php, updated from Javascript -->
+        <input 
+            type="hidden"
+            id="amount_total"
+            value="0" 
+            name="plan_amount"
+        />
+
+
+
+        <!-- Hidden fiels for Stripe Meta. -->
+        <input type="hidden" name="meta:EUID" value="{logged_in_username}" >
+        <input type="hidden" name="meta:ConcertType" value="{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}" >
+        <input type="hidden" name="meta:Location" value="{room backspace='2'}{room:title}, {/room}" >
+        <input type="hidden" name="meta:Date" value="{entry_date format='%F %j, %Y'}" >
+        <!--<input type="hidden" name="meta:LateFee" value="{item_options:product_late_fee}" >-->
+
+        <button type="submit" id="complete_order_button" class="submit_order_button" disabled />Submit Charge for <span id="orderButtonTotal"></span></button>
+
+      <!--</fieldset>-->
+    </article>
+
+  </section>
+
+{/exp:charge:form}
+
+
+  <article id="chargeSuccess" class="charge_success hidden" aria-hidden="true">
+    <h1>Payment Successful!</h1>
+    <p>We charged <span id="success_amount"></span> and updated the event details.</p>
+    <p><span id="success_receipt_link" class="basic_button"></span></p>
+    <p>You can logout or close this window.</p>
+  </article>
+
+
+{if logged_in_member_id ==1}
+
+  <article class="center-align payment_type_block">
+    <!--<h1 style="width:100%;margin:2em auto;padding:.5em 0;text-align:center;border-top:1px dotted var(--midgray);border-bottom:1px dotted var(--midgray)">OR</h1>-->
+
+    <h2 class="payment_type_header">Use Department Funds</h2>
+
+    {exp:channel:form 
+      id="ido_form"  
+      channel="live"
+      entry_id="{segment_2}"
+      status="open|pending|closed|Needspayment"
+      include_jquery="no"
+      include_assets="no"
+      unique_url_title="yes"
+      json="yes"
+    }
+      <label for="ido_field">Department Chartstring:</label>
+      <input type="text" name="archive_billing_chart_string" id="ido_field" value="{archive_billing_chart_string}" />
+      <input type="hidden" name="status" value="Scheduled" />
+      <button type="submit" id="ido_submit" class="submit_order_button">Submit</button>
+    {/exp:channel:form}    
+  </article>
+{/if}
+
+
+
+  <article class="center-align">
+    <h3>Policy Review</h3>
+    <p>Payment made here is applied to the specified recital, and must be used this academic year.</p>
+    <p>Payments are only refundable up to <strong>2 weeks</strong> before the date of the concert.</p>
+    <p>Refunds must be requestd in an email (recordingservices@unt.edu)</p>
+    <p>Concert date may be moved or cancelled up to the <strong>2 weeks</strong> before the recital.</p>
+    <p>Concert recordings are only acccessible while you are a current student with an active EUID.<br />The university defines this as <strong>1 semester</strong> after your last class.</p>
+  </article>
+
+</div><!--content-->
+
+
+{jquery}
+{embed=a/js}
+
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+jQuery(document).ready(function($) {
+
+/********** Payment Scripts **********/
+(async () => {
+
+const paymentFormID         = document.getElementById('checkout_form');
+const paymentFormIDJquery   = $('#checkout_form');
+
+var form = paymentFormID.elements;
+
+/** Elements **/
+const element_CardErrors    = document.getElementById('element_CardErrors'); // When entering a credit card wrong.
+const element_success       = document.getElementById('element_Success'); // When token is received.
+//const element_chargeError   = document.getElementById('element_chargeError'); // If token fails.
+const element_submitButton  = document.getElementById('complete_order_button'); // CC submit button.
+
+var total1      = 0;
+var total_audio = 0;
+var total_video = 0;
+var archive_late_cancellation_fee = 0;
+
+{!-- Use EE code to figure out which fields to use for total amount --}
+{if '{archive_amount_due}' > 0 }
+  total1 = {archive_amount_due};
+{if:else}
+  {if "{service_audio limit='1'}{service_audio:cost}{/service_audio}" > 0}
+    total_audio = {service_audio limit='1'}{service_audio:cost}{/service_audio};
+  {/if}
+  {if "{service_video limit='1'}{service_video:cost}{/service_video}" > 0}
+    total_video = {service_video limit='1'}{service_video:cost}{/service_video};
+  {/if}
+{/if}
+
+{if archive_late_cancellation_fee != ''}
+  archive_late_cancellation_fee = {archive_late_cancellation_fee};
+{/if}
+
+
+//
+
+const amount_total = total1 + total_video + total_audio + archive_late_cancellation_fee;
+
+console.log('Total being sent to Stripe: ', amount_total);
+
+// Put the amount into the form field for Charge to use later in php.
+document.querySelector('#amount_total').value = amount_total;
+
+// Display the amount with extra signage.
+document.querySelector('#display_total').innerHTML    = "$" + amount_total + ".00";
+document.querySelector('#orderButtonTotal').innerHTML = "$" + amount_total + ".00";
+
+var cc_field_complete       = false;
+var contact_info_complete   = false;
+
+// Outputs either live/test keys based on backend settings.
+const stripe = Stripe( "{exp:charge:public_key}" );
+
+// Create an instance of Elements.
+const elements = stripe.elements();
+
+
+// Create a Card Element and pass some custom styles to it.
+var card = elements.create('card', {
+  paymentRequest: paymentRequest,
+  iconStyle: 'solid',
+  style: {
+    base: {
+      iconColor: '#8898AA',
+      color: 'black',
+      lineHeight: '36px',
+      fontWeight: 300,
+      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontSize: '19px',
+
+      '::placeholder': {
+        color: '#8898AA',
+      },
+    },
+    invalid: {
+      iconColor: '#e85746',
+      color: '#e85746',
+    }
+  },
+  classes: {
+    focus: 'is-focused',
+    empty: 'is-empty',
+  },
+});
+
+
+
+// Mount the Card Element on the page.
+card.mount('#card-element');
+
+
+// Monitor change events on the Card Element to display any errors.
+card.on('change', ({error}) => {
+  if (error) {
+    element_CardErrors.innerHTML = '<i class="fa fa-times-circle" aria-hidden="true"></i> '+error.message;
+    element_CardErrors.classList.remove('cc_msg_hidden');
+    element_submitButton.disabled = true;
+    cc_field_complete = false;
+  } else {
+    element_CardErrors.classList.add('cc_msg_hidden');
+  }
+  verify();
+});
+
+card.on('change', (event) => {
+  if (event.complete === true) {
+    cc_field_complete = true;
+  }
+  verify();
+});
+
+// Check on Load.
+if ( form.customer_name.value.length > 5 && form.customer_email.value.length > 10 ) {
+  contact_info_complete = true;
+} else {
+  contact_info_complete = false;
+}
+/*
+if ( $('#cc_name').val().length > 5 && $('#cc_email').val().length > 10 ) {
+  contact_info_complete = true;
+} else {
+  contact_info_complete = false;
+}
+*/
+
+paymentFormID.addEventListener('keyup', e => {
+  if ( form.customer_name.value.length > 5 && form.customer_email.value.length > 10 ) {
+    contact_info_complete = true;
+  } else {
+    contact_info_complete = false;
+  } 
+  verify();
+});
+
+/*
+$(paymentFormIDJquery).on('keyup', (e) => {
+  if ( $('#cc_name').val().length > 5 && $('#cc_email').val().length  > 10 ) {
+    contact_info_complete = true;
+  } else {
+    contact_info_complete = false;
+  }
+  verify();
+});
+*/
+
+function verify() {
+  if (cc_field_complete && contact_info_complete) {
+    element_submitButton.disabled = false;
+  }
+}
+
+
+var paymentRequest = stripe.paymentRequest({
+  country: 'US',
+  currency: 'usd',
+  total: {
+    label: 'UNT Recording Services',
+    amount: amount_total * 100,
+  },
+  displayItems: [
+    {if "{service_audio limit='1'}{service_audio:cost}{/service_audio}" > 0}
+      {service_audio limit='1'}
+      {
+        amount: {service_audio:cost} * 100,
+        label: 'Recital {service_audio:option_name} Recording'
+      },
+      {/service_audio}
+    {/if}
+    {if "{service_video limit='1'}{service_video:cost}{/service_video}" > 0}
+      {service_video limit='1'}
+      {
+        amount: {service_video:cost} * 100,
+        label: '{service_video:option_name}'
+      }
+      {/service_video}
+    {/if}
+  ],
+  requestPayerName: true,
+  requestPayerEmail: true,
+});
+
+
+
+
+// Create the Payment Request Button.
+const paymentRequestButton = elements.create('paymentRequestButton', {
+  paymentRequest:paymentRequest,
+});
+
+// Check if the Payment Request is available (or Apple Pay on the Web).
+const paymentRequestSupport = await paymentRequest.canMakePayment();
+if (paymentRequestSupport) {
+
+  // Display the Pay button by mounting the Element in the DOM.
+  paymentRequestButton.mount('#payment-request-button');
+
+  /** Show additional payment options **/
+  let instructions = document.querySelector('#additional_payment_instructions');
+  instructions.style.display = "block";
+  
+  /* For using classes instead of ID.
+  let instructions = document.querySelectorAll('.additional_payment_instructions');  
+  for (var instruction of instructions) {
+    instruction.style.display = "block";
+  }
+  */
+
+}
+
+
+
+
+
+/***********  Standard Credit Card submit.  *********/
+//paymentFormID.addEventListener('submit', function(e) {
+  paymentFormID.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  //** Double-check all form fields are good **/
+  element_submitButton.disabled = true;
+  
+  const extraDetails = {
+    //name: paymentFormID.querySelector('input[name=customer_name]').value,
+    name: form.customer_name.value,
+    //email: paymentFormID.querySelector('input[name=customer_email]').value,
+    email: form.customer_email.value,
+  };
+
+  /* Create Toaken */
+  stripe.createToken(card, extraDetails).then(setOutcome);
+
+});
+
+
+
+
+/** When Stripe returns a token by any means, then charge using EE **/
+paymentRequest.on('token', function(stripeResponse) {
+  // Send the token to server to charge it.
+  setOutcome(stripeResponse);
+});
+
+
+
+
+
+/** Change Styling, and proceed to charging the card. **/
+function setOutcome(stripeResponse) {
+
+  // Card was approved, and it returned a token.
+  if (stripeResponse.token) {
+
+    element_success.classList.remove('cc_msg_hidden');
+
+    // Charge the card.  Leaving here for reference.
+    // submitToCharge(stripeResponse.token);
+
+    // Send to Cartthrob to charge the card.
+    submitToCharge(paymentFormIDJquery, stripeResponse.token);
+
+  } else if (stripeResponse.error) {
+    element_CardErrors.innerHTML = '<i class="fa fa-times-circle" aria-hidden="true"></i> '+stripeResponse.error.message;
+    element_CardErrors.classList.remove('cc_msg_hidden');
+  }
+}
+
+
+
+
+
+function submitToCharge(formID, stripeResponse) {
+
+  /** Add hidden fields returned from Stripe to add to Cartthrob **/
+  const hiddenFields = {
+      card_token:           stripeResponse.id, // Charge
+      stripeToken:          stripeResponse.id, // Cartthrob
+      card_last4:           stripeResponse.card.last4, // Charge
+      credit_card_number:   stripeResponse.card.last4, // Cartthrob
+      card_type:            stripeResponse.card.brand,
+      card_name:            stripeResponse.card.name,
+      card_exp_month:       stripeResponse.card.exp_month,
+      card_exp_year:        stripeResponse.card.exp_year,
+      card_fingerprint:     stripeResponse.card.fingerprint,
+      card_address_line1:   stripeResponse.card.address_line1,
+      card_address_line2:   stripeResponse.card.address_line2,
+      card_address_city:    stripeResponse.card.address_city,
+      card_address_state:   stripeResponse.card.address_state,
+      card_address_zip:     stripeResponse.card.address_zip,
+      card_address_country: stripeResponse.card.address_country,
+      customer_name:        paymentFormID.querySelector('input[name=customer_name]').value,
+  };  
+  for (var prop in hiddenFields) {
+    if(hiddenFields.hasOwnProperty(prop)){
+        paymentFormID.innerHTML += "<input type='hidden' name=" + prop + " value='" + hiddenFields[prop] + "'/>";
+    }
+  }
+
+  // Tell the browser to submit the form like normal.
+  //formID.submit();
+
+  // AJAX Example
+  
+   $.ajax({
+    type: 'POST',
+    url: $(formID).attr('action'),
+    data: $(formID).serialize(),
+    success: function (eeChargeResponse) {
+
+        console.log(eeChargeResponse);
+
+        if (typeof(eeChargeResponse) == 'string') {
+          eeResponse = JSON.parse(eeResponse);
+        }
+
+        if (eeChargeResponse.success) {
+
+          let successDiv         = document.querySelector('#chargeSuccess');
+          let successAmountDiv   = document.querySelector('#success_amount');
+          let successReceiptLink = document.querySelector('#success_receipt_link');
+          //let creditcardFields   = document.querySelector('#paymentFields');
+
+          // Hide credit card fields.
+          //creditcardFields.classList.add('hidden');
+
+          // Hide credit card form.
+          services_payment_column.classList.add('hidden');
+
+          // Show success message.
+          successDiv.classList.remove('hidden');
+
+          // Add custom data to success message.
+          successAmountDiv.innerHTML   = eeChargeResponse.data.amount_currency_formatted;
+          successReceiptLink.innerHTML = '<a href="/chargecheckout/receipt/'+eeChargeResponse.data.hash+'">View Receipt</a>';
+
+          // Fireworks.
+          showFireworks();
+          setTimeout(removeFireworks, 8000);
+
+        } else {
+
+          let paymentDiv = document.querySelector('#chargeErrors');
+          paymentDiv.innerHTML = '<p>There was a problem when trying to charge the credit card, and likely was not charged.  Here is what we know: '+eeChargeResponse.errors+'</p>';
+          paymentDiv.classList.remove = 'hidden';
+
+          element_submitButton.disabled = false;
+        }
+
+    },
+
+    error: function (xhr, text, error) {
+      console.error(error);
+      let paymentDiv = document.querySelector('#chargeErrors');
+      paymentDiv.innerHTML = '<p>There was a problem trying to charge the credit card.  No charge has been made yet, and the error has been logged. You can try again or contact us recordingservices@unt.edu</p>';
+      paymentDiv.classList.remove = 'hidden';     
+    }
+  });
+
+
+}
+
+
+
+var inputs = paymentFormID.querySelectorAll('input.field');
+Array.prototype.forEach.call(inputs, function(input) {
+  input.addEventListener('focus', function() {
+    input.classList.add('is-focused');
+  });
+  input.addEventListener('blur', function() {
+    input.classList.remove('is-focused');
+  });
+  input.addEventListener('keyup', function() {
+    if (input.value.length === 0) {
+      input.classList.add('is-empty');
+    } else {
+      input.classList.remove('is-empty');
+    }
+  });
+});
+
+
+
+
+
+})(); // async immediate function.
+});// Jquery
+
+
+
+
+
+/****
+  
+  For displaying Firework after submission
+
+****/
+class FireworkParticle {
+  
+  constructor( context, width, height, total ) {
+    this.context = context;  
+    this.width = width;
+    this.height = height;
+    this.total = total;
+    this.done = 0;
+    this.x = 0;
+    this.xTo = 0;
+    this.y = 0;
+    this.yTo = 0;
+    this.ease = 20;
+    this.size = 300;
+    this.hue = 0, 
+    this.particles = [];
+    this.reset(); 
+  }
+  
+  between( min, max ) {
+    return Math.random() * ( max - min + 1 ) + min;
+  }
+  
+  complete() {
+    return ( this.done >= this.total );
+  }
+  
+  reset() {
+    this.particles = [];
+    this.x = this.between( 100, this.width - 100 );
+    this.xTo = this.between( this.x + 100, this.x - 100 );
+    this.y = this.height + 10;
+    this.yTo = this.height / 2 - this.between( 0, 200 );
+    this.ease = this.between( 12, 20 );
+    this.hue = this.between( 100, 360 );
+    this.done = 0;
+  }
+  
+  explode() {
+    this.particles = [];
+    this.context.clearRect( 0, 0, this.width, this.height ); // flash 
+    
+    for ( let i = 0; i < this.total; i++ ) {
+      this.particles.push( {
+        x     : this.x,
+        y     : this.y,
+        xTo   : this.between( this.x - this.size, this.x + this.size ),
+        yTo   : this.between( this.y - this.size, this.y + this.size ),
+        size  : this.between( 1, 3 ),
+        ease  : this.between( 8, 28 ),
+        hue   : this.between( this.hue - 100, this.hue ),
+        alpha : 1
+      });
+    }
+  }
+  
+  update( width, height ) {
+    this.width = width || this.width;
+    this.height = height || this.height;
+    this.x += ( this.xTo - this.x ) / this.ease;
+    this.y += ( this.yTo - this.y ) / this.ease;
+  }
+  
+  drawBomb() {
+    this.context.beginPath();
+    this.context.arc( this.x, this.y, 2, 0, 2 * Math.PI, false );
+    this.context.fillStyle = `hsl( ${this.hue}, 100%, 60% )`;
+    this.context.fill();
+  }
+  
+  drawParticles() {
+    for ( let i = 0; i < this.particles.length; i++ ) {
+      const p = this.particles[ i ];
+
+      if ( p.alpha >= 0 ) {
+        this.context.beginPath();
+        this.context.arc( p.x, p.y, p.size, 0, 2 * Math.PI, false );
+        this.context.fillStyle = `hsla( ${p.hue}, 100%, 60%, ${p.alpha} )`;
+        this.context.fill();
+
+        p.x += ( p.xTo - p.x ) / p.ease;
+        p.y += ( p.yTo - p.y ) / p.ease;
+        p.alpha -= 0.014;
+        continue;
+      }
+      this.particles.splice( i, 1 );
+      this.done += 1;
+    }
+  }
+  
+  draw() {
+    if ( this.complete() ) return;
+    if ( this.y > this.yTo + 20 ) { this.drawBomb(); } 
+    else if ( !this.particles.length ) { this.explode(); } 
+    else { this.drawParticles(); } 
+  }
+}
+
+/**
+ * Setup
+ */
+function showFireworks() {
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let particles = [];
+  
+  // particle canvas
+  const canvas = document.createElement( 'canvas' );
+  const context = canvas.getContext( '2d' );
+  canvas.id = 'firework-canvas';
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.display = 'block';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.position = 'fixed';
+  canvas.style.zIndex = '1';
+  canvas.style.left = '0';
+  canvas.style.top = '0';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.opacity = '.85';
+  document.body.appendChild( canvas );
+  
+  // on resize 
+  window.addEventListener( 'resize', e => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  });
+  
+  // add particles slowly over time 
+  const create = () => {
+    if ( particles.length > 2 ) return; 
+    particles.push( new FireworkParticle( context, width, height, 100 ) ); 
+    setTimeout( create, 600 );  
+  }; 
+  
+  // animation loop 
+  const loop = () => {
+    requestAnimationFrame( loop );
+    context.fillStyle = 'rgba(0,0,0,0.2)';
+    context.fillRect( 0, 0, width, height );
+    
+    for ( let p of particles ) {
+      if ( p.complete() ) p.reset();
+      p.update( width, height );
+      p.draw();
+    }
+  };
+ 
+  // init 
+  create();
+  loop();
+};
+
+function removeFireworks() {
+  let content = document.querySelector('#content');
+  let canvas  = document.querySelector('#firework-canvas');
+  content.style.opacity = 1;
+  content.style.width = '100%';
+
+  canvas.style.opacity = 0;
+
+
+  setTimeout(function() {
+    let fireworksCanvas = document.getElementById('firework-canvas');
+    fireworksCanvas.parentNode.removeChild(fireworksCanvas);
+  }, 1100);
+
+}
+
+
+
+
+
+
+
+
+jQuery(document).ready(function($) {
+
+///////////// Enable/Disable submitting of the chartstring button.
+document.querySelector('#ido_field').addEventListener('keyup', function(e) {
+  if (this.value.length > 10) {
+    document.querySelector('#ido_submit').removeAttribute('disabled');
+  } else {
+    document.querySelector('#ido_submit').setAttribute('disabled', true);
+  }
+});
+
+
+document.querySelector('#ido_form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  
+   $.ajax({
+    type: 'POST',
+    url: this.getAttribute('action'),
+    data: $('#ido_form').serialize(),
+    success: function (eeResponse) {
+
+        if (typeof(eeChargeResponse) == 'string') {
+          eeResponse = JSON.parse(eeResponse);
+        }
+
+        if (eeResponse.success) {
+
+          let successDiv = document.querySelector('#chargeSuccess');
+
+          // Add custom data to success message.
+          successDiv.innerHTML = '<h1>Success!</h1><p>The chartstring was added to the event.  Our awesome budget office will process it.</p>';
+
+          // Show success message.
+          successDiv.classList.remove('hidden');
+
+          // Fireworks.
+          showFireworks();
+          setTimeout(removeFireworks, 8000);
+        } else {
+          console.log('Error saving to EE.', eeResponse);
+          new Noty({
+              text: 'Uh Oh, something went wrong trying to save the data.',
+              type: 'error',
+              theme: 'nest',
+              timeout: 30000
+          }).show();          
+        }
+    },
+    error: function (xhr, text, error) {
+      console.error(error, eeResponse);
+      new Noty({
+          text: 'Uh Oh, something went wrong trying to save the data.',
+          type: 'error',
+          theme: 'nest',
+          timeout: 30000
+      }).show();     
+    }
+  });
+
+});
+
+});// jquery
+
+</script>
+<style>
+#content, #firework-canvas {
+  transition: all 1s ease-in-out;
+}
+</style>
+{/if}
+{embed=a/f}
+
+{/exp:channel:entries}

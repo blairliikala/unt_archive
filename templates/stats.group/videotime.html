@@ -1,0 +1,17 @@
+{exp:vz_tabular:csv }
+
+{exp:channel:entries 
+	channel="live" 
+	show_expired="yes" 
+	search:archive_playtime_duration="not IS_EMPTY" 
+	start_on="2020-08-01" 
+	stop_before="2020-12-01"
+	limit="1000"
+}
+
+	[col Date]{entry_date format="%Y-%m-%d"}[/col]
+	[col Time]{archive_playtime_duration}[/col]
+
+{/exp:channel:entries}
+
+{/exp:vz_tabular:csv}

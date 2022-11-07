@@ -1,0 +1,784 @@
+{!-- 
+
+Areas: Jazz, Keyboard, Strings, Woodwind.
+Instruments: [actual instruments].  Instruments relate to Areas.
+
+Performance Categories: Wind Studies, Choral... Performance Categories relate to Faculty.
+Ensembles. [name].  Ensembles relate to Faculty.  Ensembles relate to Performance Categories
+
+Faculty: [name].  Faculty relate to instruments.
+
+--}
+
+{embed=a/h
+  title="Archive Home" 
+  meta="The online archive of concerts and recitals"
+  og-title="Archive Home"
+  og-type="website"
+  og-url="{site_url}/{segment_1}"
+}
+{embed='downloads/_nav'}
+
+<div id="downloads_catalog">
+
+<div id="content">
+
+  {if logged_in}
+
+
+  {!-- No Educator --}
+  {if logged_in_member_group != "11"}
+
+  <!-- //////////////////////////  Warning about upcoming event payment needed ////////////////////////// -->  
+    {exp:channel:entries
+      channel="live"
+      show_expired="no"
+      show_future_entries="yes"
+      limit="1"
+      search:archive_euid="{logged_in_username}"
+      search:archive_charege_paid="IS_EMPTY"
+      disable="categories|pagination|member_data|relationships"
+      status="needspayment"
+    } 
+      {if archive_change_deadline == '' OR archive_change_deadline > current_time}
+        <p id="admin_notice" class="bad">You have an upcoming event that requries payment.  Please head <a href="/chargecheckout/{entry_id}">here</a>.</p>
+      {/if}
+    {/exp:channel:entries}
+
+
+  <!-- //////////////////////////  Upcoming events based on their EUID.  ////////////////////////// -->
+    {exp:channel:entries
+      channel="live"
+      show_expired="no"
+      show_future_entries="yes"
+      limit="10"
+      search:archive_euid="{logged_in_username}"
+      disable="categories|pagination|member_data"
+      cache="yes"
+      refresh="1000"
+      status="Scheduled|Needspayment"
+    }
+      {if count=='1'}
+        <section class="scroll_group">
+          <header class="scroll_group_header">
+            <h2 class="scroll_group_title">Your Upcoming Events</h2>
+          </header>
+          <div class="scroll_group_items"> 
+      {/if}
+        <div class="scroll_group_item {if status=="needspayment"}needspayment{/if}"> 
+          <a href="/live/event/{entry_id}" data-hjtag="link-myupcoming">
+          <div class="scroll_group_item_img_container">
+          <div class="scroll_group_item_img_container2">
+            {if ondemand_image}
+                {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{related_ensembles_v2:default_picture}' !="" }
+                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' !=""}
+                {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {/if}
+            </div></div>
+            <section class="scroll_group_item_meta">
+              <h4>{exp:char_limit total="30"}{title}{/exp:char_limit}</h4>
+              <p>{entry_date format="%F %j, %Y"}</p>
+            </section>
+          </a>      
+        </div>
+      {if count==total_results}
+      </div><!-- Gallery 2 -->
+      </section>
+      {/if}
+    {/exp:channel:entries}
+  {/if}
+
+  
+  {if logged_in_member_group=="9" OR logged_in_member_group=='1'}
+
+    <!-- //////////////////////////  Assignment queries.  When someone is put on an entry by an admin ////////////////////////// -->
+
+    <!-- ////////////////////////////// CONDUCTOR LISTING //////////////////////////////-->
+    <section id="_conductors" class="afterload-flickity" data-location="{site_url}/me/_conductors_v2/{logged_in_username}"></section>
+
+    <!-- ////////////////////////////// Degree Recitals assigned to facutly //////////////////////////////-->
+    <!-- Add faculty per entry.  In the concert entry, add a faculty and it will show up here. -->
+    <section id="_assigned-recitals" class="afterload-flickity" data-location="{site_url}/me/_assigned-recitals/{logged_in_username}"></section>
+
+    <!-- ///////////////////// Show Recitals by instruments.  Add the instrument to the faculty's entry.  ///////////////////// -->
+    <section id="_assigned_instruments" class="afterload-flickity" data-location="{site_url}/me/_assigned_instruments/{logged_in_username}"></section>
+
+    <!-- Performance Categories (wind studies, choral) - If user was added to the  field. -->
+    <!--  I think I deleted the field this is looking for.
+    <section id="_assigned_categories" class="afterload-flickity" data-location="{site_url}/me/_assigned_categories/{logged_in_username}"></section>-->
+
+  {/if}{!--/member group --} 
+
+
+  {!-- No Educator --}
+  {if logged_in_member_group!="11"}
+    <!-- //////////////////////////////  Search List //////////////////////////////-->
+    <!-- Automatically does a search of the username and displays results -->
+    <section id="_user_search" class="afterload-flickity" data-location="{site_url}/me/_user_search?keywords={exp:ce_str:ing urlencode}{logged_in_screen_name}{/exp:ce_str:ing}"></section>
+
+    <!-- //////////////////////////////  Exceptions List - Discontiuned //////////////////////////////-->
+    <!-- In a concert entry, add the EUID to the exceptions field -->
+    <section id="_exceptions" class="afterload-flickity" data-location="{site_url}/me/_exceptions/{logged_in_username}"></section>
+
+    <!-- ////////////////////////////// BOUGHT STUFF LISTING //////////////////////////////-->
+    <!-- Show entires that people bought.  For video downloads. -->
+    <section id="_boughtstuff" class="afterload-flickity" data-location="{site_url}/me/_boughtstuff/{logged_in_username}"></section>
+
+
+
+    <!-- ////////////////////////////// FAVORITES - ENTRIES //////////////////////////////-->
+    {exp:favorites:entries
+      channel="live"
+      show_expired="yes"
+      orderby="date"
+      sort="desc"
+      }
+      {if count=='1'}
+        <section class="scroll_group">
+          <header class="scroll_group_header">
+            <h2 class="scroll_group_title">Saved Concerts</h2>
+          </header>
+          <div class="scroll_group_items"> 
+      {/if}
+        <div class="scroll_group_item"> 
+          <a href="{entry_id_path=downloads/item}" data-hjtag="link-saved_entries">
+          <div class="scroll_group_item_img_container">
+          <div class="scroll_group_item_img_container2">
+            {if ondemand_image}
+                {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif archive_default_image}
+                {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{related_ensembles_v2:default_picture}' }
+                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {/if}
+            </div></div>
+            <section class="scroll_group_item_meta">
+              <h4>{exp:char_limit total="30"}{title}{/exp:char_limit}</h4>
+              <p>{entry_date format="%F %j, %Y"}</p>
+            </section>
+          </a>      
+        </div>
+      {if count==total_results}
+      </div>
+      </section>
+      {/if}
+    {/exp:favorites:entries}
+
+
+    <!-- ////////////////////////////// FAVORITES - ENSEMBLES //////////////////////////////-->
+    {exp:favorites:entries
+      channel="ensembles"     
+      }
+      {if count=='1'}
+      <section class="scroll_group">
+        <header class="scroll_group_header">
+          <h2 class="scroll_group_title">Saved Ensembles</h2>
+        </header>
+      {/if}
+
+      <h2 style="margin-top:2em">{title} <i style="color:rgba(0,0,0,0.1)">saved</i></h2>
+      <div class="scroll_group_items"> 
+      
+      {parents 
+        show_expired="yes"
+        cache="yes"
+        refresh="1000"
+        limit="10"
+        orderby="date"
+        sort="desc"
+      }
+        <div class="scroll_group_item"> 
+          <a href="{parents:entry_id_path=downloads/item}" data-hjtag="link-saved_ensembles">
+          <div class="scroll_group_item_img_container">
+          <div class="scroll_group_item_img_container2">
+            {if parents:ondemand_image}
+                {exp:ce_img:pair src="{parents:ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif parents:archive_default_image}
+                {exp:ce_img:pair src="{parents:archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:related_ensembles_v2:default_picture}' }
+                {exp:ce_img:pair src="{parents:related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+                {exp:ce_img:pair src="{parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{parents:room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {/if}
+            </div></div>
+            <section class="scroll_group_item_meta">
+              <h4>{exp:char_limit total="30"}{parents:title}{/exp:char_limit}</h4>
+              <p>{parents:entry_date format="%F %j, %Y"}</p>
+            </section>
+          </a>      
+        </div>
+      {/parents}
+
+      </div>
+
+      {if count==total_results}
+      </section>
+      {/if}
+    {/exp:favorites:entries}
+
+
+    <!-- ////////////////////////////// FAVORITES - INSTRUMENTS //////////////////////////////-->
+    {exp:favorites:entries
+      channel="college_instruments"     
+      }
+      {if count=='1'}
+      <section class="scroll_group">
+        <header class="scroll_group_header">
+          <h2 class="scroll_group_title">Saved Instrument Categories</h2>
+        </header>
+      {/if}
+
+      <h2 style="margin-top:2em">{title} <i style="color:rgba(0,0,0,0.1)">saved</i></h2>
+      <div class="scroll_group_items"> 
+      
+      {parents 
+        show_expired="yes"
+        cache="yes"
+        refresh="1000"
+        limit="10"
+        orderby="date"
+        sort="desc"
+      }
+        <div class="scroll_group_item"> 
+          <a href="{parents:entry_id_path=downloads/item}" data-hjtag="link-saved_ensembles">
+          <div class="scroll_group_item_img_container">
+          <div class="scroll_group_item_img_container2">
+            {if parents:ondemand_image}
+                {exp:ce_img:pair src="{parents:ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif parents:archive_default_image}
+                {exp:ce_img:pair src="{parents:archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:related_ensembles_v2:default_picture}' }
+                {exp:ce_img:pair src="{parents:related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+                {exp:ce_img:pair src="{parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{parents:room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{parents:room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                  <img src="{made}" title="{parents:title}" alt="{parents:title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {/if}
+            </div></div>
+            <section class="scroll_group_item_meta">
+              <h4>{exp:char_limit total="30"}{parents:title}{/exp:char_limit}</h4>
+              <p>{parents:entry_date format="%F %j, %Y"}</p>
+            </section>
+          </a>      
+        </div>
+      {/parents}
+
+      </div>
+
+      {if count==total_results}
+      </section>
+      {/if}
+    {/exp:favorites:entries}
+
+
+
+    <!-- //////////////////////////  Their Events events based on the EUID field match.  ////////////////////////// -->
+    {exp:channel:entries
+      channel="live"
+      show_expired="yes"
+      show_future_entries="no"
+      limit="10"
+      search:archive_euid="{logged_in_username}"
+      disable="categories|pagination|member_data"
+      status="open|pending|waitingforreview|pendingaudio|pendingvideo"
+      orderby="date"
+      sort="desc"      
+      }
+      {if count=='1'}
+        <section class="scroll_group">
+          <header class="scroll_group_header">
+            <h2 class="scroll_group_title">Your Events</h2>
+          </header>
+          <div class="scroll_group_items"> 
+      {/if}
+        <div class="scroll_group_item"> 
+          <a href="{entry_id_path=downloads/item}" data-hjtag="link-myconcerts">
+          <div class="scroll_group_item_img_container">
+          <div class="scroll_group_item_img_container2">
+            {if ondemand_image}
+                {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif archive_default_image}
+                {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{related_ensembles_v2:default_picture}' }
+                {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+                {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:elseif '{room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                  <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+                {/exp:ce_img:pair}
+            {/if}
+            </div></div>
+            <section class="scroll_group_item_meta">
+              <h4>{exp:char_limit total="30"}{title}{/exp:char_limit}</h4>
+              <p>{entry_date format="%F %j, %Y"}</p>
+            </section>
+          </a>      
+        </div>
+      {if count==total_results}
+      </div><!-- Gallery 2 -->
+      </section>
+      {/if}
+    {/exp:channel:entries}
+  {/if}{!-- No Educator --}
+
+
+
+  {/if}
+
+
+{!-- <!-- If a faculty is added through relationships to an area -->
+  {exp:channel:entries channel="faculty" search:faculty_euid="{logged_in_username}"}
+
+    <!-- Area -->
+    {siblings}
+
+      <section class="flickity_group">
+        <header class="ens_head">
+          {exp:ce_img:pair src="{siblings:performance_image}" width="100" crop="yes" save_type="jpg" fallback_src="/images/default.png"}
+            <a href="{site_url}/downoads/performance_areas/{siblings:entry_id}"><img src="{made}" alt="{siblings:title}" title="See more of {siblings:title}" width="{width}" height="{height}" /></a>
+          {/exp:ce_img:pair}
+          <h2><a href="#">{siblings:title}</a></h2>
+          <!--<p style="font-size:10px">{parents backspace="2"}<a href="{parents:entry_id_path=downloads/ensembles}">{parents:title}</a>, {/parents}</p>-->
+          <a href="{siblings:entry_id_path=feeds/performance_areas}" class="basic_button tippy" title="RSS feed of this tag"><span class="fa fa-rss"></span></a>
+          <a href="webcal://recording.music.unt.edu/feeds/ical-ensemble/{siblings:entry_id}" class="basic_button tippy" title="Subscribe to live events in your Calendar"><i class="fa fa-calendar-plus-o"></i></a>
+        </header>
+
+        <div class="gallery2">
+
+    <!--Ensembles-->
+    {siblings:parents}
+      <!-- Entries -->
+      {siblings:parents:parents show_expired="yes" show_future_entries="yes" orderby="date" limit="6"}
+
+        <div class="gallery-cell2"> 
+          <a href="{site_url}/downloads/item/{siblings:parents:parents:entry_id}" class="homepage-action-bar2">
+            <img src="{exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}" data-flickity-lazyload="{exp:ce_img:pair src="{siblings:parents:parents:ondemand_image}" width="400" height="225" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}
+              {if siblings:parents:parents:ondemand_image ==""}
+                {if siblings:parents:default_picture != ""}
+                  {exp:ce_img:pair src="{siblings:parents:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_src="/images/default.png"}{made}{/exp:ce_img:pair}
+                {if:else}
+                  {if '{siblings:parents:parents:room:room_primary_image:server_path}' != ''}
+                    {exp:ce_img:pair src="{siblings:parents:parents:room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}
+                  {if:else}
+                    {exp:ce_img:pair src="/images/default.png" width="400" height="306" crop="225" save_type="jpg"}{made}{/exp:ce_img:pair}
+                  {/if}
+                {/if}
+              {/if}" title="{siblings:parents:parents:title}" alt="{siblings:parents:parents:title}" class="gallery2-image" width="400" height="225" />
+          </a>
+          <section class="gallery-column">
+              <div class="txt2">
+              <h4>{exp:char_limit total="30"}{siblings:parents:parents:title}{/exp:char_limit}</h4>
+              <p>{siblings:parents:parents:entry_date format="%F %j, %Y"}</p>
+            </div>
+            <div class="fav-column"></div>
+          </section>
+        </div>
+      {/siblings:parents:parents}
+    {/siblings:parents}
+
+      </div><!-- Gallery 2 -->
+    </section><!-- Flicity group-->
+
+  <!-- ???
+    </section>
+    </section>
+  -->
+    {/siblings}
+    
+  {/exp:channel:entries}
+--}
+
+
+  {/if}
+
+
+
+  <!-- //////////////////////////////  Just Posted //////////////////////////////-->
+  {exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    disable="categories|category_fields|pagination|member_data"
+    limit="10"
+    orderby="date"
+    sort="desc"
+
+  }
+    {if count=='1'}
+      <section class="scroll_group">
+        <header class="scroll_group_header">
+          <h2 class="scroll_group_title">Recently Posted</h2>
+          <!--<p><small>All new recorded events by concert date.</small></p>-->
+          <!--<button class="basic_button tippy" title="Student recitals listed by the primary instrument. This instrument category was assigned by our staff."><i class="fa fa-info"></i></button>-->
+        </header>
+        <div class="scroll_group_items"> 
+    {/if}
+      <div class="scroll_group_item"> 
+        <a href="{entry_id_path=downloads/item}" data-hjtag="link-recentlyposted">
+        <div class="scroll_group_item_img_container">
+        <div class="scroll_group_item_img_container2">
+          {if ondemand_image}
+              {exp:ce_img:pair src="{ondemand_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif archive_default_image}
+              {exp:ce_img:pair src="{archive_default_image}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{related_ensembles_v2:default_picture}' }
+              {exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{archive_faculty_notificaiton:faculty_photo:server_path}' }
+              {exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg" fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:elseif '{room:room_primary_image:server_path}' }
+              {exp:ce_img:pair src="{room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"  fallback_image="/images/default.png"}
+              <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {if:else}
+              {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{title}" alt="{title}" loading="{if count < 4}eager{if:else}lazy{/if}" width="{width}" height="{height}" />
+              {/exp:ce_img:pair}
+          {/if}
+          </div></div>
+          <section class="scroll_group_item_meta">
+            <h4>{exp:char_limit total="30"}{title}{/exp:char_limit}</h4>
+            <p>{entry_date format="%F %j, %Y"}</p>
+          </section>
+        </a>      
+      </div>
+    {if count==total_results}
+    </div>
+    </section>
+    {/if}
+  {/exp:channel:entries}
+
+
+  <!-- Progress Meters -->
+  <h2 class="up_and_coming">In Progress...</h2>
+  <p>Concert entries that were recorded, and in the archive system, but post-production is not yet completed.</p>
+  <article class="in_progress">
+    {exp:channel:entries
+      channel="live" 
+      status="WaitingForReview|Pending|LiveStream|pendingvideo|PendingAudio|scheduled" 
+      show_expired="yes" 
+      show_future_entries="no" 
+      sort="asc" 
+      disable="categories|pagination|custom_fields|relationships"
+      cache="yes"
+      refresh="1000"
+    }
+    {if no_results}
+      <p>All recordings are online.</p>
+    {/if}
+    <a href="{site_url}/downloads/item/{entry_id}" data-encoder-check="{entry_id}" data-status="{status}" data-hjtag="link-inprogress">{entry_date format="%M %d, %Y"} {exp:char_limit total="35"}{title}{/exp:char_limit} <div id="percentage_complete"></div>
+      {if status=="WaitingForReview"}
+        <span>Concert is in review process.</span>
+        <progress max="5" value="4" title="Concert is in review process."></progress>
+      {/if}
+      {if status=="PendingVideo"}
+        <span>Waiting for video to process.</span>
+        <progress max="5" value="3" title="Waiting for video to process."></progress>
+      {/if}
+      {if status=="PendingAudio"}
+        <span>Audio needs mixing or processing.</span>
+        <progress max="5" value="2" title="Audio needs mixing or processing."></progress>
+      {/if}
+      {if status=="Pending" OR status=="Scheduled"}
+        <span>Just getting started on it.</span>
+        <progress max="5" value="2" title="Just getting started on it."></progress>
+      {/if}
+      {if status=="LiveStream"}
+        <span>Concert is currently live streaming or just completed.</span>
+        <progress max="5" value="1" title="Concert is currently live streaming or just completed."></progress>
+      {/if}
+    </a>
+    {/exp:channel:entries}
+  </article><!-- /progress -->
+
+</div><!-- content-->
+
+</div><!--download catalog-->
+
+{embed=a/js}
+
+
+
+<script>
+const localDebug = false;
+const member_group_id = {logged_in_member_group} // set by EE.
+
+
+encodingStatusStart();
+let encodingInterval = setInterval( encodingStatusStart, 30000);
+
+async function encodingStatusStart() {
+  //const jobs = await fetch('/sys/elementalserver_control.php?action=status_all')
+  const jobs = await fetch('/sys/elemental/server_current.json')
+    .then( response => {return response.json()} )
+    .catch( error => { console.debug("Error getting Elemental JSON: ", error) });
+
+  if (await jobs) {
+    document.querySelectorAll('[data-encoder-check]').forEach( el => {
+        let entry_id = el.dataset.encoderCheck;
+        getEncodingStatus(entry_id, el, jobs);
+    });
+  }
+}
+
+
+async function getEncodingStatus(entry_id, element, jobs) {
+
+  let div_percentage = element.querySelector('#percentage_complete');
+  let percentage = 0;
+
+  if (jobs.hasOwnProperty('empty')) {
+    if (jobs.empty == 'There are currently no jobs') {
+      console.debug('No Jobs listed in Encoder.');
+      return;
+    }
+  }
+
+  // Gets the generic data of the job that matches this entry.
+  let job = await findMachingJob(entry_id, jobs);
+
+  if (job == undefined) {
+    console.debug('Could not find matching encoder job.');
+    return;
+  }
+
+  console.group('Processing:');
+  console.debug("Entry ID: "+entry_id);
+
+  switch(true) {
+
+    case job.status == "complete" :
+    case job.status == "postprocessing" :
+      console.debug('Encoder: "'+job.status+'"');
+      div_percentage.textContent = "Processing Complete.";
+      break
+
+    case job.status == "error" :
+      console.debug("Elemental Errored.");
+      break;
+
+    case job.status == "running" :
+    case job.status == "pending" :
+      console.debug('Encoder "'+job.status+'" at '+job.pct_complete+"%");
+
+      // Update Percentage.
+      if (job.status=="pending") {
+        div_percentage.textContent = "In Line, Waiting to Process...";
+      }      
+      if (job.status=="running") {
+        div_percentage.textContent = "Processing: " + job.pct_complete + "%";
+      }
+
+      // Parsex out the job ID.
+      let link        = job['@attributes'].href;
+      let link_array  = link.split('/');
+      let job_id      = link_array[2];
+      console.debug('Encoder Job ID:', job_id);
+      break;
+
+
+    default:
+      console.error('Status not accounted for: ', job.status);
+  }
+  console.groupEnd();
+}
+
+async function findMachingJob(entry_id, jobs) {
+
+  let matchingJob;
+
+  // Just objects don't work yet.
+  // PHP script changes from array to object when there is only one job.
+  /*
+  if ( typeof(jobs == 'object') ) {
+    jobs['job'] = jobs.job;
+  }
+  */
+
+  // When the encoder doesn't have any entries, MAYBE?????
+  if (jobs['job'].length == undefined) {
+    return;
+  }
+
+
+  jobs['job'].forEach( item => {
+
+    // Parse out the ExpressionEngine from the filename.
+    let uri = item.input.file_input.uri; // File path.
+    let uri_array = uri.split("/"); // Split path to array.
+    let filename = uri_array.slice(-1)[0]; // Get the last item, should be filename.
+    let filename_array = filename.split("-"); // split filename into array.
+    let ee_id = filename_array[3]; // get the second to last, should be the EE ID.
+
+    // Check for conductor camera.
+    let title = filename_array[4];
+
+    if (ee_id == entry_id) {
+      matchingJob = item;
+    }
+  });
+  return matchingJob;
+}
+
+
+
+
+// Load the remote pages.
+(async () => {
+
+  document.querySelectorAll('.afterload-flickity').forEach( async el => {
+
+    let url = el.dataset.location;
+
+    let data = await fetch(url)
+      .then( response => {
+        return response.text();
+      })
+      .catch(error => {
+        console.error(error);
+        trackingTags('error-fetch-archive-homepage');
+      });
+
+    if (data) {
+      el.innerHTML = data;
+    }
+    // checkIfAjaxIsComplete();
+
+    document.querySelectorAll('#'+el.id+' [data-hjtag]').forEach( item => {
+      item.addEventListener('click', function(e) {
+        trackingTags(this.dataset.hjtag);
+      });
+    });
+
+    //new Tippy('.tippy');
+    tippy('.tippy', {
+      content(reference) {
+        const title = reference.getAttribute('title')
+        reference.removeAttribute('title')
+        return title
+      },
+    });
+    MicroModal.init();
+
+  });
+
+
+
+
+  // Show message to Alumni that they are Alumni.
+  if(member_group_id == 10) {
+    if(localStorage.getItem('10_detect')==='false' || localStorage.getItem('10_detect') ===null) {
+      new Noty({
+          text: "We have you setup as an alumni. Access to concerts will be limited to streaming-only, no donwloading.",
+          theme: 'nest',
+          timeout: 6000
+      }).show();
+    localStorage.setItem('10_detect', true);
+    }
+  }
+
+  // Show message to Discontinued.
+  if(member_group_id == 12) {
+    if(localStorage.getItem('12_detect')==='false' || localStorage.getItem('12_detect') ===null) {
+      new Noty({
+          text: "The UNT authentication system says you are no longer a student, and did not graduate from UNT.  Access to entries is removed.<br />Send us a message if this is not correct.",
+          theme: 'nest',
+          timeout: 7000
+      }).show();
+    localStorage.setItem('12_detect', true);
+    }
+  } 
+
+
+// End of immedate async function.
+})().catch(err => {
+    console.error(err);
+});
+
+
+</script>
+
+{embed=a/f}

@@ -1,0 +1,550 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    search:global_streaming="yes"
+    entry_id="{if segment_4 ==""}{segment_3}{/if}{if segment_4 !=""}{segment_4}{/if}"
+    status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio"
+    disable="category_fields|pagination|categories"
+    show_future="no"
+    limit="1"
+    cache="yes"
+    refresh="9000"
+}
+
+{if no_results}
+<body><p>Not available or no entries found.</p></body>
+{/if}
+
+<html>
+<head>
+	<title>{entry_date format="%M %j, %Y"} {title}</title>
+	<meta name="description" content="On Demand Video Content" />
+	<meta name="copyright" content="{current_time format='%Y'} University of North Texas College of Music" /> 
+	<meta name="viewport" content="width=device-width, user-scalable=yes, maximum-scale=1.0" >
+	<link rel="shortcut icon" href="/favicon.ico">
+
+	<!-- Stylesheets-->
+	<link rel="stylesheet" href="{stylesheet=media/styles}" />
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.5.4/plyr.css">
+    <script>
+
+ 
+
+    </script>
+
+</head>
+
+<body>
+{!-- <!-- Admin's message board will show at the top if text is there. -->--}
+{exp:query sql="SELECT * FROM exp_members WHERE group_id = '1'"}
+	{if notepad !=""}<div id="message_board"><p>{notepad}</p></div>{/if}
+{/exp:query}
+
+{if logged_in_member_group =='12'}
+  <h2>Restricted.</h2>
+  <p>Unfortunately your access level does not allow you to view entries.</p>
+{if:else}
+
+{if status != "open"}
+    <div id="message_board"><p>This entry is not live yet.</p></div>
+{/if}
+
+<div class="plyr__video-embed" id="player">
+  <div class="pre_jw_loading"><i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i></div>  
+  <iframe
+    src="https://player.vimeo.com/video/312856058?loop=false&amp;byline=false&amp;portrait=false&amp;title=false&amp;speed=false&amp;transparent=0&amp;gesture=media"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>
+
+<aside class="keyboard_shortcuts">
+  <!--
+  <dl>
+    <dd>
+      <td><i class="key fa fa-long-arrow-up"></i></td>
+      <td>Previous Track</td>
+    </tr>
+    <tr>
+      <td><i class="key fa fa-long-arrow-down"></i></td>
+      <td>Next Track</td>
+    </tr>
+    <tr>
+      <td><div class="key">Space</div></td>
+      <td>Play / Pause</td>
+    </tr>
+    <tr>
+      <td><i class="key fa fa-exchange"></i></td>
+      <td>Skip Forward/Backward</td>
+    </tr>
+  </table>
+-->
+
+  <span class="tip">
+    <div><i>Space</i> to Play.</div>
+    <div><i class="fa fa-long-arrow-up"></i><i class="fa fa-long-arrow-down"></i> to Navigate</div>
+    <div><i class="fa fa-exchange"></i> to jump 5 sec</div>
+  </span>
+
+</aside>
+<!--
+<div class="player_container">
+  <div class="pre_jw_loading"><i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i></div>
+  <div id="mediaspace"></div>
+</div>
+-->
+
+<section id="meta">
+  <header>
+	  <h3>{entry_date format="%M %j, %Y"} {title}</h3>
+    <a href="{entry_id_path=downloads/item}" class="backtoentry" title="Return to this Entry">Back to Entry</a>
+  </header>
+  <!--{!-- Check if there are actually chapters --} -->
+  {ondemand_chapters_grid limit="1"}
+    {if ondemand_chapters_grid:chapter_location_human}
+      <div id="chapterlist"></div>
+    {if:else}
+      <p style="color:#616161">No track markers set for this concert.</p>
+    {/if}
+  {/ondemand_chapters_grid}
+  <p class="legal_notice">Subject to the requirements set forth in Section 108(f)(1) of the Copyright Act, making a copy or the subsequent distribution of material accessed through this electronic reserve is strictly prohibited.</p>
+</section><!-- meta -->
+
+{jquery}
+{embed=a/js}
+<script src="https://cdn.plyr.io/3.5.6/plyr.js"></script>
+<script>
+
+//*********************************** Global
+const vDebug  = true;
+
+if(vDebug){console.log('Debug Enabled.');}
+
+var playmeta = {
+  'currentTrack' : -1,
+  'previousTrack' : -1
+};
+
+//*********************************** Helper functions /***********************************/
+
+//***************** Show error messages to user.
+function errorMessage(messageTxt) {
+  if (!messageTxt || messageTxt == undefined) {
+    if(vDebug){console.log('default error message being shown.');}
+    messageTxt = 'Something went wrong.  Please try refreshing the page or sent us an email if it continues.'
+  };
+    new Noty({
+        text: messageTxt,
+        type: 'error',
+        theme: 'nest',
+        timeout: 3000
+    }).show();  
+}
+function noticeMessage(messageTxt) {
+    new Noty({
+        text: messageTxt,
+        //type: 'error',
+        theme: 'nest',
+        timeout: 3000
+    }).show();  
+}
+
+
+
+//***************** Chapter List JSON ***************/
+const chaptermarkers = {
+  "items" : [
+    {ondemand_chapters_grid backspace="1"}
+    {
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="30" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "marker"        : "{exp:timetoseconds:convert time='{ondemand_chapters_grid:chapter_location_human}'}",
+      "markerhuman"   : "{ondemand_chapters_grid:chapter_location_human}",
+      "rowid"         : "{ondemand_chapters_grid:field_row_count}",
+      "prefixedrowid" : "row-{ondemand_chapters_grid:field_row_count}"
+    },{/ondemand_chapters_grid}
+  ]
+}
+//* color formatting break. *//
+
+//*****************  Show Chapter Marker List ***************/
+if(chaptermarkers.items.length > 0) {
+
+  // Create the chapter list HTML markup and assign it to a var.
+  var chapterlist="<section class='programlist'>";
+
+  for (var i=0; i<chaptermarkers.items.length; i++) {
+    chapterlist+="<article data-playercontrol='"+chaptermarkers.items[i].marker+"' class='program_row "+chaptermarkers.items[i].prefixedrowid+"'><div class='row'>"+chaptermarkers.items[i].rowid+".</div><div class='time'>"+chaptermarkers.items[i].markerhuman+"</div><div class='piece'>"+chaptermarkers.items[i].piece+"</div><div class='composer'>"+chaptermarkers.items[i].composer+"</div><div class='arranger'>"+chaptermarkers.items[i].arranger+"</div></article>";
+  }
+  chapterlist+="</section>";
+
+  // Put the chapter list in the DOM.
+  try{
+    document.getElementById('chapterlist').innerHTML = chapterlist;
+  }catch(e){
+    console.error('No Chapters.');
+  }
+  
+}
+
+
+//***************** Disable some native keyboard actions. ***************/
+const keys = {};
+window.addEventListener("keydown",
+    function(e){
+        keys[e.keyCode] = true;
+        switch(e.keyCode){
+            case 37: case 39: case 38:  case 40: // Arrow keys
+            case 32: e.preventDefault(); break; // Space
+            default: break; // do not block other keys
+        }
+    },
+false);
+window.addEventListener('keyup',
+    function(e){
+        keys[e.keyCode] = false;
+    },
+false);
+// End
+
+
+
+function trackNotification(meta) {
+
+  const message = meta.rowid+". "+meta.piece+" - "+meta.composer+" "+meta.arranger;
+
+  new Noty({
+      text: message,
+      theme: 'nest',
+      type: 'success',
+      timeout: 5000,
+      queue: "trackupdate"
+  }).show();    
+}
+
+
+//****************************** Plyr Internal streaming ************************************************
+jQuery(document).ready(function($) { 
+
+if(vDebug){console.log('Setting Timer...');}
+/** Set a loading Timeout **/
+let loadingTimer = setTimeout(slowLoadingMessage, 5000);
+function slowLoadingMessage() {
+  console.log('Slow Loading!');
+  $('.pre_jw_loading').html('<h3 style="color:white">It is taking awhile to load the player.  We will keep trying to load...</p>');
+  trackingTags('jwplayer-slowloading');
+}
+
+
+iniPlyr();
+
+
+function iniPlyr() {
+
+  const player = new Plyr('#player', {
+    enabled: true,
+    debug: false,
+    autoplay: true,
+    keyboard: {
+      global: false,
+      focused: false
+    },
+    invertTime: false,
+    volume: 1,
+    controls:[
+      'play-large',
+      'play',
+      'progress',
+      'current-time',
+      'settings',
+      'airplay',
+      'fullscreen'
+    ],
+    vimeo: {
+      color:'#BAE197'
+    }
+  });
+
+
+  player.on('ready', e => {
+
+    clearTimeout(loadingTimer);
+
+    $('.pre_jw_loading').remove();
+
+    player.increaseVolume(1);    
+
+  });
+
+  player.on('error', event => {
+    console.error(event);
+  });
+
+
+
+  // On click, Jump the video to the second off-set using the data-playercontrol attribute on the element.
+  $('[data-playercontrol]').click( function() {
+    Noty.closeAll('trackupdate');
+    //trackingTags('video-chapter-click');
+
+    playmeta.currentTrack = $('#chapterlist').find('.program_row').index(this);
+    var seekTime = chaptermarkers.items[playmeta.currentTrack].marker;
+
+    // add just a little bit to get the marker to highlight the correct track.
+    // It was highlighting previous track while player was buffering, confusing people.
+    // change var to a number type.
+    seekTime = seekTime * 1;
+    // Add 1 second.
+    seekTime = seekTime +.1;
+
+    // Seek player to time.
+    player.currentTime = seekTime ;
+  });
+
+  // Update which track is currently active.
+  player.on('timeupdate', event => {
+    // Find the chapter in the JSON list, and pull the time.
+    var results = chaptermarkers.items.filter(function (el) {
+      return el.marker < player.currentTime
+    });
+    // Make sure the search finds something otherwise Console lights up with undefined var errors.
+    if(results.length != 0) {
+      var activeRow = results[results.length - 1].prefixedrowid;
+      // returns chapter number.
+      playmeta.currentTrack = results.length - 1;
+      $('.programlist').find('.program_row').removeClass('active');
+      $('.programlist').find('.'+activeRow).addClass('active');
+
+      if (playmeta.currentTrack != playmeta.previousTrack) {
+        trackNotification( chaptermarkers.items[playmeta.currentTrack] );
+        playmeta.previousTrack = playmeta.currentTrack;
+      }      
+    }
+  });
+
+
+  function playpause() {
+    player.togglePlay();
+  }
+  function skipAhead() {
+    player.forward(5);
+    Noty.closeAll('trackupdate');
+
+    new Noty({
+        text: 'Forwarding 5 seconds...',
+        theme: 'nest',
+        type: 'success',
+        timeout: 1000,
+        queue: "trackupdate"
+    }).show();
+
+  }
+  function skipBackwards() {
+    player.rewind(5);
+    Noty.closeAll('trackupdate');
+
+    new Noty({
+        text: 'Rewinding 5 seconds...',
+        theme: 'nest',
+        type: 'success',
+        timeout: 1000,
+        queue: "trackupdate"
+    }).show();
+
+  }
+  function playNextChapter() {
+    playmeta.currentTrack++;
+
+    if(playmeta.currentTrack > chaptermarkers.items.length - 1) {
+      playmeta.currentTrack = '0';
+      var seekTime = chaptermarkers.items[0].marker;
+    } else {
+      var seekTime = chaptermarkers.items[playmeta.currentTrack].marker;
+    }
+
+    seekTime = seekTime * 1;
+    player.currentTime = seekTime;
+    Noty.closeAll('trackupdate');
+  }
+  function playPreviousChapter() {
+    playmeta.currentTrack--;
+
+    // If at the beginning and go up, then go to the end.
+    if(playmeta.currentTrack < 0) {
+      var seekTime = chaptermarkers.items[chaptermarkers.items.length - 1].marker;
+    } else {
+      var seekTime = chaptermarkers.items[playmeta.currentTrack].marker;
+    }
+
+    seekTime = seekTime * 1;
+    player.currentTime = seekTime;
+    Noty.closeAll('trackupdate');
+  }
+  $(document).keydown(function(e){
+    //Down
+    if (e.keyCode == 40) {
+      e.preventDefault;
+      playNextChapter();
+      //trackingTags('video-keyboard-playnextchapter');
+    }
+    //UP
+    if (e.keyCode == 38) {
+      e.preventDefault;
+      playPreviousChapter();
+      //trackingTags('video-keyboard-playpreviouschapter');
+    }
+    // Space
+    if (e.keyCode == 32) {
+      e.preventDefault;
+      playpause();
+      //trackingTags('video-keyboard-playpause');
+    }
+    // Right arrow
+    if (e.keyCode == 39) {
+      e.preventDefault;
+      skipAhead();
+      //trackingTags('video-keyboard-skipforwards');
+    }
+    if (e.keyCode == 37) {
+      e.preventDefault;
+      skipBackwards();
+      //trackingTags('video-keyboard-skipbackwards');
+    }
+  });  
+
+
+
+    // Put quality back to auto.
+    //jwplayer().setCurrentQuality(0);      
+
+    // Tracking Events //
+    /*
+    jwplayer().on('play', function(e){
+      trackingTags('video-play');
+    });
+    jwplayer().on('seek', function(e){
+      trackingTags('video-seek');
+    });
+    jwplayer().on('pause', function(e){
+      trackingTags('video-pause');
+    });
+    jwplayer().on('volume', function(e){
+      trackingTags('video-volumechange');
+    });
+    jwplayer().on('fullscreen', function(e){
+      trackingTags('video-fullscreen');
+    });
+    jwplayer().on('resize', function(e){
+      if(vDebug){console.log('resizing...'+e)};
+    });
+    jwplayer().on('displayClick', function(e){
+      trackingTags('video-displayClick');
+    });
+    jwplayer().on('buffer', function(e){
+      if (e.reason === 'stalled' || e.reason === 'error') {
+        console.log('Buffer Stalled or Errored.'+e.reason);
+        console.log(e);
+      }
+    });
+    jwplayer().on('bufferChange', function(e){
+      if(e.bufferPercent <=0){
+        console.group();
+        console.log('Buffer Underrun.');
+        console.log(e);
+        console.groupEnd();
+      }
+      //This generates events every second.  if(vDebug){console.group();console.log('BufferChnage: ');console.log(e);console.groupEnd()};
+    });
+    */
+
+    player.on('seeking', e => {
+      Noty.closeAll('trackupdate');
+    });
+
+    player.on('qualitychange', function(e){
+      console.log('Quality Change.');
+      //trackingTags('video-q-'+e.level.index);
+    });
+
+
+  }// iniPlyr
+
+
+});// jquery
+//******************************************************************************
+
+</script>
+{/if}{!-- member group is 12 --}
+{/exp:channel:entries}
+
+</body>
+
+
+<!--//////////////////// GA ////////////////////-->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-442990-23', 'auto', {
+    {if logged_in} userId: {logged_in_member_id} {/if}
+  });
+  ga('send', 'pageview');
+  // {if logged_in}
+  ga('set', 'userId', '{logged_in_member_id}'); // Set the user ID using signed-in user_id.
+  // {/if}
+</script>
+
+<!--//////////////////// FS ////////////////////-->
+<script>
+window['_fs_debug'] = false;
+window['_fs_host'] = 'fullstory.com';
+window['_fs_org'] = 'E0RT2';
+window['_fs_namespace'] = 'FS';
+(function(m,n,e,t,l,o,g,y){
+    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+    g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[];
+    o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
+    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+    g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){g(l,v)};g.event=function(i,v){g('event',{n:i,p:v})};
+    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+    g.consent=function(a){g("consent",!arguments.length||a)};
+    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+    g.clearUserCookie=function(){};
+})(window,document,window['_fs_namespace'],'script','user');
+
+{if logged_in}
+  {if
+    logged_in_member_group=='1' OR
+    logged_in_member_group=='9' OR 
+    logged_in_member_group=='11'
+  }
+  // For faculty/staff, and educators
+    FS.identify('{if logged_in_member_id == 1}99999{if:else}{logged_in_member_id}{/if}', {
+      displayName: '{logged_in_screen_name}',
+      email: '{logged_in_email}',
+      memberGroup_str: "{logged_in_group_title}",
+      memberGroupID_int: {logged_in_group_id}
+    });
+  {/if}
+  {if:else}
+    {exp:member:custom_profile_data}
+      {if ldap_directory_withdraw ==""}
+        FS.identify('{logged_in_member_id}', {
+          displayName: '{logged_in_group_title}-{logged_in_member_id}',
+          memberGroup_str: "{logged_in_group_title}",
+          memberGroupID_int: {logged_in_group_id}
+        });
+      {/if}
+    {/exp:member:custom_profile_data}
+ {/if}
+{/if}
+
+</script>
+{/if}
+
+</body>
+</html>

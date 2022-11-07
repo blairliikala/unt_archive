@@ -1,0 +1,698 @@
+{exp:channel:entries
+  channel="live"
+  status="scheduled|needspayment|closed|cancelled"
+  show_expired="no"
+  show_future_entries="yes"
+  cache="yes"
+  refresh="1000"
+  limit="1"
+  require_entry="yes"
+}
+
+{embed=a/h title="Review Event Details" meta="Concert details relating to your event."}
+<script>
+
+const entry = {
+  "hall_id" : {room limit="1"}{room:entry_id}{/room},
+  "type_id" : {archive_recital_type limit="1"}{archive_recital_type:entry_id}{/archive_recital_type},
+};
+
+</script>
+
+<div id="content">
+
+  <nav id="bread">
+    <p><a href="{path=events/index}">Events</a> - <strong>Review Event Details</strong></p>
+  </nav>
+  <span id="loadingIndicator" class="hidden"></span>
+
+  <article class="event_details_block">
+
+    <h2>Basic</h2>
+    <dl>
+      <div>
+      <dt>Title (This will change):</dt>
+      <dd>{title}</dd>
+      </div>
+
+      <div>
+      <dt>Recording Event Status</dt>
+      <dd>{status}</dd>
+      </div>
+
+      <div>
+      <dt>Start:</dt>
+      <dd>{entry_date format="%n/%d/%y %g:%i%a"}</dd>
+      </div>
+
+      <div>
+      <dt>Approx End:</dt>
+      <dd>{expiration_date format="%n/%d/%y %g:%i%a"}</dd>
+      </div>      
+
+      <div>
+      <dt>Event Change Deadline</dt>
+      <dd>{archive_change_deadline format="%n/%d/%y %g:%i%a"}</dd>
+      </div>
+
+      <div>
+      <dt>Location:</dt>
+      <dd>{room limit="1"}{room:title}{/room}</dd>
+      </div>
+    </dl>
+
+    <h2>Type</h2>
+    <dl>
+      <div>
+      <dt>Recital Type:</dt>
+      <dd>{archive_recital_type backspace="6"}{archive_recital_type:title}<br />{/archive_recital_type}</dd>
+      </div>
+
+      <div>
+      <dt>Ensemble:</dt>
+      <dd>{related_ensembles_v2 backspace="6"}{if related_ensembles_v2:no_results}n/a{/if}{related_ensembles_v2:title}<br />{/related_ensembles_v2}</dd>
+      </div>
+
+      <div>
+      <dt>Primary Instrument(s):</dt>
+      <dd>{archive_instrument backspace="6"}{if archive_instrument:no_results}n/a{/if}{archive_instrument:title}<br />{/archive_instrument}</dd>
+      </div>
+    </dl>
+
+    <h2>Requester</h2>
+    <dl>
+      <div>
+      <dt>EUID:</dt>
+      <dd>{archive_euid}</dd>
+      </div>
+
+      <div>
+      <dt>Email(s):</dt>
+      <dd>{archive_email_notifications}</dd>
+      </div>
+    </dl>
+
+    <h2>System</h2>
+    <dl>
+      <div>
+        <dt>Roomview Event ID:</dt>
+        <dd>{roomview_id}</dd>
+        <dt>Roomview Details ID</dt>
+        <dd>{roomview_details_id}</dd>
+      </div>
+
+      <div>
+        <dt>Roomview Status</dt>
+        <dd>{archive_roomview_status}</dd>
+      </div>  
+    </dl>
+  </article>
+{/exp:channel:entries}
+
+
+<section class="edit_event">
+{exp:channel:form 
+  id="event_form"
+  channel="live"
+  entry_id="{segment_3}"
+  datepicker="no"
+  include_jquery="yes"
+  include_assets="yes"
+  unique_url_title="yes"
+  json="yes"
+}
+
+
+  <article id="cform" class="form_block">
+    <h2>Event Details</h2>
+    <textarea name="archive_event_details" id="archive_event_details" class="rte" cols="90" rows="6">{archive_event_details}{field_data}{/archive_event_details}</textarea>
+  </article>
+
+
+  <article id="select_instrument" class="form_block hidden">
+    <h2>5. Primary Instrument</h2>
+    <select id="archive_instrument" class="archive_instrument" name="archive_instrument[data][]" style="width:100%">
+      <option value="">Choose Instrument...</option>
+    {options:archive_instrument}
+      <option id="instrument_{option_value}" value="{option_value}" {selected}>{option_name}</option>
+    {/options:archive_instrument}
+    </select>
+  </article>
+
+
+
+  <article id="select_ensemble" class="form_block hidden">
+    <h2>5. Ensembles</h2>
+      <p>Ensembles are defined as an offical UNT regular performing group with a course number.</p>
+      <p>If the ensemble is not listed here, please contact us.</p>
+      <select id="archive_ensemble" class="related_ensembles_v2" name="related_ensembles_v2[data][]" style="width:100%">
+        <option value="">Choose Ensemble...</option>
+      {options:related_ensembles_v2}
+        <option value="{option_value}" {selected}>{option_name}</option>
+      {/options:related_ensembles_v2}
+      </select>
+  </article>
+
+
+  <article class="form_block">
+  <h2>Audio Request</h2>
+  <input 
+    type="radio" 
+    id="service_audio_nofee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="0"
+    data-name="Audio-Course Fee"
+    data-shortname="audio_coursefee"
+    data-price="0"
+  >
+  <label class="checkbox" for="service_audio_nofee">Audio-only Course Fee $0.00</label>
+
+  <input 
+    type="radio"
+    id="service_audio_fee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="75"
+    data-name="Audio-only"
+    data-shortname="audio_fee"
+    data-price="75"
+    >
+  <label class="checkbox" for="service_audio_fee">Audio-only $75.00</label>
+
+  <!-- Name -->
+  <input type="{if logged_in_member_group=='1'}text{if:else}hidden{/if}" id="audio_hidden_name" name="service_audio[rows][new_row_0][col_id_65]" value="">
+
+  <!--Shortname -->
+  <input type="{if logged_in_member_group=='1'}text{if:else}hidden{/if}" id="audio_hidden_shortname" name="service_audio[rows][new_row_0][col_id_66]" value="">
+
+  <!-- Will need additional hidden fields to add more meta to the service type -->
+
+  </article>
+
+
+
+  <!-- Field 362
+  68 = Name
+  69 = short name
+  70 = cost
+  -->
+
+<article id="video_request" class="form_block">
+  <h2>Video Request</h2>
+  <input 
+    type="radio" 
+    id="service_video_novideo"
+    class="validateVideo"
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0" 
+    data-shortname="service_video_novideo" 
+    data-name="No Video"
+    data-price="0"
+  >
+  <label class="checkbox" for="service_video_novideo">No Video $0.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_center" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75"
+    data-shortname="service_video_center" 
+    data-name="Video - Center Camera"
+    data-price="75" 
+  >
+  <label class="checkbox" for="service_video_center">Video - Center Camera-only $75.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_multi" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75"
+    data-shortname="service_video_multi" 
+    data-name="Video - Multiple Cameras"  
+    data-price="75"    
+  >
+  <label class="checkbox" for="service_video_multi">Video - Multiple Cameras $75.00</label>
+
+  <!--
+  <input 
+    type="radio" 
+    id="service_video_recitallivestream" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0"
+    data-shortname="service_video_recitallivestream" 
+    data-name="Video - Recital Live Stream"         
+    data-price="0"
+  >
+  <label class="checkbox" for="service_video_recitallivestream">Video - Multiple Cameras, Live Stream $75.00</label>
+  -->
+
+  <div id="video_live_ens" class="hidden">
+    <input 
+      type="radio" 
+      id="service_video_enslivestream" 
+      class="validateVideo"    
+      name="service_video[rows][new_row_0][col_id_70]" 
+      value="0"
+      data-shortname="service_video_enslivestream" 
+      data-name="Video - Ensemble Live Stream"
+      data-price="0"  
+    >
+    <label class="checkbox" for="service_video_enslivestream">Video - Ensemble Live Stream $0.00</label>
+  </div>
+
+
+
+  <!-- Name -->
+  <input type="{if logged_in_member_group=='1'}text{if:else}hidden{/if}" id="video_hidden_name" name="service_video[rows][new_row_0][col_id_68]" value="">
+
+  <!--Shortname -->
+  <input type="{if logged_in_member_group=='1'}text{if:else}hidden{/if}" id="video_hidden_shortname" name="service_video[rows][new_row_0][col_id_69]" value="">
+
+</article>
+
+<article class="form_block">
+  <h2>Guest Artist Agreement</h2>
+  {options:archive_guest_artist_disclaimer}
+  <input type="checkbox" id="guestAgreement" name="archive_guest_artist_disclaimer" value="{option_value}" {checked}>
+  <label for="guestAgreement">I agree that any guest artists have given written permission for recording and distributing copies of the recording on our archive as outlined in our policies.</label>
+  {/options:archive_guest_artist_disclaimer}
+</article>
+
+
+  <article class="form_block">
+    <label for="amount_due"><strong>Amount Due</strong> Payment will be required on the next page.</label>
+    <h2 class="amount_style">$<input type="text" id="amount_due" name="archive_amount_due" value="{archive_amount_due}" readonly>.00</h2>
+  </article>
+
+  <!-- Sets to blank if payment is required.  Needed if they return to pay for video. -->
+  <input type="hidden" id="archive_charege_paid" name="archive_charege_paid" value="{archive_charege_paid}">
+
+  <!-- Required -->
+  <input type="hidden" id="url_title" name="url_title"  value="{url_title}">
+
+  <!-- JS changes if they need to pay or not -->
+  <input type="hidden" id="status" name="status" value="Scheduled" >
+
+  <button type="submit" id="submit" class="basic_button submit_button">Save Request <span class="submit_paymsg hidden">and Pay</span></button>
+{/exp:channel:form}
+
+</div><!--content-->
+
+{jquery}
+{embed=a/js}
+<script src="/js/axios/axios.js"></script>
+<link rel="stylesheet" href="{path=events/event_form_styles}"  />
+<script src="{exp:rte:script_url}"></script>
+
+
+<script>
+var form           = document.getElementById('event_form').elements;
+var radios         = {};
+var form_valid     = false;
+const div_loading  = document.querySelector('#loadingIndicator');
+const submitbutton = document.querySelector('#submit');
+const pathArray    = window.location.pathname.split('/');
+
+
+// EE Generated array of instrument IDs and Names.  Used to try and match Roomview data to EE data.
+const ee_instrument_array = [
+  {exp:channel:entries channel="college_instruments" }
+    {
+      title: '{title}',
+      id: '{entry_id}'
+    },
+  {/exp:channel:entries}
+];
+
+// EE Generated array of ensemble IDs and Names.  Used to try and match Roomview data to EE data.
+const ee_ensemble_array = [
+  {exp:channel:entries channel="ensembles" }
+    {
+      title: '{title}',
+      id: '{entry_id}'
+    },
+  {/exp:channel:entries}
+];
+
+
+
+
+
+
+$(document).ready(function() {
+
+  // Run immediately.
+  formLogic();
+
+  $('#event_form').on('change', formLogic);
+  $('#event_form').on('submit', event => {
+    console.log('form submitted...');
+    event.preventDefault();
+    submitHandler();
+  });
+
+});
+
+
+function formLogic() {
+  getRadioValues();
+  roomActions(entry.hall_id);
+
+  getRadioValues();
+  typeActions(entry.type_id);
+  getRadioValues();
+
+  calculateFee();
+
+  copyHiddenVideoFields();
+  copyHiddenAudioFields();
+
+  validate();
+  submitButtonControl();
+}
+
+
+
+
+
+function getRadioValues() {
+  // For Radio boxes, they aren't registered in Elements.
+  radios = {
+    "audio" : document.querySelector('input[name="service_audio[rows][new_row_0][col_id_67]"]:checked'),
+    "video" : document.querySelector('input[name="service_video[rows][new_row_0][col_id_70]"]:checked'),
+  }
+}
+
+
+function roomActions(hallID) {
+
+  hallID = hallID * 1 //make a number!
+
+  /****************** Video Support Logic ***************/
+  // Winspear & Voertman.
+  const videoSupport  = [3266,3267];
+  const videoDiv      = document.querySelector('#video_request')
+  const videoOptions  = document.querySelectorAll('.validateVideo');
+
+  // If no video option is checked, then check no video.
+  if (radios.video == null) {
+    //document.querySelector('#service_video_novideo').checked = true;
+    form.service_video_novideo.checked = true;
+  }
+
+
+  if ( videoSupport.indexOf(hallID) >= 0 ) {
+    // Video is supported in the selected hall.
+    [].forEach.call(videoOptions, function(div) {
+      div.classList.remove = 'no_select';
+      div.removeAttribute('disabled', false);
+    });
+    videoDiv.classList.remove('no_select');
+  } else {
+    // Video is not supported in this hall.
+    [].forEach.call(videoOptions, function(div) {
+      div.classList.add = 'no_select';
+      div.setAttribute('disabled', true);
+    });
+    form.service_video_novideo.checked = true; //Set the video option to none.
+    videoDiv.classList.add('no_select');
+  }
+
+}
+
+function typeActions(typeID) {
+
+    typeID = typeID * 1; //make number.
+
+    //************** Show/Hide Ensemble and Instrument List. **************//
+    switch (typeID) {
+
+      // Ensemble
+      case 8783:
+        console.log('Ensemble');
+        document.querySelector('#select_ensemble').classList.remove('hidden');
+        document.querySelector('#select_instrument').classList.add('hidden');
+        //document.querySelector('#video_live_ens').classList.remove('hidden'); // Show Ensemble Live stream.
+      break;
+
+      // SR, NonDeg, Masters, JR, GAC, DMA, studio
+      case 8789: case 8788: case 8779: case 8787: case 8781: case 8780: case 8790:
+        console.log('Degree');
+        document.querySelector('#select_ensemble').classList.add('hidden');
+        document.querySelector('#select_instrument').classList.remove('hidden');
+        //document.querySelector('#video_live_ens').classList.add('hidden'); // hide Ensemble Live stream.
+      break;
+
+      default:
+        document.querySelector('#select_ensemble').classList.add('hidden');
+        document.querySelector('#select_instrument').classList.add('hidden');
+    }
+
+
+    //************** Change Audio recording fees accordingly.  **************//
+
+    // DMA, Ensemble, Faculty, GAC, Masters, SR
+    const coursefee = [8780,8783,8784,8781,8779,8789];
+    const fieldname = 'archive_recital_type[data][]';
+
+    let noFee = document.getElementById('service_audio_nofee');
+    let fee   = document.getElementById('service_audio_fee');
+
+    if ( coursefee.indexOf(typeID) >= 0 ) {
+      // Is a degree recital. No Fee.
+      console.log('Is a degree recital. No Fee.');
+      noFee.setAttribute('checked', true);
+      noFee.removeAttribute('disabled');
+      noFee.classList.remove('no_select');
+      fee.setAttribute('disabled', true);
+      fee.classList.add('no_select');
+      fee.removeAttribute('checked');
+
+    } else {
+      console.log('Fee required.');
+      noFee.setAttribute('disabled', true);
+      noFee.classList.add('no_select');
+      noFee.removeAttribute('checked');
+      fee.setAttribute('checked', true);
+      fee.removeAttribute('disabled');
+      fee.classList.remove('no_select');
+    }
+    
+}
+
+
+
+
+
+/////////////////////////// Misc Functions ///////////////////////////
+function copyHiddenVideoFields() {
+  if (radios.video) {
+    form.video_hidden_name.value      = radios.video.dataset.name;
+    form.video_hidden_shortname.value = radios.video.dataset.shortname;  
+  }
+}
+function copyHiddenAudioFields() {
+  if (radios.audio) {
+    form.audio_hidden_name.value      = radios.audio.dataset.name;
+    form.audio_hidden_shortname.value = radios.audio.dataset.shortname;
+  }
+}
+function showLoadingIndicator(toggle) {
+  toggle ? div_loading.classList.remove('hidden') : div_loading.classList.add('hidden');
+  //div_loading.classList.toggle('hidden');
+}
+function styleValidated(bool, id) {
+  if (bool) {
+    document.querySelector(id).parentNode.classList.add('validated');
+  } else {
+    document.querySelector(id).parentNode.classList.remove('validated');
+  }
+}
+function styleErrored(bool, id) {
+ 
+  if(bool) {
+    document.querySelector(id).parentNode.classList.add('errored');
+  } else {
+    document.querySelector(id).parentNode.classList.remove('errored');
+  }
+}
+function submitButtonControl() {
+  if (form_valid) {
+    //submitbutton.removeAttribute('disabled');
+    submitbutton.classList.add('heartbeat', 'submit_validated');
+  } else {
+    //submitbutton.setAttribute('disabled', true);
+    submitbutton.classList.remove('heartbeat', 'submit_validated');
+  }
+}
+function calculateFee() {
+  var mydata = $('[data-price]:checked');
+  var total = 0;
+
+  mydata.each( function(i,elm){
+    total = total + $(mydata[i]).data('price');
+  });
+
+  if (form.archive_extra_amount_due != null) {
+    const extraFee = form.archive_extra_amount_due.dataset.price;
+    if (extraFee != null) {
+      total = total + (extraFee*1);
+    } 
+  }
+
+  // Update field.
+  form.amount_due.value = total;
+
+  // Show message on submit button.
+  if (total*1 > 0) {
+    document.querySelector('.submit_paymsg').classList.remove('hidden');
+    form.status.value = 'NeedsPayment';
+    form.archive_charege_paid.value = ""; // blank the paid if they add-on video.
+    console.log('Status will be NeedsPayment');
+  } else {
+    document.querySelector('.submit_paymsg').classList.add('hidden');
+    form.status.value = 'Scheduled';
+    console.log('Status will be Scheduled');
+  }
+}
+function matchPrimaryInstrument(instrumentNameString) {
+  let match = '';
+  for (var i = 0; i < ee_instrument_array.length; i++) {
+    if ( ee_instrument_array[i].title.includes(instrumentNameString) ) {
+      match = ee_instrument_array[i];
+    }
+  }
+  if (match != '') {
+    document.querySelector('#instrument_'+match.id).setAttribute('selected', true);
+    styleValidated(true, '#archive_instrument');
+  }
+}
+
+function matchEnsemble (ensembleNameString) {
+  let match = '';
+  for (var i = 0; i < ee_ensemble_array.length; i++) {
+    if ( ee_ensemble_array[i].title.includes(ensembleNameString) ) {
+      match = ee_ensemble_array[i];
+    }
+  }
+  if (match != '') {
+    document.querySelector('#ensemble_'+match.id).setAttribute('selected', true);
+    styleValidated(true, '#archive_ensemble');
+  }   
+}
+
+
+function validate() {
+
+  let validated = [];
+
+  // Radios already an object.
+  for (var item in radios) {
+    if (radios[item] == null) {
+      try {
+        styleValidated(false, "#"+radios[item].id);
+      } catch(error) {};
+      validated.push(false);
+    } else {
+      styleValidated(true, "#"+radios[item].id);
+    }
+  };
+
+  if (form.archive_guest_artist_disclaimer.checked) {
+    styleValidated(true, "#"+form.archive_guest_artist_disclaimer.id);
+  } else {
+    styleValidated(false, "#"+form.archive_guest_artist_disclaimer.id);
+    validated.push(false);
+  }
+
+  if (validated.length > 0) {
+    form_valid = false;
+  } else {
+    form_valid = true;
+  }
+}
+
+
+/*********************** Submit ***********************/
+async function submitHandler(){
+
+  if (form_valid == true) {
+
+    showLoadingIndicator(true);
+
+    let jquery_form = $('#event_form');
+    let formSeralized = jquery_form.serialize();
+    let action = jquery_form.attr('action');
+
+    /*
+    console.log('Submit Successful (but disabled)');
+    showLoadingIndicator(false);
+    new Noty({
+        text: 'Success!  Except the form is in test mode and did not submit.',
+        type: 'error',
+        theme: 'nest',
+        timeout: 5000
+    }).show(); 
+    */
+
+
+    axios.post(action, formSeralized)
+      .then(function (response) {
+
+        let total2 = form.amount_due.value; // Couldnt' get Total var here...?
+
+        // Hide loading.
+        showLoadingIndicator(false);
+
+        // If they pay, redirect.
+        if (total2*1 > 0) {
+          // EE creates and returns and entry ID if all goes well.
+          let entry_id = response.data.entry_id;
+
+          console.log(response);
+  
+          // Need a popup just incase redirect does not work.
+          window.location.replace("/chargecheckout/"+entry_id);
+
+        } else {
+
+          // Payment is not required.  Show conformation that details were saved.
+          showLoadingIndicator(false);
+          new Noty({
+              text: 'Event Details Saved.',
+              type: 'success',
+              theme: 'nest',
+              timeout: 5000
+          }).show(); 
+        }
+
+      })
+      .catch(function (error) {
+        console.log(error);
+        new Noty({
+            text: 'There was an error trying to save event details.<br />Refresh the page and try again?',
+            type: 'error',
+            theme: 'nest',
+            timeout: 5000
+        }).show();        
+      });
+
+  } else {
+    console.log('Submit click aborted due to the form having errors.');
+    new Noty({
+        text: 'The form has some missing fields.  Please check and try again.',
+        type: 'error',
+        theme: 'nest',
+        timeout: 5000
+    }).show();     
+  }
+
+};
+</script>
+
+
+{embed=a/f} 

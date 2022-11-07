@@ -1,0 +1,392 @@
+/*
+
+Form validation.
+https://www.bram.us/2021/01/28/form-validation-you-want-notfocusinvalid-not-invalid/
+
+*/
+
+
+
+
+/* For some reason these buttons were too big */
+#update_cart, #clear_cart {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/************************ Recital Orders **************************/
+#recital h2 a, #sessions h2 a {
+    text-decoration: none;
+}
+#recital h2, #sessions h2 {
+    border-bottom: 0;
+}
+section.service_options h2 {
+    margin-top: 2em;
+}
+@media (min-width:450px) {
+    section#service_products {
+        display: flex;
+        justify-content: center;
+        max-width:900px;
+    }
+}
+
+.services_options label {
+    display: block;
+    margin-top: 1.5em;
+}
+.services_options select  {
+    font-size: 1.1em;
+    width: 100%;
+}
+.services_options input {
+    padding:.3em 2%;
+    font-size:1.2em;
+    border:2px solid #ccc;
+    border-radius:3px;
+    font-weight:700;
+}
+
+.formfield_fullwidth {
+    width:96%;
+}
+
+.services_options .date_select,
+.services_options .hours
+{
+    width: 95%;
+}
+/*** Services Order **/
+.payment_nav {
+   width:70%;
+   margin:0 auto;
+   display:flex;
+   text-align: center;
+}
+.services_each_product {
+    width:70%;
+    margin:0 auto;
+}
+@media (max-width:600px){
+    .services_each_product {
+        width:100%;
+    } 
+}
+.payment_nav a {
+    display:block;
+    width:50%;
+    font-size:130%;
+    text-decoration: none;
+    margin-right:5px;
+    padding:.7em;
+    box-sizing: border-box;
+    border-bottom:2px solid #ccc;   
+}
+.payment_nav a:hover, .payment_nav a.active {
+    background:var(--greenfour);
+    color:white;
+}
+
+/****************** Current Shopping Cart & some My Purchases Styles ****************/
+p#order_completed {
+    text-align: center;
+    width:40%;
+    margin: .1em auto;
+    padding: .7em .5em;
+    background: #CCE2DA;
+    color: #6D7572;
+    font-size: 1.2vw;
+    border-radius:5px;
+    font-weight: bold;
+    text-shadow: #d9ebe7 0 0 2px;
+}
+
+
+.cart_update_buttons {
+    margin: 0 0 2em 0;
+    padding:0;
+    text-align: right;
+    width: 100%;
+}
+
+.checkout_info {
+    display:flex;
+}
+.checkout_info .order_info {
+    width:50%;
+}
+.checkout_info .totals {
+    width:50%;
+    align-self: flex-end;
+}
+.checkout_info .submit_order_button {
+    width:15em;
+}
+
+
+
+/*******  Changes input to use Font Awesome *****/
+#login_form input[type=radio] {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: .5vw;
+    position: absolute;
+    width: 1px;
+}
+#login_form input[type=radio] ~ label:before {
+    font-family: FontAwesome;
+    font-display: auto;
+    display: inline-block;
+    content: "\f1db";
+    letter-spacing: 10px;
+    color: #535353;
+    width: 1.4em;
+    padding:0 0 0 .7vw;
+}
+#login_form input[type=radio]:checked ~ label {
+    padding:0 .7vw 0 0;
+}
+#login_form input[type=radio]:checked ~ label:before {
+    content: "\f00c";
+    color: #BAE197;
+    letter-spacing: 5px;
+}
+#login_form input[type=radio]:checked ~ label:before,
+#login_form input[type=radio]:checked ~ label { 
+  color: white;
+  background:#BAE197;
+}
+#login_form input[type=radio]:focus ~ label:before,
+#login_form input[type=radio]:focus ~ label { 
+  color: white;
+  background:#BAE197;
+}
+@media (max-width:500px) {
+    #login_form input[type=radio] ~ label:before {
+        padding-left:.5em;
+    }
+    #login_form input[type=radio]:checked ~ label:before {
+        font-size: 1.1em;
+    }
+    #login_form input[type=radio]:checked ~ label {
+        padding-right:1em;
+    }
+    #login_form ul li ul li label {
+       font-size:1em;
+        overflow: hidden;
+        white-space: nowrap
+    }
+}
+
+/**** For showing field label hints.  Works with JS, and specific HTML.  ***/
+
+.hintHelper {
+    font-size:120%;
+  padding:.3em .5em;
+  cursor: pointer;
+    border-radius:50%;
+}
+.hint_text {
+  display:none;
+  background:none;
+}
+.hint_active {background:#FFF8B5;}
+
+
+
+
+.cart_contents input[type=number] {
+    border:1px solid var(--purewhite);
+    background:none;
+    outline:none;
+    padding:.7em;
+    width:5em;
+}
+.cart_contents input[type=number]:hover, input[type=number]:focus {
+    border:1px solid var(--darkone);
+}
+
+
+/************************* Payment form *************************/
+.center-align {
+  max-width: 75%;
+  margin:0 auto;
+}
+@media (max-width:900px) {
+    .center-align {
+        max-width: 100%;
+    }
+}
+.payment_type_block {
+    border:2px solid var(--lightgray);
+    border-radius:3px;
+    padding:0;
+    margin-top:0;
+    margin-bottom:8vw;
+}
+.payment_type_block > * {
+    margin:1.5em;
+}
+.payment_type_header {
+    margin:0;
+    padding:1em;
+    background:var(--lightgray);
+    font-weight: normal;
+}
+
+/** Standard Credit Card **/
+/*
+fieldset.payment {
+    border-top:2px solid var(--midgray);
+    border-left:0;
+    border-right:0;
+    border-bottom:0
+}
+fieldset.payment legend {
+    padding:0 .5em;
+    color:var(--midgray);
+}
+*/
+
+
+/* Row */
+.services_payment_column section {
+  display: flex;
+}
+/* Cell */
+.services_payment_column article {
+  border-bottom: 1px solid var(--midgray);
+  position: relative;
+  flex-grow:1;
+}
+.services_payment_column label {
+  display: block;
+  font-size: 1em;
+  letter-spacing: 0.04em;
+  font-weight: normal;
+  text-transform: uppercase;
+  margin:0;
+  padding:0 .9em;
+}
+.services_payment_column label span {
+  color:#ccc;
+}
+.services_payment_column input {
+  display: block;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  margin:0;
+  padding:.6em .5em .3em .5em;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.services_payment_column input:focus {background:#FDFCD9;}
+.services_payment_column .valid {color:green;}
+.services_payment_column .verywrong,
+.services_payment_column .invalid {
+    color:red;
+}
+
+@media (max-width:500px) {
+  .services_payment_column section {
+    display: initial;
+  }
+  .services_payment_column .cc_field {
+    border-right:0;
+  }
+  .services_payment_column .cc_month {
+    border-right:0;
+  }
+}
+
+
+
+/****************** Charge checkout, success message ******************/
+.charge_success {
+    padding:3em;
+    width:75%;
+    margin:0 auto;
+    border:1px solid var(--lightgray);
+    border-radius:10px;
+    background:var(--purewhite);
+    box-shadow:0 15px 30px 1px rgba(69, 69, 69, .3);
+    position:relative;
+    z-index:2;
+}
+.charge_success h1 {
+    color:var(--greenfour);
+}
+@media (max-width:600px) {
+    .charge_success {
+        width:93%;
+        padding:2em;
+    }
+}
+
+/****************** Big green button /******************/
+.submit_order_button {
+    margin: 1em auto;
+    padding: 1em;
+    color: white;
+    background: var(--greenone);
+    border-radius:5px;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: bold;
+    border-radius: 5px; 
+    border:1px solid var(--midgray);
+    outline: none;
+    box-shadow:0 3px 8px 1px rgba(69, 69, 69, .3);    
+}
+.submit_order_button:hover,
+.submit_order_button:focus, 
+a#proceed_to_payment:focus, 
+a#proceed_to_payment:active {
+    background:var(--greenfive);
+    cursor:pointer;
+    color:white;    
+}
+.submit_order_button:active {
+    transform: scale(.97);
+    box-shadow:inset 0px 1px 10px #414D48;
+}
+.submit_order_button:disabled {
+  opacity: .7;
+  filter: grayscale(100%);
+  cursor: initial;
+  color: transparent;
+  text-shadow: 0 0 2px rgba(0,0,0,.8);
+  box-shadow:none;
+}
+.submit_order_button:disabled:hover {
+    cursor:initial;
+    box-shadow:none;
+    color:transparent;      
+}
+
+
+/****************** Success and Error Notices ******************/
+.alerts {
+    margin:.5em 0;
+    padding:.5em;
+    border-radius:3px;
+    text-align: center;
+    font-weight: bold;
+}
+.alert-error {
+    background:rgba(246, 163, 162, 1);
+}
+.alert-success {
+    background:rgba(163, 244, 166, 1);
+}
+.cc_msg_hidden {
+    display: none;
+}

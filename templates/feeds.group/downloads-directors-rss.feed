@@ -1,0 +1,113 @@
+{!--
+
+  Access:       Entry Link & file URL.
+  For:          Directors.
+  Description:  Shows all entries based on a tag.
+                File URL in description.
+
+--}
+
+{preload_replace:root="downloads"}
+{preload_replace:entry="item"}
+{if segment_3 !=""}
+
+{exp:rss:feed channel="live" show_expired="yes" show_future_entries="no" dynamic_start="yes"}
+
+<?xml version="1.0" encoding="UTF-8"?>
+  <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    
+      <title><![CDATA[UNT Archive-My Ensembles]]></title>
+      <link>{site_url}/me</link>
+      <description>parents downloads by ensemble director.</description>
+      <dc:language>{channel_language}</dc:language>
+      <dc:creator>recordingservices@unt.edu</dc:creator>
+      <dc:rights>Copyright {current_time format="%Y"}</dc:rights>
+      <dc:date>{current_time format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+      <admin:generatorAgent rdf:resource="{site_url}" />
+
+      {exp:query sql="SELECT entry_id FROM exp_channel_data WHERE field_id_178 LIKE '%{segment_3}%'"}
+        {exp:channel:entries channel="ensembles" disable="category_fields|pagination|categories" entry_id="{entry_id}" dynamic="off" orderby="title" sort="asc"}
+          {parents show_expired="yes" limit="3"}
+      			    <item>
+      			      <title><![CDATA[{parents:entry_date format="%M %d, %Y"} {parents:title}]]></title>
+      			      <link>{parents:entry_id_path='{root}/{entry}'}</link>
+      			      <guid>{parents:entry_id_path='{root}/{entry}'}</guid>
+      			      <description><![CDATA[
+
+                  <a href="{entry_id_path='{root}/{entry}'}">
+                    {if '{parents:ondemand_image}' != ""}
+                      {exp:ce_img:pair src="{parents:ondemand_image}" width="512" height="288" crop="yes" save_type="jpg" fallback_src="/images/default.png"}
+                          <img src="{site_url}{made}" alt="{title}" title="Preview" />
+                      {/exp:ce_img:pair}
+                    {/if}
+
+                    {if '{parents:ondemand_image}' ==""}
+                        {if default_picture !=""}
+                          {exp:ce_img:pair src="{default_picture}" width="512" height="288" crop="yes" save_type="jpg"}
+                              <img src="{site_url}{made}" alt="{title}" title="Open {title}" width="{width}" height="{height}" />
+                          {/exp:ce_img:pair}
+                        {/if}
+
+                        {!-- No ensemble pic! --}
+                        {if default_picture ==""}         
+                            {exp:ce_img:pair src="/images/default.png" width="512" height="288" crop="yes" save_type="jpg"}
+                              <img src="{site_url}{made}" alt="{title}" title="Open {title}" width="{width}" height="{height}" />
+                            {/exp:ce_img:pair}
+                        {/if}
+
+                    {/if}
+                  </a>
+      			      
+
+          					{parents:ondemand_chapters_grid}
+          						{parents:ondemand_chapters_grid:audio_file}
+       
+                          <a href="{site_url}{parents:ondemand_chapters_grid:audio_file:url}">{parents:ondemand_chapters_grid:audio_file:filename}</a>
+
+          						{/parents:ondemand_chapters_grid:audio_file}
+          					{/parents:ondemand_chapters_grid}
+      				
+
+
+            				{if parents:global_streaming}
+            					<p>Video Stream: <a href="{entry_id_path=media/playvideo}">Play</a></p>
+            				{/if}    
+            				
+            				{if parents:video_download_link}
+            					<p>Video: <a href="{exp:link_vault:url
+                                                          url='{parents:video_download_link}'
+                                                          entry_id="{entry_id}"
+                                                          class="download_button orange dl tip"
+                                                          text="Download Video"
+                                                          title="{filename}"
+                                                          cf:album="{entry_date format="%M %d, %Y"} {title}"
+                                                          cf:artist="{parents:related_ensembles_v2 backspace="2"}{parents:related_ensembles_v2:title}, {/parents:related_ensembles_v2}"
+                                                          cf:year="{entry_date format="%Y"}"
+                                                          cf:page="{segment_1}/item/{entry_id}"
+                                                          cf:type="rss video_download"
+                                                          cf:recitaltype="{parents:recital_type}"
+                                                          cf:category="{categories backspace="2"}{category_name}, {/categories}"                      
+                                                        }">{filename}</a></p>
+            				{/if}
+       
+            				{if parents:archive_concert_notes}<br />{exp:ce_str:ing remove_html}{parents:archive_concert_notes}{/exp:ce_str:ing}{/if}<br />
+            				{parents:room:title}
+
+                    <p>{exp:tag:tags entry_id='{parents:entry_id}' tag_group_id='3' orderby='tag_name' sort='desc' backspace='2'}{tag}, {/exp:tag:tags}</p>
+
+            				]]></description>
+          			  <dc:subject><![CDATA[{categories backspace="2"}{category_name}, {/categories}]]></dc:subject>
+          			  <dc:date>{parents:entry_date format="%Y-%m-%dT%H:%i:%s%Q"}</dc:date>
+         			 </item>
+          {/parents}
+        {/exp:channel:entries}
+      {/exp:query}
+    </channel>
+</rss>
+
+{/exp:rss:feed}
+{/if}
+{if segment_3 ==""}
+Please pick a user
+{/if}

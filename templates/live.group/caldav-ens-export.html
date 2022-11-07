@@ -1,0 +1,73 @@
+{!-- Shows iCal formatted events for upcoming live streams.  Events are removed afterwards.
+	For use, /feeds//ical-livestream/anything.ics
+--}{exp:channel:entries 
+	channel="ensembles" 
+	disable="member_data|pagination" 
+	require_entry="yes" 
+	limit="1" 
+	cache="yes" 
+	refresh="500" 
+	entry_id="{segment_3}"
+}{if count==1}METHOD:PUBLISH
+VERSION:2.0
+X-WR-CALNAME:{title} Events
+X-WR-TIMEZONE:America/Chicago
+PRODID:UNT Recording Services
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+LAST-MODIFIED:20050809T050000Z
+BEGIN:STANDARD
+DTSTART:20071104T020000
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0600
+TZNAME:CST
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:20070311T020000
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0400
+TZNAME:EDT
+END:DAYLIGHT
+END:VTIMEZONE{/if}
+{parents 
+	show_expired="yes" 
+	show_future_entries="yes" 
+	orderby="date" sort="desc" 
+	status="livestream|open|Scheduled"
+	search:live_stream="yes"
+}BEGIN:VEVENT
+TITLE:{parents:entry_date format="%F %j, %Y"} {parents:title}
+TRANSP:OPAQUE
+UID:{parents:entry_id}
+DTSTART;TZID=America/Chicago:{parents:entry_date format="%Y%m%dT%H%i%s"}
+DTEND;TZID=America/Chicago:{parents:expiration_date format="%Y%m%dT%H%i%s"}
+LOCATION:{if parents:room:entry_id=="3266" OR parents:room:entry_id=="3270"}Murchison Performing Arts Center\, 2100 Interstate 35E Frontage Rd\, Denton\, TX 76201
+{if:else}Music Building\, 415 Ave C\, Denton, TX 76201\, USA
+{/if}
+X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=2100 N Interstate 35 E\\
+ nDenton TX 76205;X-APPLE-RADIUS=99;X-TITLE=2100 N Interstate 35 E:geo:33
+ .208022,-97.159236
+URL;VALUE=URI:http://recording.music.unt.edu{if status=="livestream" OR live_stream="yes"}/live/{parents:entry_id}{if:else}/downloads/item/{parents:entry_id}{/if}
+DESCRIPTION:{parents:room:title}{if status=="livestream" OR live_stream="yes} \nLive events start 15 minutes beforehand.{/if}\n{if parents:archive_concert_notes}{parents:archive_concert_notes}\n{/if}{parents:ondemand_chapters_grid backspace="2"}{exp:ce_str:ing remove_html}{parents:ondemand_chapters_grid:name_of_piece} - {parents:ondemand_chapters_grid:name_of_composer}{/exp:ce_str:ing}\n{/parents:ondemand_chapters_grid}
+DTSTAMP;TZID=America/Chicago:{if edit_date}{edit_date format="%Y%m%dT%H%i%s"}{if:else}20190701T110000{/if}
+SEQUENCE:{if parents:archive_ical_increment}{parents:archive_ical_increment}{if:else}1{/if}
+SUMMARY:{parents:title}
+{if parents:concert_program}{parents:concert_program}ATTACH;FILENAME={parents:concert_program:filename}.{parents:concert_program:extension};FMTTYPE=text/pdf;MANAGED-ID=100000{parents:concert_program:source_id}
+ 65539ff;SIZE={parents:concert_program:size unformatted="yes"};VALUE=URI:http://recording.music.unt.edu{parents:concert_program:url}{/concert_program}{/if}
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:entry_id}{parents:entry_id}
+UID:{parents:entry_id}{parents:entry_id}
+TRIGGER;VALUE=DATE-TIME:{parents:entry_date format="%Y%m%dT%H%i%s"}Z
+ACTION:NONE
+END:VALARM
+BEGIN:VALARM
+X-WR-ALARMUID:{parents:entry_id}{parents:entry_id}
+UID:{parents:entry_id}{parents:entry_id}
+TRIGGER:-P15M
+ATTACH;VALUE=URI:Basso
+ACTION:AUDIO
+END:VALARM
+END:VEVENT
+{ical_space}{/parents}
+{if count=='{total_results}'}END:VCALENDAR{/if}
+{/exp:channel:entries}

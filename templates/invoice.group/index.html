@@ -1,0 +1,301 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+{exp:channel:entries
+    channel="invoices" 
+    show_future_entries="yes" 
+    show_expired="yes" 
+    entry_id="{segment_2}" 
+    disable="categories|pagination" 
+    status="open|closed|needspayment|paid|Project_In_Progress" 
+    require_entry="yes"
+}
+
+{if no_results}
+
+    {embed='site/404' error_title="No invoice selected" error_description="Please contact us for a link or check your email."}
+
+{/if}
+
+{if count=='1'}
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recording Services - Invoice Payment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.3/dist/css/foundation.min.css" integrity="sha256-xpOKVlYXzQ3P03j397+jWFZLMBXLES3IiryeClgU5og= sha384-gP4DhqyoT9b1vaikoHi9XQ8If7UNLO73JFOOlQV1RATrA7D0O7TjJZifac6NwPps sha512-AKwIib1E+xDeXe0tCgbc9uSvPwVYl6Awj7xl0FoaPFostZHOuDQ1abnDNCYtxL/HWEnVOMrFyf91TDgLPi9pNg==" crossorigin="anonymous">
+  </head>
+  <body>
+{/if}
+
+<style>
+#contain {
+    max-width:900px;
+    width:100%;
+    box-sizing:border-box;
+    padding:0 5%;
+    margin:0 auto;
+}
+#line-items {
+    border:0;
+}
+#line-items input, #the_total, #invoice_id_field {
+    border:0;
+    border-bottom:1px dashed #ccc;
+    background:transparent;
+    box-shadow:none;
+}
+#the_total {font-weight: bold}
+.alert-error {
+    color:white;
+    font-weight:bold;
+    display:block;
+    width:100%;
+    padding:1em;
+    background:red;
+    border-radius:4px;
+}
+</style>
+
+
+<section id="contain">
+
+
+<div class="row">
+    <div class="medium-4 columns"></div>
+        <div class="medium-8 columns" style="text-align:right">
+            <h2>UNT Recording Services</h2>
+            University of North Texas College of Music<br />415 Ave C<br/ >Denton Texas 76201<br />
+            940-565-3780 | recordingservices@unt.edu<br />
+            {site_url}<br />
+            UNT Account: 134000.202.885000.400.12268
+            </p>
+        </div>
+    </div>
+
+    {exp:charge:form
+        form_id="charge-form"
+        on_success="email"
+        on_success:entry_id="{entry_id}"
+        on_success:invoice_hash="{hash}"
+        return="{segment_1}/receipt"
+        return_error="{segment_1}/error"}
+ 
+
+    <h3>{title}</h3>
+    <p>
+        Invoice # {entry_id}<br />
+        Status: {status}<br />
+        Created {entry_date:relative stop="+1 day" format="%F %d, %Y"}<br />
+        Last edited  {edit_date:relative stop="+1 day" format="%F %d, %Y"}
+    </p>
+    {invoices_description}<br />
+
+        {if have_errors}
+        <div class="row">
+            <div class="error panel callout radius">
+                <h4>We have {error_count} errors</h4>
+                <ul>
+                {errors}
+                    <li>{error_message}</li>
+                {/errors}
+                </ul>
+            </div>
+        </div>
+        {/if}
+
+
+
+        <div class="row">
+ 
+                <h4>Items</h4>
+     
+                <table id="line-items">
+                    <tr>
+                        <td>Description</td>
+                        <td>Quantity</td>
+                        <td>$ Per Unit</td>
+                        <td>$ Total</td>
+                    </tr>
+                    {invoices_cost_breakdown}
+                        <tr>
+                            <td><input readonly type="text" name="meta:{invoices_cost_breakdown:field_row_count}-description" placeholder="" value="{invoices_cost_breakdown:description}"></td>               
+                            <td><input readonly type="text" name="meta:{invoices_cost_breakdown:field_row_count}-quantity" placeholder="" value="{invoices_cost_breakdown:quantity}"></td>
+                            <td><input readonly type="text" name="meta:{invoices_cost_breakdown:field_row_count}-description" placeholder="" value="{invoices_cost_breakdown:cost_per_unit}"></td>
+                            <td><input readonly type="text" name="meta:{invoices_cost_breakdown:field_row_count}-cost_per_unit" placeholder="" value="{invoices_cost_breakdown:total}"></td>
+                        </tr>
+                    {/invoices_cost_breakdown}
+                </table>            
+ 
+                
+                <div class="row">
+    
+                    <div class="medium-4 columns">
+
+                        <div class="small-6 columns">
+                            <label for="plan_amount" {if error_plan_amount}class="error"{/if} class="right inline">Total:</label>
+                        </div>
+
+                        <div class="small-6 columns">
+                            <input readonly type="text" id="the_total" name="plan_amount" placeholder="{invoices_amount_due}" value="${invoices_amount_due}">
+                       
+                            {if error_plan_amount}
+                                <small class="error">
+                                {error_plan_amount_message}
+                                </small>
+                            {/if}
+                        </div>
+                    </div><!--4 column-->
+
+                    <div class="medium-8 columns" style="display:none">
+                    <div class="small-1 columns">
+                        <label for="meta:invoice_id" class="right inline">ID:</label>
+                    </div>
+                    <div class="medium-2 columns">
+                        <input readonly type="text" id="invoice_id_field" name="meta:invoice_id" placeholder="" value="{entry_id}">
+                    </div>
+                    <div class="small-5 columns"></div>
+                    </div>
+
+                </div>
+            </div><!-- row -->
+
+
+
+{!--
+         <div class="row">
+          <div class="medium-6 columns">            
+            <h4>Payment Details</h4>
+                <label for="plan_amount" {if error_customer_name}class="error"{/if}>Your Name
+                <input type="text" id="customer_name" name="customer_name" placeholder="eg. Joe Smith" value="{if logged_in}{logged_in_screen_name}{if:else}{invoices_customer_name}{/if}">
+                </label>
+                {if error_customer_name}
+                    <small class="error">
+                        {error_customer_name_message}
+                    </small>
+                {/if}
+ 
+                <label for="plan_amount" {if error_customer_email}class="error"{/if}>Receipt Email
+                    <input type="text" id="customer_name" name="customer_email" placeholder="eg. joe@smith.org" value="{if logged_in}{logged_in_email}{if:else}{invoices_customer_email}{/if}">
+                </label>
+                {if error_customer_email}
+                    <small class="error">
+                    {error_customer_email_message}
+                    </small>
+                {/if}
+
+
+                {if logged_in}
+                <label for="meta:euid">EUID:
+                    <input type="text" name="meta:euid" placeholder="{logged_in_username}" value="{logged_in_username}">
+                </label>
+                {/if}
+
+                {if logged_out}
+                    <p>If you have a UNT ID and would like this information attached to your ID please <a href="{site_url}/a/login">login</a>.</p>
+                {/if}
+            </div><!-- large-6 columns-->
+            <div class="medium-6 columns">
+            </div>
+        </div><!--row-->
+
+
+        <div class="row">
+ 
+            <h4>Credit Card Details</h4>
+            <div class="row">
+                {if have_card_token}
+                    <div class="small-12 columns"><p><strong>{card_type}</strong> : {card_number_dotted}</p></div>
+                {if:else}
+                    <div class="medium-6 columns">
+                        <label for="card_number">Credit Card Number</label>
+                        <input type="text" id="card_number" required value="" data-stripe="number"/>
+                    </div><!--9-->
+                    
+                    <div class="medium-3 columns">
+                        <label for="card_cvc">Security Code</label>
+                        <input type="text" id="card_cvc" required placeholder="" value="" data-stripe="cvc"/>
+                    </div><!--3-->
+                    <div class="medium-3 columns">
+                    </div>
+
+
+                    <div class="large-12 columns">
+                        <label for="card_exp_month">Expires</label>
+                    </div>
+                    <div class="small-6 columns">
+                        <select id="card_exp_month" data-stripe="exp_month">
+                            {card_months}
+                                <option value="{month_digit}" {if current_month}selected="selected"{/if}>{month_digit} / {month_long}</option>
+                            {/card_months}
+                        </select>
+                    </div><!--column-->
+
+                    <div class="small-3 columns">
+                        <select id="card_exp_year" data-stripe="exp_year">
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="small-3 columns">
+                    </div>
+
+                {/if}
+
+            </div><!--row -->
+
+            {if status !="Paid" AND status !='Project_In_Progress'}
+            <button id="submit_payment" class="success button" type="submit">Pay Now</button><div id="working"></div>
+            <div id="payment-errors"></div>
+            {/if}
+
+            {if status=="Paid"}
+            <button id="submit_payment" class="button" disabled  type="submit">This has already been paid.</button>
+            {/if}
+
+            {if status=='Project_In_Progress'}
+            <button id="submit_payment" class="button" disabled  type="submit">Project is not complete.</button>
+            {/if}
+
+
+
+        </fieldset>
+ 
+ 
+    </div><!--row-->
+--}
+
+
+
+{/exp:charge:form}
+</section>
+ 
+
+ 
+{!--
+
+{embed=a/js}
+
+<!--Script is in the header <script src="{exp:charge:stripe_js}"></script>-->
+<script src="{exp:charge:js}"></script>
+<script>
+    (function(window, undefined) {
+        Stripe.setPublishableKey('{exp:charge:public_key}');
+        $(this).charge('#charge-form', '#payment-errors');
+    })(window);
+</script>
+
+<script>
+$('#charge-form').submit(function(event) {
+    $('#working').html('<div class="fa fa-spin fa-cog"></div> Processing...');
+});
+</script>    
+
+--}
+
+{/exp:channel:entries}
+

@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recording Services - Session Payment</title>
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3"></script>
+
+    <script>
+    window['_fs_debug'] = false;
+    window['_fs_host'] = 'fullstory.com';
+    window['_fs_org'] = 'E0RT2';
+    window['_fs_namespace'] = 'FS';
+    (function(m,n,e,t,l,o,g,y){
+        if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+        g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[];
+        o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
+        y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+        g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){g(l,v)};g.event=function(i,v){g('event',{n:i,p:v})};
+        g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+        g.consent=function(a){g("consent",!arguments.length||a)};
+        g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+        g.clearUserCookie=function(){};
+    })(window,document,window['_fs_namespace'],'script','user');
+
+    {if logged_in}
+      {if
+        logged_in_member_group=='1' OR
+        logged_in_member_group=='9' OR 
+        logged_in_member_group=='11'
+      }
+      // For faculty/staff, and educators
+        FS.identify('{if logged_in_member_id == 1}99999{if:else}{logged_in_member_id}{/if}', {
+          displayName: '{logged_in_screen_name}',
+          email: '{logged_in_email}',
+          memberGroup_str: "{logged_in_group_title}",
+          memberGroupID_int: {logged_in_group_id}
+        });
+      {if:else}
+        {exp:member:custom_profile_data member_id="{logged_in_member_id}"}
+          {if ldap_directory_withdraw ==""}
+            FS.identify('{logged_in_member_id}', {
+              displayName: '{logged_in_group_title}-{logged_in_member_id}',
+              memberGroup_str: "{logged_in_group_title}",
+              memberGroupID_int: {logged_in_group_id}
+            });
+          {/if}
+        {/exp:member:custom_profile_data}
+     {/if}
+    {/if}
+    </script>
+
+
+  </head>
+  <body>
+
+
+<style>
+input {
+  padding:.2em;
+  margin:.2em;
+}
+input[type=number] {
+  border:1px solid rgb(0,0,0,.1);
+  width:3em;
+}
+
+table {
+  width:100%;
+}
+table td {
+  width:50%;
+}
+
+.line {
+  display:block;
+  height:.3em;
+  margin:1em 0;
+  width:100%;
+  background-color:#ddd;
+}
+
+.hide {
+  display:none;
+}
+
+#content {
+  position: relative;
+  z-index: 3;
+  opacity: .8;
+  transition: all 1s ease-in-out;
+}
+#firework-canvas {
+  transition: all 1s ease-in-out; 
+}
+@media (min-width:600px) {
+  #content {
+    width:80%;
+  }
+}
+@media (max-width:599px) {
+  #content {
+    width:90%;  
+  }
+}
+
+</style>
+
+
+{if segment_3 == ''}
+
+
+<div class="max-w-sm mx-auto p-8 bg-white rounded-lg shadow-xl">
+
+  <form id="session_form">
+    <div class="flex-shrink-0">
+
+      <h3>Session Type</h3>
+      <div id="sessionsSelection">
+        <input id="sessionType_audio" type="radio" name="sesssion_sku" data-sku="sku_FXqUmwUysS3RHc" checked>
+        <label for="sessionType">Audio ($35/hr)</label><br />
+
+        <input id="sessionType_video" type="radio" name="sesssion_sku" data-sku="sku_FXqUG0zVGdyi9d">
+        <label for="sessionType_video">Video ($75/hr)</label><br />
+
+        <input id="sessionType_custom" type="radio" name="sesssion_sku" data-sku="sku_FXqUcZAcNJPBKC">
+        <label for="sessionType_custom">Custom Amount</label>
+      </div>
+
+
+
+      <table id="hours_table">
+        <tr>
+          <td><label for="hours">Hours:</label></td>
+          <td><input id="hours" type="number" name="session_hours" min="0" value="1" v-model="session_hours">hrs.</td>
+        </tr>
+      </table>
+
+      <div class="line"></div>
+
+      <table id="editing_table">
+        <tr>
+          <td><label for="editing">Editing ($50/hr)</label></td>
+          <td><input id="editing" type="number" name="session_editing_hours" value="0" min="0"> hrs.</td>
+        </tr>
+      </table>
+
+    </div>
+
+    <div id="user_defined_payment_form" class="hide">
+      <p>
+        <label for="custom_amount_field">Pay a Specific Amount</label>
+        $<input id="custom_amount_field" type="number" name="custom_amount_field" min="0" value="0">
+      </p>  
+    </div>
+
+
+
+<p class="text-center">
+  <button
+    style="background-color:#6772E5;color:#FFF;padding:8px 12px;border:0;border-radius:4px;font-size:1em;margin-top:2em"
+    id="checkout-button"
+    role="link"
+  >
+  Checkout
+  </button>
+</p>
+
+</div>
+
+
+
+<div id="error-message"></div>
+
+</div>
+
+
+{if logged_in_member_group == '1'}
+  <section style="margin:0 auto;text-align:center;margin-top:2em">
+    <button id="copyURL" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Copy URL Link</button>
+    <div id="sendLink"></article>
+  </div>
+{/if}
+
+
+<script>
+
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  const sessions_selector   = document.querySelector('#sessionsSelection');
+  const hours_selector      = document.querySelector("#hours");
+  const editing_selector    = document.querySelector('#editing');
+  const custom_amount_field = document.querySelector('#custom_amount_field');
+  const session_form        = document.querySelector('form#session_form');
+  const checkoutButton      = document.getElementById('checkout-button');
+
+  var link_url              = "";
+  var sesssion_sku          = "sku_FXkseZY0dSQ35P"; // audio is default.
+  var session_hours         = 1; // one hour is default.
+  var session_editing_hours = 0;
+
+  
+
+
+
+
+
+  //////////// Session Type.
+  // Get session type from URL if it exists.
+  const url_session_type = urlParams.get('session_type');
+  if (url_session_type != null && url_session_type !=''){
+    // Set the input field.
+    document.querySelector('#'+url_session_type).setAttribute('checked','');
+    // Set the Stripe variable.
+    sesssion_sku = document.querySelector('input[name="sesssion_sku"]:checked').dataset.sku;
+  };
+
+  sessions_selector.addEventListener('change', function(e) {
+    sesssion_sku = document.querySelector('input[name="sesssion_sku"]:checked').dataset.sku;
+
+    if (document.querySelector('input[name="sesssion_sku"]:checked').id == 'sessionType_custom') {
+      customAmount(true);
+    } else {
+      customAmount(false);
+    }
+
+  });
+
+
+
+
+  ////////// Session Hours
+
+  // Set based on URL:
+  hours_selector.value  = urlParams.get('session_hours'); // Set input field.
+  session_hours         = urlParams.get('session_hours') * 1; // Set variable for Stripe
+
+  // Set based on user changes:
+  hours_selector.addEventListener('change', function(e){
+    session_hours = this.value * 1;
+  });
+
+
+
+
+  ////////// Editing Hours
+
+  // Set based on URL:
+  editing_selector.value  = urlParams.get('session_editing_hours'); // set input field.
+  session_editing_hours   = urlParams.get('session_editing_hours') * 1; // set variable for stripe.
+
+  // Set based on user changes:
+  editing_selector.addEventListener('change', function(e){
+    session_editing_hours =  this.value * 1;
+  });
+
+
+
+  ////////// Custom Amounts:
+  const url_custom_amount = urlParams.get('custom_amount_field');
+  if (url_custom_amount !='' && url_custom_amount !=null) {
+    custom_amount_field.value   = urlParams.get('custom_amount_field') * 1;
+    session_hours               = urlParams.get('custom_amount_field') * 1;
+    customAmount(true);
+  }
+
+
+
+{!-- EE --}
+{if logged_in_member_group =='1'}
+
+  // Anytime the form chanages, update the URL to send to people:
+  session_form.addEventListener('change', function(e) {   
+
+    link_url    = 'https://recording.music.unt.edu/services/session_payments?';
+
+    // Deal just with Radio input.
+    var session_type = document.querySelector('input[name="sesssion_sku"]:checked').id;
+    link_url += "session_type=" + session_type;
+
+    // Get all inputs except Radio.
+    const forms = document.querySelectorAll("#session_form");
+    const form = forms[0];
+    [...form.elements].forEach((input) => {
+      if (input.type == "text" || input.type == "number") {
+        if (input.value !='' && input.value != null && input.value != 0) {
+          link_url += "&" + input.name + "=" + input.value;    
+        }
+      }  
+    });
+
+
+    const elm_sendlink = document.querySelector('#sendLink');
+    elm_sendlink.innerHTML = link_url;
+  });
+{/if}
+//
+
+
+  // Custom Amount
+  function customAmount(showCustom) {
+    if (showCustom) {
+      document.querySelector("#hours_table").classList.add('hide'); //hide
+      document.querySelector("#editing_table").classList.add('hide'); // hide
+      user_defined_payment_form.classList.remove('hide'); // show
+      session_editing_hours = 0;
+    } else {
+      document.querySelector("#hours_table").classList.remove('hide'); //hide
+      document.querySelector("#editing_table").classList.remove('hide'); // hide
+      user_defined_payment_form.classList.add('hide'); // show
+      session_hours = 0;
+      custom_amount_field.value   = 0;      
+    }
+
+      
+      custom_amount_field.addEventListener('change', function(e){
+        session_hours = custom_amount_field.value * 1;
+      });      
+  }
+//
+
+
+//************ Checkout ***************//
+var stripe = Stripe('pk_live_9VVEre5LYuLR5zP2yhEPI17R00MlRmrQoD');
+
+checkoutButton.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    var shoppingcart = [
+      {
+        "sku": sesssion_sku, 
+        "quantity": session_hours * 1,
+      }
+    ];
+
+
+    if (session_editing_hours != 0) {
+      shoppingcart.push(
+        {
+          sku: 'sku_FXqUYqioVtO4QM',
+          quantity: session_editing_hours,
+        },
+      );
+    }
+   // console.log(shoppingcart);
+
+
+
+    // Catch error if no value.
+    if (shoppingcart[0].quantity > 0) {
+
+
+      // When the customer clicks on the button, redirect
+      // them to Checkout.
+      stripe.redirectToCheckout({
+        items: shoppingcart,
+
+        // Do not rely on the redirect to the successUrl for fulfilling
+        // purchases, customers may not always reach the success_url after
+        // a successful payment.
+        // Instead use one of the strategies described in
+        // https://stripe.com/docs/payments/checkout/fulfillment
+        successUrl: 'https://recording.music.unt.edu/services/session_payments/success',
+        cancelUrl: 'https://recording.music.unt.edu/services/session_payments/canceled',
+      })
+      .then(function (result) {
+        if (result.error) {
+          // If `redirectToCheckout` fails due to a browser or network
+          // error, display the localized error message to your customer.
+          var displayError = document.getElementById('error-message');
+          displayError.textContent = result.error.message;
+        }
+      });
+      
+    }
+
+
+});
+
+
+
+
+{if logged_in_member_group == '1'}
+
+ // Copy URL to clipboard.
+document.querySelector('#copyURL').addEventListener('click', function(e) {
+  e.preventDefault();
+  copyStringToClipboard(link_url);
+});
+
+function copyStringToClipboard (str) {
+   // Create new element
+   var el = document.createElement('textarea');
+   // Set value (string to be copied)
+   el.value = str;
+   // Set non-editable to avoid focus and move outside of view
+   el.setAttribute('readonly', '');
+   el.style = {position: 'absolute', left: '-9999px'};
+   document.body.appendChild(el);
+   // Select text inside element
+   el.select();
+   // Copy text to clipboard
+   document.execCommand('copy');
+   // Remove temporary element
+   document.body.removeChild(el);
+}
+{/if}
+
+</script>
+
+
+{/if}
+
+
+{if segment_3 =='success'}
+<div  id="content" class="max-w-sm mx-auto p-8 bg-white rounded-lg shadow-xl" style="margin-top:5em">
+<h1>Success!</h1>
+<p>You should receive a receipt email shortly.</p>
+</div>
+<script>
+/******************************** Firework particle class *********************************/
+/** Credits: https://codepen.io/rainner/pen/GaqOOW **/
+class FireworkParticle {
+  
+  constructor( context, width, height, total ) {
+    this.context = context;  
+    this.width = width;
+    this.height = height;
+    this.total = total;
+    this.done = 0;
+    this.x = 0;
+    this.xTo = 0;
+    this.y = 0;
+    this.yTo = 0;
+    this.ease = 20;
+    this.size = 300;
+    this.hue = 0, 
+    this.particles = [];
+    this.reset(); 
+  }
+  
+  between( min, max ) {
+    return Math.random() * ( max - min + 1 ) + min;
+  }
+  
+  complete() {
+    return ( this.done >= this.total );
+  }
+  
+  reset() {
+    this.particles = [];
+    this.x = this.between( 100, this.width - 100 );
+    this.xTo = this.between( this.x + 100, this.x - 100 );
+    this.y = this.height + 10;
+    this.yTo = this.height / 2 - this.between( 0, 200 );
+    this.ease = this.between( 12, 20 );
+    this.hue = this.between( 100, 360 );
+    this.done = 0;
+  }
+  
+  explode() {
+    this.particles = [];
+    this.context.clearRect( 0, 0, this.width, this.height ); // flash 
+    
+    for ( let i = 0; i < this.total; i++ ) {
+      this.particles.push( {
+        x     : this.x,
+        y     : this.y,
+        xTo   : this.between( this.x - this.size, this.x + this.size ),
+        yTo   : this.between( this.y - this.size, this.y + this.size ),
+        size  : this.between( 1, 3 ),
+        ease  : this.between( 8, 28 ),
+        hue   : this.between( this.hue - 100, this.hue ),
+        alpha : 1
+      });
+    }
+  }
+  
+  update( width, height ) {
+    this.width = width || this.width;
+    this.height = height || this.height;
+    this.x += ( this.xTo - this.x ) / this.ease;
+    this.y += ( this.yTo - this.y ) / this.ease;
+  }
+  
+  drawBomb() {
+    this.context.beginPath();
+    this.context.arc( this.x, this.y, 2, 0, 2 * Math.PI, false );
+    this.context.fillStyle = `hsl( ${this.hue}, 100%, 60% )`;
+    this.context.fill();
+  }
+  
+  drawParticles() {
+    for ( let i = 0; i < this.particles.length; i++ ) {
+      const p = this.particles[ i ];
+
+      if ( p.alpha >= 0 ) {
+        this.context.beginPath();
+        this.context.arc( p.x, p.y, p.size, 0, 2 * Math.PI, false );
+        this.context.fillStyle = `hsla( ${p.hue}, 100%, 60%, ${p.alpha} )`;
+        this.context.fill();
+
+        p.x += ( p.xTo - p.x ) / p.ease;
+        p.y += ( p.yTo - p.y ) / p.ease;
+        p.alpha -= 0.014;
+        continue;
+      }
+      this.particles.splice( i, 1 );
+      this.done += 1;
+    }
+  }
+  
+  draw() {
+    if ( this.complete() ) return;
+    if ( this.y > this.yTo + 20 ) { this.drawBomb(); } 
+    else if ( !this.particles.length ) { this.explode(); } 
+    else { this.drawParticles(); } 
+  }
+}
+
+/**
+ * Setup
+ */
+function showFireworks() {
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let particles = [];
+  
+  // particle canvas
+  const canvas = document.createElement( 'canvas' );
+  const context = canvas.getContext( '2d' );
+  canvas.id = 'firework-canvas';
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.display = 'block';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.position = 'fixed';
+  canvas.style.zIndex = '1';
+  canvas.style.left = '0';
+  canvas.style.top = '0';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.opacity = '.85';
+  document.body.appendChild( canvas );
+  
+  // on resize 
+  window.addEventListener( 'resize', e => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  });
+  
+  // add particles slowly over time 
+  const create = () => {
+    if ( particles.length > 2 ) return; 
+    particles.push( new FireworkParticle( context, width, height, 100 ) ); 
+    setTimeout( create, 600 );  
+  }; 
+  
+  // animation loop 
+  const loop = () => {
+    requestAnimationFrame( loop );
+    context.fillStyle = 'rgba(0,0,0,0.2)';
+    context.fillRect( 0, 0, width, height );
+    
+    for ( let p of particles ) {
+      if ( p.complete() ) p.reset();
+      p.update( width, height );
+      p.draw();
+    }
+  };
+ 
+  // init 
+  create();
+  loop();
+};
+
+function removeFireworks() {
+  let content = document.querySelector('#content');
+  let canvas  = document.querySelector('#firework-canvas');
+  content.style.opacity = 1;
+  content.style.width = '100%';
+
+  canvas.style.opacity = 0;
+
+
+  setTimeout(function() {
+    let fireworksCanvas = document.getElementById('firework-canvas');
+    fireworksCanvas.parentNode.removeChild(fireworksCanvas);
+  }, 1100);
+
+}
+
+showFireworks();
+
+// Stop fireworks after 10 seconds.
+setTimeout(removeFireworks, 30000);
+</script>
+{/if}
+
+
+{if segment_3 == 'error'}
+<div class="max-w-sm mx-auto p-8 bg-white rounded-lg shadow-xl">
+<h1>Payment Failed.</h1>
+</div>
+{/if}
+
+
+</body>
+</html>

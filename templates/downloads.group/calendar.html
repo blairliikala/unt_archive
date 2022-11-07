@@ -1,0 +1,281 @@
+{!-- To make JS easier, redirect to put the date in the URL --}
+{if segment_3==""}
+    {redirect='{segment_1}/{segment_2}/{current_time format="%Y"}/{current_time format="%m"}'}
+{/if}
+
+{preload_replace:template_root="downloads"}
+{preload_replace:template_entry="item"}
+{preload_replace:template_catalog="catalog"}
+
+{embed=a/h
+	title="Calendar"
+	meta="List of archive events displayed in a calendar view."
+	og-title="Archive Calendar"
+	og-type="article"
+	og-url="/{segment_1}{if segment_2!=""}/{segment_2}{/if}{if segment_3!=""}/{segment_3}{/if}"
+}
+
+{!-- FYI, The Cache can't be longer than 24hr or current day doesn't refresh. --}
+{!--{exp:ce_cache:it for="1 hour"}--}
+{embed=downloads/_nav}
+
+<section class="entire_calendar">
+{exp:channel:calendar
+	channel="live" 
+	show_expired="yes" 
+	show_future_entries="yes" 
+	limit="10000" 
+	switch="calendarToday|calendarCell" 
+	orderby="date" 
+	sort="asc" 
+	status="open|pending|waitingforreview|pendingvideo|pendingaudio|Scheduled|cancelled"
+}
+
+<nav class="calendarLinks">
+    <article class="_sec_static_jumps">
+      <a href="{previous_path=downloads/calendar}" title="Previous Month" rel="prefetch" class="month_nav tippy">&lt;&lt; <span>Previous</span></a>
+      <a href="{next_path=downloads/calendar}" title="Next Month" class="month_nav tippy"><span>Next</span> &gt;&gt;</a>
+      <button id="scroll_today">Today</button>
+    </article>
+
+    <article class="_sec_month_select">
+        <select id="month">
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+        <select id="year">
+            {!-- Plugin that displays the last x years in a option dropdown. --}
+            {exp:year_options years="6"}
+        </select>
+    </article>
+</nav>
+
+<section class="calendarDayHeading">
+        {calendar_heading}
+            <article>
+                {!--{lang:weekday_abrev}--}
+                {lang:weekday_long}
+            </article>
+        {/calendar_heading}
+</section>
+
+<section class="archiveCalendar">
+    {calendar_rows}
+        {row_start}<article>{/row_start}
+        {if entries}
+            <div class='day {switch}'>
+                <span class="day_number">{day_number}</span><br />
+                {entries}
+                        {exp:channel:entries 
+                        	channel="live" 
+                        	status="open|pending|waitingforreview|pendingvideo|pendingaudio|Scheduled|cancelled" 
+                        	show_expired="yes" 
+                        	show_future_entries="yes" 
+                        	cache="yes" 
+                        	refresh="86400" 
+                        	disable="pagination|categories|member_data" 
+                        	entry_id="{entry_id}"
+                        }
+                        <aside class="day_event {if status=='Cancelled'}cancelled{/if}">
+
+                        {if current_time < expiration_date}
+
+                          {!-- Future Entries --}
+                          <span class="event_title">{exp:char_limit total="40"}{if status=='Cancelled'}Cancelled{/if} {title}{/exp:char_limit}</span>
+
+                        {if:else}
+
+                          {!-- Past Entries --}
+                          {if status !='Cancelled'}
+                            <a href="{entry_id_path=downloads/item}" class="event_name">
+                              <span class="event_title">{exp:char_limit total="40"}{if status=='Cancelled'}Cancelled{/if} {title}{/exp:char_limit}</span>
+                            </a>
+                          {/if}
+
+                        {/if}
+
+
+                        {if status == 'Scheduled'}
+                        <br />
+                        <span class="event_meta">
+                          <time datetime="{entry_date format='{DATE_ATOM}'}">{entry_date format="%g:%i%a"}</time>
+                          {room limit="1"}{room:title}{/room}<br />
+
+                            {if current_time < expiration_date}
+
+                              {!-- Featured Events that show on Live page. --}
+                              {if live_stream == "yes"}
+
+                                <a href="{entry_id_path=live/event}" class="watch_live_featured">Watch Live</a>
+
+                              {if:else}
+
+                                {!-- Recital live streams --}
+                                {if '{room:room_enable_live_streaming}' == true}
+                                  <a href="{entry_id_path=live/event}" class="watch_live" title="Watch Live Stream">Watch Live</a>
+                                {/if}
+
+                              {/if}
+                            {/if}
+
+                        </span>
+                        {/if}
+                        </aside>
+                        {/exp:channel:entries}
+
+                {/entries}
+                {if
+                  '{exp:bl_roomview_sync_range:custom format="d" offset="41"}' == '{day_number}' AND
+                  '{exp:bl_roomview_sync_range:custom format="m" offset="41"}' == '{segment_4}'
+                }
+                  <p data-tippy-content="The last day events have been imported and synced with Roomview, the master calendar. Updated once a day at 4:00pm."><i>End of current <a href="https://music.unt.edu/calendar/">Roomview</a> Import Range</i></p>
+                {/if}
+            </div>
+        {/if}
+        {if not_entries}
+            <div class='day {switch} day_empty'>
+                <span class="day_number">{day_number}</span>
+                {if
+                  '{exp:bl_roomview_sync_range:custom format="d" offset="41"}' == '{day_number}' AND
+                  '{exp:bl_roomview_sync_range:custom format="m" offset="41"}' == '{segment_4}'
+                }
+                  <p data-tippy-content="The last day events have been imported and synced with Roomview, the master calendar. Updated once a day at 4:00pm."><i>End of current <a href="https://music.unt.edu/calendar/">Roomview</a> Import Range</i></p>
+                {/if}
+            </div>
+        {/if}
+        {if blank}
+            <div class='calendarBlank day_number'>{day_number}</div>
+        {/if}
+
+        {row_end}</article>{/row_end}
+    {/calendar_rows}
+</section>
+{/exp:channel:calendar}
+
+
+</section><!--calright-->
+{jquery}
+{embed=a/js}
+
+<script>
+// Change the date dropdowns to be current.
+var pathArray = window.location.pathname.split( '/' );
+
+// If index.php is in the URL and not automatically removed, then the segments in JS needs to be migrated.
+if (pathArray[1] == 'index.php') {
+  isIndexPHP = true;
+} else {
+  isIndexPHP = false;
+}
+
+// See if index.php is in the URL.
+if(isIndexPHP) {
+  document.querySelector('#month').value = (pathArray[5]);
+  //$('#month').val(pathArray[5]);
+
+  document.querySelector('#year').value = (pathArray[4]);
+  //$('#year').val(pathArray[4]);
+} else {
+  document.querySelector('#month').value = (pathArray[4]);      
+  //$('#month').val(pathArray[4]);
+
+  document.querySelector('#year').value = (pathArray[3]);      
+  //$('#year').val(pathArray[3]);
+};
+
+// Scroll to current day.
+
+const today_button  = document.querySelector('#scroll_today');
+const today_div     = document.querySelector('.calendarToday')
+if (today_div != null ) {
+  today_button.addEventListener('click', function(e) {
+      today_div.scrollIntoView({behavior: "smooth"});
+  });
+} else  {
+  // Should change this to link to today.
+  let today = new Date();
+  //today_button.remove(today_button);
+
+  let month = today.getMonth() * 1 + 1;
+  if (month < 10) {
+    month = "0"+month;
+  }
+
+  today_button.addEventListener('click', function(e) {
+    window.location.href = '/index.php/downloads/calendar/'+today.getFullYear()+'/'+month;
+  });
+}
+
+// Date Changer
+
+//Check if index.php is in URL.
+if(isIndexPHP) {
+    //$("#month").change(function() {
+    document.querySelector('#month').addEventListener('change', function(event) {
+      console.log(this);
+      //Run pageUPdate function
+      pageUpdate(5, this);
+    });            
+    //$("#year").change(function() {
+    document.querySelector('#year').addEventListener('change', function(event) {
+      pageUpdate(4, this);
+    });
+} else {
+    //$("#month").change(function() {
+    document.querySelector('#month').addEventListener('change', function(event) {
+      //Run pageUPdate function          
+      pageUpdate(4, this);
+    });            
+    //$("#year").change(function() {
+    document.querySelector('#year').addEventListener('change', function(event) {
+      pageUpdate(3, this);
+    });
+};
+
+
+// two parameters =
+//   segment referrs to the URL segment to modify.
+//   IDthis is the month or year that's being affected.
+function pageUpdate(segment, IDthis) {
+
+    // Get current URL
+    var pathArray = window.location.pathname.split( '/' );
+
+    // Put the new month into the array.
+    pathArray[segment] = $(IDthis).prop('value')
+
+    // Put URL back together
+    var newPathname = "";
+    for (i = 0; i < pathArray.length; i++) {
+      newPathname += "/";
+      newPathname += pathArray[i];
+    }
+    
+    // Kill first slash.
+    newPathname = newPathname.substr(1);
+    
+    // Build the new URL
+    newPathname = window.location.protocol + "//" + window.location.host + newPathname;
+
+    // Refresh page
+    window.location = newPathname;
+};
+
+async function current_sync() {
+  let end_date_8601 = fetch('/sys/roomview_return_sync_range.php').then(response=>{return response.json()});
+
+}
+
+</script>
+{!--{/exp:ce_cache:it}--}
+{embed=a/f}

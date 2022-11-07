@@ -1,0 +1,81 @@
+{embed=a/h}
+<article id="content">
+
+<h1>Access Restricted to UNT Students</h1>
+<p>Access to this academic archive of recordings, including events you performed in, is only for current UNT faculty, staff and students.  Your login shows you may have taken classes at UNT, but did not graduate and your last class was more than 1 semester ago.  Therefore we are not able to provide further access here.</p>
+
+<p>Thank you for studying at UNT!</p>
+
+{exp:channel:entries
+  channel="live"
+  show_expired="yes"
+  show_future_entries="no"
+  search:archive_euid="{logged_in_username}"
+  disable="categories|pagination|member_data"
+  cache="yes"
+  refresh="1000"
+  status="open"
+}
+
+{if no_results}
+  <p>We did a quick search of this archive as a courtesy, but no concerts were found with your EUID attached to a recital within the last 5 years. You may visit the Willis Library to see if there is a way to listen to your recital recording.</p>
+{/if}
+
+{if count==1}
+  <p>The recital(s) displayed below are a courtesy, and come with no additional support.  They are removed from this system after 5 years, and are archived with the Willis Library.</p>
+{/if}
+
+<h2>{entry_date format="%F %j, %Y"} {title}</h2>
+{if concert_program}
+  <p><a href="{concert_program}" class="basic_button" title="Download Program as a PDF" data-hjtag="pdf-download" target="_blank" rel="noopener noreferrer">Program</a></p>
+{/if}
+
+<table>
+{video_download_link}
+<tr>
+  <td></td>
+  <td>Video:</td>
+  <td>
+    <a id="disableContextMenu"
+      data-hj="video-download" 
+      class="download_button orange" 
+      title="mp4, h.264." 
+      href="{site_url}{url}" 
+      download="{filename}.{extension}">{filename}.{extension}</a>
+  </td>
+</tr>
+{/video_download_link}
+{ondemand_chapters_grid}
+<tr>
+  <td>{ondemand_chapters_grid:name_of_piece}</td>
+  <td>{ondemand_chapters_grid:name_of_composer}</td>
+  <td>
+    {ondemand_chapters_grid:audio_file}
+      <a href="{exp:link_vault:download_link
+                            url_only="true"
+                            file_path='{exp:paths:getpath path_type="server" serverpath="{ondemand_chapters_grid:audio_file:server_path}" parse="inward"}' 
+                            entry_id="{entry_id}" 
+                            parse="inward"
+                            cf:title=""
+                            cf:album="{entry_date format="%M %d, %Y"} {title}"
+                            cf:artist="{related_ensembles_v2 backspace="2"}{related_ensembles_v2:title}, {/related_ensembles_v2}"
+                            cf:composer=""
+                            cf:year="{entry_date format="%Y"}"
+                            cf:page="{segment_1}/item/{entry_id}"
+                            cf:type="download m4a"
+                            cf:member_group="{logged_in_group_id}"
+                            cf:recitaltype="{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}"
+                            cf:category=""
+                            cf:accesstime="{current_time format='%Y-%m-%d'} }" >{ondemand_chapters_grid:audio_file:filename}</a><br />
+    {/ondemand_chapters_grid:audio_file}
+  </td>
+</tr>
+{/ondemand_chapters_grid}
+</table>
+
+
+
+{/exp:channel:entries}
+
+</article>
+{embed=a/f}

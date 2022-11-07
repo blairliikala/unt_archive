@@ -1,0 +1,1186 @@
+<!--
+
+  This is a development/experimental version quickly made during COVID and should be better optimized.
+  Sometimes things just have to work, right?
+
+-->
+
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    show_future_entries="yes"
+    status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio|scheduled"
+    disable="pagination|categories|member_data"
+    limit="1"
+    cache="yes"
+    refresh="9000"
+    entry_id="{segment_3}"
+}
+
+{if no_results}
+  <body>
+    {embed=a/h title="Event Live Stream Not Available"}
+    <section id="content">
+      <h2>This event has been closed and is not available.</h2>
+    </section>
+  </body>
+{embed=a/js}
+{/if}
+
+{embed=a/h
+  title="UNT Live-{entry_date format="%M %j, %Y"} {title}"
+  entry_id="{entry_id}"
+  og-title="{entry_date format="%F %j"} {title}"
+  meta="University of North Texas College of Music Live Concert Streaming"
+  og-type="article"
+  og-url="{site_url}/live/event/{segment_3}"
+  og-image="{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{if:else}{if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{if '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{/if}{/if}{/if}"
+}
+
+
+<!-- Stylesheets-->
+<link rel="stylesheet" href="{stylesheet=media/styles}" />
+  
+ <style>
+.sixteen_by_nine {
+  --size: 100vw;
+  --aspect-ratio: calc(16 / 9);
+  width:100%;
+  height: calc( var(--size) / var(--aspect-ratio) );
+  display:grid;
+  align-items: center;
+  background:black;
+}
+
+
+.archive_nav_v3 .ag_results_box {background:#282828;}  
+
+
+.full_screen_overlay {
+  position: absolute;
+  width:100%;
+  height:0;
+  z-index: 20;
+  background:rgba(0,0,0,1);
+  padding-top:56.25%;
+  z-index: 1;
+}
+.full_screen_overlay > * {
+  position: absolute;
+  top: 56.21%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color:white;
+  width:90%;
+  z-index: 3;
+  background: rgba(0,0,0,.5);
+  margin:0;
+  box-shadow: 0 0 15px 20px rgba(0,0,0,.5);  
+}
+.full_screen_poster {
+  position: absolute;
+  width:100%;
+  height:auto;
+  z-index:-1;
+  top:50%;
+  padding:0;
+  object-fit: cover
+}
+
+
+
+/**  Used??? **/
+/*
+.isplayDeadCenter {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width:90%;
+}
+*/
+
+.displayCentered {
+  width:80%;
+  margin:9vh auto;
+}
+.player_notification {
+  background:#864703;
+  width:100%;
+  padding:.5em;
+  color:white;
+  font-weight: bold;
+}
+.loadingIcon {
+  position: absolute;
+  padding:10%;
+  text-align: center;
+  width:100%;
+  top:20.5vw;
+  font-size:3vw;  
+}
+.disabled_text {color:var(--disabled_text);}
+
+.slide-fade-enter-active {
+  transition: all 1s ease;
+}
+.slide-fade-leave-active {
+  transition: all 1s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateY(10px);
+  opacity: 0;
+}
+
+[v-cloak] {
+  opacity: 0;
+  display:none;
+}
+
+.no_break {
+  white-space: nowrap;
+}
+
+.information_block {
+  position: relative;
+  z-index: 5;
+  background:var(--bodybackground);
+}
+.information_block h4 {
+  font-weight: normal;
+}
+</style>
+
+</head>
+
+<body>
+
+{!-- Hall is Supported for Live Streaming --}
+{if '{room:room_enable_live_streaming}' =='' OR '{room:room_enable_live_streaming}' == 'false'}
+
+  <section class="displayCentered">
+    <h1>{room:title} is Not Enabled for Live Streaming.</h1>
+  </section>
+
+{if:else}
+
+
+{!-- Concert is over, set by expiration time --}
+{if '{expiration_date}' < '{current_time}'}
+
+  <section class="sixteen_by_nine">
+    <article class="message" style="padding-left:5%">
+    <h2>Concert Is Over</h2>
+    <p>{title}, {entry_date format="%M %j, %Y %g:%i%a"}</p>
+
+    {!--
+    {if global_streaming OR archive_mux_vod_playback_id}
+      <p>UNT members may re-watch this event <a href="/downloads/item/{entry_id}" class="basic_button tracker_live_event_over">Play</a></p>
+    {/if}
+    --}
+    </article>
+  </section>
+  {embed=a/js}
+
+{!-- Concert is not over --}
+{if:else}
+
+{!-- Show content and scripts if it is the day of the event --}
+{if '{entry_date format="%D"}' != '{current_time format="$D"}' }
+
+<div id="firstLoadingIcon" class="loadingIcon">
+  <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
+</div>
+
+<section id="playerApp">
+
+  <article 
+    id="info" 
+    class="full_screen_overlay" 
+    v-if="concert_status == 'pre'"
+    v-cloak
+  >
+    <img v-bind:src="entry_data[0].thumbFeatured_1080" class="full_screen_poster" alt="poster" v-if="entry_data[0].thumbFeatured_1080 !== '' " />
+    <article class="message">
+      <div>
+      <p>Starts in {{ message_timeTillStart_2 }} at {{ concertStart }} {{timezone}}.<br />
+      {if logged_in_member_id ==1}
+        Stream opens in {{message_timeTillOpen}}.<br />
+      {/if}
+
+      <!--
+      <button v-on:click="setReminder()" class='basic_button tippy tracker_live_native_reminder' title='Set a reminder while browsing this site.' v-if="supported.notifications == true">Remind Me</button>
+      -->
+      <a v-bind:href="'/live/caldav-event-export/'+entry_data[0].entry_id+'.ics'" v-bind:download="entry_data[0].title" class="basic_button tracker_live_calendar_reminder" type="calendar+xml" rel="noreferrer" >Add to Calendar</a>
+      <a v-bind:href="generateGoogleCalendarEvent()" class="basic_button tracker_live_google_calendar_reminder" type="calendar+xml" target="_blank" rel="noreferrer">Google Calendar</a>
+      </p>
+      </div>
+    </article>
+  </article>
+
+  <!-- Stream is done -->
+  <transition name="slide-fade">
+  <section class="full_screen_overlay" v-if="concert_status == 'end'" v-cloak>
+    <div>Concert Streaming has concluded.<br />
+
+    <!--
+    <span v-if="entry_data[0].archive_mux_vod_playback_id != ''">
+    UNT members may re-watch this event.  <a v-bind:href="'/media/playvideo/'+entry_data[0].entry_id" class="basic_button tracker_live_expired">Play</a>
+    </span>
+    -->
+
+    </div>
+  </section>
+  </transition>
+
+  <div class="player_container">
+    <div id="mediaspace" v-if="concert_status == 'live' || concert_status =='pre'"></div>
+  </div>
+
+  <!-- Loading icon till player is loaded.  Removed by starting JW player -->
+  <div class="loadingIcon fadeIn" v-if="concert_status == 'NO'" v-cloak>
+    <i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
+  </div>
+
+
+
+
+  <section class="information_block" v-cloak>
+
+    <article class="player_notification" v-if="concert_status == 'end' && config.postRollMinutes > 0 ">The live feed has finished.  You can continue watching till this entry closes {{ concertEndPost.from(now) }}</article>
+
+    <span v-for="event in entry_data">
+
+      <header>
+    	  <h4>{{event.title}}, <span v-for="type in event.recitaltype" :key="type">{{type}} </span><br />
+          <time datetime="{entry_date format='{DATE_ATOM}'}">{{concertStart}}</time> to about <time datetime="{expiration_date format='{DATE_ATOM}'}">{{concertEnd}}</time> {{timezone}} {if logged_in_member_group=="1" OR logged_in_member_group=="6"}<span title="Admins only see this." v-if="concert_status == 'live'" class="no_break admin_only">{{message_timeRemainingTillEnd}} remaining</span>{/if}
+        </h4>
+
+        <div class="header_menu">
+          <transition name="slide-fade">
+            <!-- Native to JW Player now
+            <button id="pipButton" class="basic_button tracker_live_pip" hidden title="Picture in Picture" style="line-height:0"><img src="/images/pip.gif" width="25" height="10" alt="Picture in Picture mode"></button>
+            -->
+            <!--<button id="pipButton" class="header_button" title="Picture in Picture" ref="pip" v-on:click="pip()">Pip</button>-->
+            supported.pip.safari
+          </transition>          
+          <transition name="slide-fade">
+            <a v-bind:href="event.program" v-if="event.program" class="basic_button tracker_live_program_pdf" target="_blank">Program PDF</a>
+            <!--<p v-if="!event.program" class="disabled_text" title="Waiting for PDF of program to be uploaded">No Program File</p>-->
+          </transition>
+          <span class="divider"></span>
+          <a href="/downloads/calendar" class="basic_button" title="Return to the calendar">Calendar</a>
+          <a href="/live" class="basic_button" title="Return to Streaming Schedule">Schedule</a>
+        </div>
+      </header>
+
+      <section class="meta">
+        <!--
+        <p v-if="event.chapters.length == 0 || event.chapters[0].piece ==''" class="disabled_text">Waiting for the program to be uploaded.</p>
+        -->
+        <section id="chapterlist" class="programlist">  
+          <article 
+            class="program_row"
+            v-for="chapter in event.chapters"
+            v-if="event.chapters[0].piece !=''"
+            v-bind:data-playercontrol="chapter.marker"
+            v-bind:data-track="chapter.track"
+            v-bind:class="chapter.prefixedrowid"
+          >
+              <div class='row'>{{chapter.rowid}}.</div>
+              <div class='piece'><span class="piece_title" v-html="chapter.piece"></span><!--<br v-if="chapter.movements.length > 0" />--><span class="movements" v-if="chapter.movements.length > 0" v-html="chapter.movements"></span></div>
+              <div class='composer'>{{chapter.composer}}</div>
+              <div class='arranger'>{{chapter.arranger}}</div>
+              <div class='performers'>{{chapter.performers}}</div>
+          </article>
+        </section>
+      </section>
+
+
+      {if logged_in_member_group == 1 OR logged_in_member_group == 6}
+      <section class="admin_only">
+        <p>Change Current Stream URL.  Active URL from Zero is #{{current_stream_key}}</p>
+        <select name="playback" id="stream_url"  @change="changeStreamURL()" v-model="current_stream_key">
+          <option
+            v-for="(object, index) in playback" 
+            v-bind:value="index"
+          >{{index}} - {{object.name}} = {{object.url}}</option>
+        </select>
+
+        <p><a v-bind:href="'https://dashboard.mux.com/organizations/r05m3l/environments/bt747p/video/live-streams/'+event.archive_mux_live_id+'/health'" target="_blank">Mux Monitor [external]</a>
+      </section>
+      {/if}
+
+    </span>
+
+  </section><!-- meta -->
+
+</section>
+
+{embed=a/js}
+<script src="https://content.jwplatform.com/libraries/3ngmM3Mg.js"></script>
+<script src="/js/moment/moment.min.js"></script>
+<script src="/js/moment/moment-timezone.js"></script>
+
+<script src="https://src.litix.io/jwplayer/3/jwplayer-mux.js"></script>
+<!--<script src="/js/jwplayer-mux.js"></script>-->
+
+<script async src="/js/airtable/airtable.browser.js"></script>
+
+<script>
+
+// **  Copied from  the _now_feed.js that will update the page later.   This is to improve load performance. ****//
+const event_data = [
+
+{
+  {if count==1}
+  "performance"     : "{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.",
+  {/if}
+  "entry_id"        : "{entry_id}",
+  "status"          : "{status}",
+  "title"           : {exp:ce_str:ing json_encode html_entity_decode}{title}{/exp:ce_str:ing},
+  "start"           : "{entry_date format="{DATE_ISO8601}"}",
+  "end"             : "{expiration_date format="{DATE_ISO8601}"}",    
+  "date_start_human"        : "{entry_date format='%F %j, %Y'} ",
+  "date_start_human_time"   : "{entry_date format='%g:%i%a'} CST",
+  "date_end_human"          : "{expiration_date format='%Y %F %j'}",
+  "date_end_human_time"     : "{expiration_date format='%g:%i%a'} CST",
+
+  {room}
+  "helo_url"                  : "{room:room_helo_url}",
+  "room_elemental_event_id"   : "{room:room_elemental_event_id}",
+  "room_haivision_channel_id" : "{room:room_haivision_channel_id}",
+  "hall"                      : "{room:title}",
+  "room_entry_id"             : "{room:entry_id}",
+  {/room}
+
+  "archive_mux_playback_key"    : "{archive_mux_playback_key}",
+  "archive_mux_vod_playback_id" : "{archive_mux_vod_playback_id}",  
+
+  "day_of_week"     : "{entry_date format='%l'}",
+
+  {!--This is cached!! --}
+  "date_relative"   : "{entry_date:relative}",
+
+  "ensemble"        : [{related_ensembles_v2 backspace='2'}"{related_ensembles_v2:title}", {/related_ensembles_v2}],
+  "instrument"      : [{archive_instrument backspace='2'}"{archive_instrument:title}", {/archive_instrument}],
+  "recitaltype"     : [{archive_recital_type backspace='2'}"{archive_recital_type:title}", {/archive_recital_type}],
+  "featured"    : {if live_stream}true{if:else}false{/if},
+  "chapters" : [ {ondemand_chapters_grid backspace="1"} {
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing nl2br json_encode}{exp:char_limit total="100" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "movements"     : {if ondemand_chapters_grid:movements}{exp:ce_str:ing nl2br json_encode}{ondemand_chapters_grid:movements}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="100" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="100" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "performers"    : {if ondemand_chapters_grid:performers}{exp:ce_str:ing json_encode}{ondemand_chapters_grid:performers}{/exp:ce_str:ing}{if:else}""{/if},
+      "marker"        : "{exp:timetoseconds:convert time='{ondemand_chapters_grid:chapter_location_human}'}",
+      "markerhuman"   : "{ondemand_chapters_grid:chapter_location_human}",
+      "rowid"         : "{ondemand_chapters_grid:field_row_count}",
+      "prefixedrowid" : "row-{ondemand_chapters_grid:field_row_count}"
+    },{/ondemand_chapters_grid}
+  ],
+  "performers" : [
+    {exp:tag:tags orderby='tag_name' sort='asc' tag_group_id='3' backspace='1' entry_id='{entry_id}'}"{exp:ce_str:ing json_encode}{tag}{exp:ce_str:ing json_encode}", {/exp:tag:tags}
+  ],  
+  "program"      : "{concert_program}",
+  "thumbURL_small" : "{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{if:else}{if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{if '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="256" height="144" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{/if}{/if}{/if}",
+  "thumbURL_med" : "{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{if ondemand_image ==""}{if related_ensembles_v2 AND '{related_ensembles_v2:default_picture}'}{related_ensembles_v2 limit='1'}{exp:ce_img:pair src="{related_ensembles_v2:default_picture}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/related_ensembles_v2}{if:else}{if archive_faculty_notificaiton AND '{archive_faculty_notificaiton:faculty_photo:server_path}' }{exp:ce_img:pair src="{archive_faculty_notificaiton:faculty_photo:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{if '{room:room_primary_image:server_path}' }{exp:ce_img:pair src="{room:room_primary_image:server_path}" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="640" height="360" crop="yes" save_type="jpg"}{made}{/exp:ce_img:pair}{/if}{/if}{/if}{/if}"
+}{if count < total_results},{/if}
+];
+
+
+
+
+//
+
+/*
+
+TO Do:
+- Better error handling for when feed doesn't work.  Ping the url first, then start the player.
+
+
+*/
+
+
+
+var now = moment();
+
+const player              = jwplayer('mediaspace');
+const concertStartTime    = moment( '{entry_date format="{DATE_ISO8601}"}' ); // EE generated.
+
+var retry_count = 0;
+var event = {
+  "hasPlayedOnce" : false,
+  "feed_name"     : 'smil:{room:room_streaming_smil_name}.smil'
+};
+
+const config = {
+  "entry_id"          : {entry_id},
+  "datasaverEnabled"  : {if '{global:saveData}'}true{if:else}false{/if}, //
+  "preRollMinutes"    : 4,
+  "postRollMinutes"   : 0,
+  "stream_url"        : []
+}
+
+var playback_count = 0; // Which url in the array to use.  Incrimented when an error occurs.
+
+
+let playback = [
+
+{room limit="1"} 
+
+  {!-- /*
+
+    Use Elemental or Haivision to Wowza feed first, then Mux. 
+
+    VH = 3267
+    RH = 3268
+    LW = 3269
+    WPH = 3266
+  
+  (In the future this should be setup in the Room entry.)
+  */ --}
+
+  {if (
+        room:entry_id == 3267 OR 
+        room:entry_id == 3268 OR 
+        room:entry_id == 3269 OR 
+        room:entry_id == 3266
+      )
+      AND
+      (
+        room:room_enable_haivision OR
+        room:room_enable_elemental
+      )
+  }
+
+    // Fastly.
+    {
+      'name' : 'live_fastly',
+      'url'  : 'https://untcomstreaming.freetls.fastly.net/live_origin/smil:{room:room_streaming_smil_name}.smil/playlist.m3u8'
+    },
+
+    {if logged_in_member_id ==1}
+    {
+      'name' : 'live_fastly_ll',
+      'url'  : 'https://untcomstreaming.freetls.fastly.net/live_origin/smil:{room:room_streaming_smil_name}.smil/playlist_sfm4s.m3u8'
+    },
+    {/if}
+
+    // Wowza origin.
+    {
+      'name' : 'live_wowza',
+      'url'  : 'https://54edc27ad2b3c.streamlock.net/live_origin/smil:{room:room_streaming_smil_name}.smil/playlist.m3u8'
+    },
+
+    {if archive_mux_id}
+    {
+      'name' : 'live_mux',
+      'url'  : 'https://stream.mux.com/{archive_mux_playback_key}.m3u8'
+
+    },
+    {/if}     
+
+
+  {if:else}
+
+    {if archive_mux_id}
+    {
+      'name' : 'live_mux',
+      'url'  : 'https://stream.mux.com/{archive_mux_playback_key}.m3u8'
+
+    },
+
+    // Fastly.  THIS ONLY WORKS IF THERE IS ANOTHER ENCODER RUNNING.  NOT POSSIBLE WITH MEIT, CHOIR.
+    {
+      'name' : 'live_fastly',
+      'url'  : 'https://untcomstreaming.freetls.fastly.net/live_origin/smil:{room:room_streaming_smil_name}.smil/playlist.m3u8'
+
+    },
+
+    // Wowza origin.
+    {
+      'name' : 'live_wowza',
+      'url'  : 'https://54edc27ad2b3c.streamlock.net/live_origin/smil:{room:room_streaming_smil_name}.smil/playlist.m3u8'
+
+    },
+
+
+    {/if}  
+
+  {/if} //
+  
+  {
+    'name' : 'live_wowza_backup',
+    'url'  : 'https://54edc27ad2b3c.streamlock.net/live_origin/default_{room:entry_id}.smil/playlist.m3u8'
+  }
+
+{/room}
+
+]
+
+
+
+
+
+const jwplayerSetup = {
+  'width' : '100%',
+  'height' : '100%',
+  'autostart' : true,
+  'cast':{
+    appid:"3D9E046F",
+    loadscreen:'/images/default_dark.png',
+    endscreen:'/images/default_dark.png',
+    logo:'{site_url}{exp:ce_img:pair src="/images/college_of_music_white.png" width="200"}{made}{/exp:ce_img:pair}',
+    railcolor:"#BAE197"
+  },
+  'playlist' : [{
+    'title' : '{entry_date format="%M %j, %Y"} {title}',
+    'mediaid': "{archive_jw_media_id}",
+    'image' : '/images/default_dark.png',
+    'sources' : [
+      {
+        'file' : playback[playback_count],
+      }
+    ]
+  }
+  ],
+};
+
+
+start();
+
+function start() {
+
+  // Remove Loading Icon.
+  let loadingIcon = document.querySelector('#firstLoadingIcon');
+  loadingIcon.classList.add('fadeOut');
+  setTimeout( function() {
+    loadingIcon.remove();
+  }, 500);
+
+  vueApp(event_data);
+
+}
+
+
+
+function vueApp(initial_entry_data) {
+
+  var streamingplayer = new Vue({
+
+    el: '#playerApp',
+    data: {
+      now : new Date(),
+      entry_id : "{entry_id}",
+      entry_data: initial_entry_data,
+      concert_status: "",
+      intervals : [],
+
+      stream_info: {}, // From Wowza
+
+      // object of APIs supported.
+      supported : {
+        notificaitons : false
+      }, 
+
+      message_timeTillStart : "", // EE start time.  Not including pre-roll.
+      message_timeRemainingTillEnd : "", // How much time till entry shuts down.  EE End + post time.
+
+      config: config, // Global config.  Used for getting stream urls for debug.
+      current_stream_key: 0, // The current URL playing.  Used for debug.
+    },
+
+    mounted() {
+      this.getEntryData(); // Gets JSON data remotely for the event.
+      {if logged_in_member_id == 1}//this.getStreamingInfo(); // Wowza Stats {/if}
+      this.intervals.time = setInterval(this.getStatus, 1000);
+      this.intervals.meta = setInterval(this.getEntryData, 30000);
+      //this.intervals.streaming_status = setInterval(this.getStreamingInfo, 5000);
+
+      // Notifications API.
+      if (("Notification" in window)) {
+        this.supported.notifications = true;
+      }
+    },
+
+    watch: {},
+
+    computed : {
+
+      // Time before actual concert time. ex 7:30pm
+      concertStart : function() {
+        return moment(this.entry_data[0].start).local().format("h:mma");
+      },
+      // Time after concert.  ex 9:00pm
+      concertEnd : function() {
+        return moment(this.entry_data[0].end).local().format("h:mma");
+      },
+      // Timezone letters ex: "CST"
+      timezone : function() {
+        return moment.tz(moment.tz.guess()).format('z');
+      },
+      // Time of concert with pre-roll.  Moment object.
+      concertStartPre : function() {
+        return moment(this.entry_data[0].start).subtract(config.preRollMinutes, "minutes");
+      },
+      // How long to roll after EE expiration time.  Used for DVR.  Moment object.
+      concertEndPost : function() {
+        return moment(this.entry_data[0].end).add(config.postRollMinutes, "minutes");
+      },
+      localizedStartTime : function() {
+        let localtimeValue = moment(this.entry_data[0].start).local().format("h:mm A");
+        let timezone = moment.tz(moment.tz.guess()).format('z');      
+        return localtimeValue+" "+timezone;
+      },
+
+      message_timeTillStart_2 : function() {
+
+        const diff = new Date(this.entry_data[0].start) - this.now;
+        const momentTime = moment(this.entry_data[0].start).from(this.now);
+
+        const d = Math.floor(diff / 1000 / 60 / 60 / 24);
+        const h = Math.floor(diff / 1000 / 60 / 60) % 24;
+        const m = Math.floor(diff / 1000 / 60) % 60;
+        const s = Math.floor(diff / 1000) % 60;
+
+        let days = d;
+        let hours = h < 10 ? '0' + h : h;
+        let minutes = m < 10 ? '0' + m : m;
+        let seconds = s < 10 ? '0' + s : s;        
+
+        switch(true) {
+          case d > 0 :
+            return momentTime;
+            break;
+          case h > 0 :
+            return hours + " hours, " + minutes + " minutes, " +seconds + " seconds";
+            break;
+          case h == 01 :
+            return hours + " hour, " + minutes + " minutes, " +seconds + " seconds";
+            break;
+          case m > 0 :
+            return minutes + " minutes, " +seconds + " seconds";
+            break;
+          case s > 0 :
+            return seconds + " seconds";
+            break;
+        }
+
+      },
+
+
+      message_timeTillOpen : function() {
+        const offset      = config.preRollMinutes * 60 * 1000;
+        const diff        = new Date(this.entry_data[0].start) - new Date(offset) - this.now;
+        const momentTime  = moment(new Date(this.entry_data[0].start) - new Date(offset)).from(this.now);
+
+        const d = Math.floor(diff / 1000 / 60 / 60 / 24);
+        const h = Math.floor(diff / 1000 / 60 / 60) % 24;
+        const m = Math.floor(diff / 1000 / 60) % 60;
+        const s = Math.floor(diff / 1000) % 60;
+
+        let days = d;
+        let hours = h < 10 ? '0' + h : h;
+        let minutes = m < 10 ? '0' + m : m;
+        let seconds = s < 10 ? '0' + s : s;        
+
+        switch(true) {
+          case d > 0 :
+            return momentTime;
+            break;
+          case h > 0 :
+            return hours + " hours, " + minutes + " minutes, " +seconds + " seconds";
+            break;
+          case h == 01 :
+            return hours + " hour, " + minutes + " minutes, " +seconds + " seconds";
+            break;
+          case m > 0 :
+            return minutes + " minutes, " +seconds + " seconds";
+            break;
+          case s > 0 :
+            return seconds + " seconds";
+            break;
+        }        
+      }
+    },
+
+    methods: {
+
+      getStatus() {
+        // Get current time.
+        let now = moment();
+        this.now = new Date();
+
+        // Current time is  in between before and after time limits.  Show the player.
+        switch (true) {
+
+          // Concert is over. Status has changed away from Scheduled or Livestream.
+          case ( this.entry_data[0].status.toLowerCase() != "livestream" && this.entry_data[0].status.toLowerCase() != "scheduled" ) :
+            console.debug('[Ping: Concert is over by Status.]', this.entry_data[0].status.toLowerCase() );
+            this.concert_status = 'end';
+            this.shutdownEvent();
+            break;
+
+          // Concert is over.
+          case ( now.unix() >= this.concertEndPost.unix() || (this.entry_data[0].status.toLowerCase() != 'scheduled' && this.entry_data[0].status.toLowerCase() != 'livestream') ): 
+            console.debug('[Ping: Concert is over.]');
+            this.concert_status = 'end';
+            this.shutdownEvent();
+            break;
+
+          // Concert hasn't started yet.
+          case ( now.unix() <= this.concertStartPre.unix() ) :
+            //console.debug('[Ping: Before Concert.]');
+            this.concert_status = 'pre';
+            //this.message_timeTillStart = moment(this.entry_data[0].start).from(now);
+            break;
+
+          // Concert is running.
+          default: 
+            //console.debug('[Ping: Concert is Live.]');
+            this.message_timeRemainingTillEnd = moment.duration(this.concertEndPost.diff(now)).humanize();
+            if (this.concert_status !='live') {
+              this.concert_status = 'live';
+              startPlayer(this);
+            }
+        }      
+      },
+
+      async getEntryData() {
+        //console.debug('Refreshing the entry meta (30sec).');
+        fetch("https://recording.music.unt.edu/live/_now_feed?status=scheduled|pending|waitingforreview|livestream&show_future_entries=yes&show_expired=yes&entry_id="+this.entry_id)
+          .then ( response => { return response.json()})
+          .then ( response => {
+            this.entry_data = response;
+            this.getStatus();
+          })
+          .catch(error => {
+            console.debug('Error getting feed.', error);
+          });
+      },
+
+      {!-- Keeping for reference for getting info from Wowza directly.
+      getStreamingInfo() {
+
+        let file = "{room:room_streaming_smil_name}"; // EE Generated.
+
+        fetch("https://recording.music.unt.edu/sys/wowza_ping.php?application=live&parameter=getlivestreamstatus&stream_name="+file+".smil")
+          .then ( response => { return response.json()})
+          .then ( response => {
+            this.stream_info["smil"] = response;
+            this.stream_info["smil"].mbytesIn = Math.round(this.stream_info["smil"].bytesIn / 1000000);
+          })
+          .catch(error => {
+            console.debug('Error getting feed.', error);
+          });
+        fetch("https://recording.music.unt.edu/sys/wowza_ping.php?application=live&parameter=getlivestreamstatus&stream_name="+file+"-1")
+          .then ( response => { return response.json()})
+          .then ( response => {
+            this.stream_info[file+"-1"] = response;
+            this.stream_info[file+"-1"].mbytesIn = Math.round(this.stream_info[file+"-1"].bytesIn / 1000000);
+          })
+          .catch(error => {
+            console.debug('Error getting feed.', error);
+          });  
+        /*
+        fetch("https://recording.music.unt.edu/sys/wowza_ping.php?application=live&parameter=getlivestreamstatus&stream_name=wph-cc.smil")
+          .then ( response => { return response.json()})
+          .then ( response => {
+            this.stream_info["wph-cc"] = response;
+            //this.stream_info[stream_name+"_smil"].mbytesIn = Math.round(this.stream_info[stream_name+"_smil"].bytesIn / 1000000);
+          })
+          .catch(error => {
+            console.debug('Error getting feed.', error);
+          });
+          */  
+      },
+      --}
+
+      shutdownEvent() {
+        clearInterval(this.intervals.time);
+        clearInterval(this.intervals.meta);     
+        player.remove(); // Remove JW Player.
+      },
+
+      returnGMTdate(date) {
+        return moment(date).utcOffset(0).format('YYYYMMDDTHHmmss')+"Z"
+      },
+
+      generateGoogleCalendarEvent() {
+        let title     = this.entry_data[0].title;
+        let start     = moment(this.entry_data[0].start).utcOffset(0).format('YYYYMMDDTHHmmss')+"Z";
+        let end       = moment(this.entry_data[0].end).utcOffset(0).format('YYYYMMDDTHHmmss')+"Z";
+        let entry_id  = this.entry_data[0].entry_id;
+
+        return encodeURI("https://calendar.google.com/calendar/render?action=TEMPLATE&text="+title+"&dates="+start+"/"+end+"&location=https://recording.music.unt.edu/live/event/"+entry_id+"&details=Concert at <a href='https://recording.music.unt.edu/live/event/"+entry_id+"'>https://recording.music.unt.edu/live/event/"+entry_id+"</a>");
+      },
+
+
+      async setReminder() {
+        trackingTags("live-set_site_reminder");
+
+        let permission_request = await notificationPermissionRequest();
+
+        if (permission_request == true) {
+          console.debug('Notifications: Will show live notification.');
+
+          // get data for this entry.  This should be done more efficiently.
+          console.debug('Notifications: Getting entry meta.');
+          let entry_data = await fetch("https://recording.music.unt.edu/live/_now_feed?status=scheduled|livestream&show_future_entries=yes&show_expired=yes&entry_id={entry_id}")
+            .then ( response => { return response.json()})
+            .then ( response => { return response[0]})
+            .catch(error => {console.debug('Error getting feed.', error);});
+
+          if (entry_data.length == 0 || entry_data == undefined) {
+            return;
+          }
+
+          let notification_entries;
+          // Update localstorage incase they navigate away.
+          if (localStorage.getItem('notify_when_live') && localStorage.getItem('notify_when_live').length > 0) {
+
+            notification_entries = JSON.parse(localStorage.getItem('notify_when_live'));
+
+            // Check if the entry already exists.
+            let exists = false;
+            notification_entries.forEach( entry => {
+              if (entry.entry_id == entry_data.entry_id){
+                exists = true;  
+              }
+            });
+            if (exists) {
+              console.debug('Notifications: Entry already added.');
+              return;
+            }
+
+            notification_entries.push({
+              "entry_id"  : entry_data.entry_id,
+              "start"     : entry_data.start,
+              "url"       : "https://recording.music.unt.edu/live/event/"+entry_data.entry_id,
+              "image"     : "{site_url}{exp:ce_img:pair src="/images/default.png" width="500" height="500" crop="yes"}{made}{/exp:ce_img:pair}",
+              "title"     : entry_data.title,
+            });
+          } else {
+            notification_entries = [{
+              "entry_id"  : entry_data.entry_id,
+              "start"     : entry_data.start,
+              "url"       : "https://recording.music.unt.edu/live/event/"+entry_data.entry_id,
+              "image"     : "{site_url}{exp:ce_img:pair src="/images/default.png" width="500" height="500" crop="yes"}{made}{/exp:ce_img:pair}",
+              "title"     : entry_data.title,
+            }];
+          }
+
+          localStorage.setItem('notify_when_live', JSON.stringify(notification_entries));
+
+        } else {
+          console.debug('Notifications: Could not be set.');
+          // Remove Remind Button
+          this.supported.notifications = false;
+        }        
+      },
+
+
+      changeStreamURL() {
+        playback_count = this.current_stream_key; // The array number.
+        startPlayer(this); // Force restart the player.
+      },
+
+    }
+  });//vue
+
+}
+
+
+async function startPlayer(app) {
+  console.debug('Player: Starting Player.');
+
+  // This will start JW Player.
+  jwplayerSetup.playlist[0].sources[0].file = playback[playback_count].url;
+  console.debug("Attempting to play: ", playback[playback_count].url);
+
+  player.setup(jwplayerSetup);
+
+  // MUX Data
+  var playerInitTime = Date.now();
+  initJWPlayerMux(player, {
+    debug: false,
+    data: {
+      env_key: 'ous9tqsjn5svmi1jm4qbnl0ei', // required
+      player_name: 'Live', // ex: 'My Main Player'
+      player_init_time: playerInitTime, // ex: 1451606400000
+      {if logged_in} viewer_user_id: {logged_in_member_id}, {/if}
+      page_type:"watchpage",
+      video_content_type: "event",
+      video_id: {entry_id},
+      video_title: "{entry_date format="%Y-%m-%j"}-{entry_id}-{title} LIVE",
+      video_stream_type: playback[playback_count].name,
+      video_cdn: playback[playback_count].name      
+    }
+  });
+
+
+  player.on('ready', () => {
+    event.hasLoaded = true;
+    console.debug("Player: Has started once. Setting variable.");
+  });
+
+  player.on('firstFrame', () => {
+    console.debug('Player: First Frame fired.');
+    event.hasPlayedOnce = true;   
+    //pip(app,player);
+    volumeAtZeroCheck(player);
+    if (config.datasaverEnabled) {
+      applyDataSaver(player);       
+    }
+    trackingTags("live_first_play");
+    airtableTrack();
+  });
+
+
+  player.play();  
+
+  player.on('error', function(e) {
+
+    // If the event hasn't successfully played once, might be a startup error.
+    if (!event.hasPlayedOnce) {
+      setTimeout(retry, 8000); // Restart the player in 8 seconds.
+      new Noty({
+          text: 'Had a problem getting stream, trying again...',
+          type: 'error',
+          theme: 'nest',
+          timeout: 7000
+      }).show();  
+    } else {
+      console.error('Player Error: Event had been working, but is now down...', e);
+    }
+
+  });
+}
+
+function retry() {
+  console.debug('Player: Retrying Player', retry_count);
+  //player.remove();
+  retry_count++;
+
+  if (playback_count < playback.length) {
+    playback_count++; // Try the next stream URL as backup.
+  } else {
+    playback_count = 0; // Start over in the playlist.
+  }
+  startPlayer();
+}
+
+/*
+function pip(app,player) {
+
+  //*********** Picture in Picture Mode **********
+  const jwElements      = player.getContainer();
+  const jwVideo         = jwElements.querySelector('.jw-video');
+  const pipButton       = document.querySelector('#pipButton');
+  let safariPipSupport  = false;
+  let chromePipSupport  = false;
+
+  //**** Safari ****
+  if (jwVideo.webkitSupportsPresentationMode && typeof jwVideo.webkitSetPresentationMode === "function") {
+    safariPipSupport = true;
+    // Toggle PiP when the user clicks the button.
+    pipButton.addEventListener("click", function(event) {
+      jwVideo.webkitSetPresentationMode(jwVideo.webkitPresentationMode === "picture-in-picture" ? "inline" : "picture-in-picture");
+    });
+  }
+
+  //** Everything Else ***
+  if ('pictureInPictureEnabled' in document) {
+    chromePipSupport = true;   
+    pipButton.addEventListener('click', async function(event) {
+      try {
+        if (jwVideo !== document.pictureInPictureElement)
+          await jwVideo.requestPictureInPicture();
+        else
+          await document.exitPictureInPicture();
+      } catch(error) {
+        console.error(`> Argh! ${error}`);
+      }
+    });
+  }
+
+  // Show button if it is supported in either platform.
+  if (chromePipSupport || safariPipSupport) {
+    pipButton.hidden = false;
+  }
+}
+*/
+
+function volumeAtZeroCheck(player) {
+  if (player.getVolume() == 0 || player.getMute()) {
+    console.debug('Player: Volume is at Zero!');
+    new Noty({
+        text: 'Volume is muted.',
+        type: 'error',
+        theme: 'nest',
+        timeout: 4000
+    }).show();    
+  }
+}
+
+function applyDataSaver(player) {
+  let lowest = player.getQualityLevels().length - 1;
+  player.setCurrentQuality(lowest);
+
+  new Noty({
+      text: 'Data Saving is enabled.  Switching to low resolution.',
+      type: 'error',
+      theme: 'nest',
+      timeout: 5000
+  }).show();
+}
+
+async function verifyURLHasVideo(url) {
+
+  let result = await fetch(url, {method: 'HEAD'})
+    .then( response => {
+      if (response.ok) {
+        console.log("Stream Check OK.");
+        return true
+      } else {
+        // Fetch failed.
+        console.log("Stream Check no OK.");
+        return false;
+      }
+    })
+    .catch( (error) => {
+      console.log("Stream Check not OK, error.");
+      return false;
+    })
+
+  return await result;
+}
+
+async function airtableTrack() {
+
+  // Set a localstorage item to prevent multiple logging for page refreshes.
+  if ( localStorage.getItem('livestream_{entry_id}') !== "true") {
+
+    try {
+      var Airtable = require('airtable');      
+      var base = new Airtable({apiKey: 'keyZb7gzIYOF7QDRR'}).base('appDKawoN9jUkG1gO');
+      base('LiveStream').create({
+        "Concert Title" : "{entry_date format='%M %d, %Y'} {title}",
+        "Entry ID"      : "{entry_id}",
+        "Concert Date"  : "{entry_date format='{DATE_ISO8601}'}",
+        "Year"          : "{entry_date format='%Y'}",
+        "Instrument"    : "{archive_instrument backspace='2'}{archive_instrument:title}, {/archive_instrument}",
+        "Recital Type"  : "{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}",
+        "IP"            : "{if logged_in}{logged_in_ip_address}{if:else}{exp:basic_tools:getIpAddress}{/if}",
+        "accesstime"    : new Date().toISOString(),
+      }, function(err, record) {
+          if (err) { console.error(err); return; }
+      });
+    } catch(error) {
+      console.error('Airtable log not made: '+error);
+    }
+
+    localStorage.setItem('livestream_{entry_id}', "true");
+
+  } else {
+    console.debug("Repeat Track attempt.");
+  }
+
+}
+
+
+/******************** Start/Stop Encoder, only used for re-streaming.  Not currently used. *****************/
+async function startEncoder() {
+  console.debug('Starting/verfying encoder.');
+  let el_status_array = await el_control("status", room_id); // Ping Encoder.
+  let current_status = el_status_array.status; // Get status of encoder.
+
+  console.debug("Current Status: "+current_status);
+
+  if (current_status != "running") {
+    console.debug('Starting Encoder.');
+    current_status = await el_control("start", room_id); // Encoder wasnt running, start it.
+    return await current_status;
+  } else {
+    console.debug('Encoder already running.');
+    return await current_status; // Return a status that it is running.
+  }
+}
+async function stopEncoder() {
+  console.debug('Stopping encoder.');
+  let el_status_array = await el_control("stop", room_id);
+  return el_status_array;
+}
+async function el_control(action, room_id) {
+  let response = await fetch("/sys/elemental_control.php?action="+action+"&hallID="+room_id)
+    .then(response => {return response.json()})
+    .catch(error => {
+      console.error("Encoder control request error: ", error);
+    });
+  return response; // JSON response from encoder.
+}
+
+
+
+
+async function screenlock() {
+    
+    if ('wakeLock' in navigator === false) {
+        return;
+    }
+    // Function that attempts to request a screen wake lock.
+    const requestWakeLock = async () => {
+        let wakeLock = null;
+
+        try {
+            wakeLock = await navigator.wakeLock.request();
+            wakeLock.addEventListener('release', () => {
+            //console.debug('Screen Wake Lock released:', wakeLock.released);
+            });
+            //console.debug('Screen Wake Lock released:', wakeLock.released);
+            return wakeLock;
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+        }
+    };
+    
+    // Request a screen wake lock…
+    let wakeLock = await requestWakeLock();
+
+    // …and release it again after 5s.
+    /*
+    window.setTimeout(() => {
+    wakeLock.release();
+    console.log(wakeLock);
+    test = null;
+    }, 5000);
+    */
+
+    const handleVisibilityChange = async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return requestWakeLock;
+};
+screenlock();
+
+
+</script>
+
+
+{if:else}
+  <article class="check_back_later">
+    <p>No concert today.  Refresh this page the day of an event.</p>
+  </article>
+{/if}
+
+
+{/if}{!-- Entry Expired --}
+{/if}{!-- Room enabled for live streaming --}
+{/exp:channel:entries}
+
+
+{embed=a/f}

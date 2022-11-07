@@ -1,0 +1,62 @@
+{exp:vz_tabular:csv}
+
+
+
+{!--
+
+{exp:link_vault:records 
+  start_date="2017-9-01" 
+  end_date="2017-12-02" 
+  group_by="cf_accesstime"
+  table="link_clicks"
+  filename="stats.csv"
+  stop_processing="yes"
+}
+[col Entry Date]{census}[/col]
+{/exp:link_vault:records}
+
+--}
+
+
+
+{!--
+{exp:channel:entries 
+  channel="live" 
+  status="open" 
+  show_expired="yes" 
+  show_future_entries="yes" 
+  cache="yes" refresh="86400" 
+  disable="category_fields|pagination" 
+  limit="10000" 
+  search:stats_graph="not IS_EMPTY"
+}
+
+[col Entry Date]{entry_date format="%F %j %Y"}[/col]
+[col Title]{title}[/col]
+ {!-- use to output live stream stats.  Removed --}
+
+{/exp:channel:entries}
+--}
+
+
+{!-- Get time --}
+{exp:channel:entries 
+  channel="live" 
+  status="open" 
+  show_expired="yes" 
+  show_future_entries="no" 
+  disable="categories|pagination|member_data|" 
+  limit="220" 
+}
+
+{!--[col Title]{title}[/col]--}
+{!--[col Date]{entry_date format="%Y-%M-%D"}[/col]--}
+[col Time]{archive_playtime_duration}[/col]
+ {!-- use to output live stream stats.  Removed --}
+
+{/exp:channel:entries}
+
+
+
+
+{/exp:vz_tabular:csv}

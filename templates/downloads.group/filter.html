@@ -1,0 +1,173 @@
+{embed=a/h title="Archive Downloads - Search" meta="Search through the Music Archive"}
+{embed=downloads/_nav}
+
+<section id="content">
+
+<form method="post" action="{path='downloads/filter'}" id="search_form">
+  {exp:low_search:form result_page="/{segment_1}/{segment_2}"}
+    <label for="keywords">Keywords:</label>
+    <input
+      type="text" 
+      inputmode="search" 
+      name="keywords" 
+      value="{exp:low_search:keywords query='{segment_3}'}" 
+      autocapitalize="off"
+    />
+
+{!--
+    <label>Start Date</label>
+    <input type="text" class="date_select date_picker" placeholder="YYYY-MM-DD" name="range-from:entry_date" value="{low_search_range-from:entry_date}">
+
+    <label>End Date</label>
+    <input type="text" class="date_select date_picker" placeholder="YYYY-MM-DD" name="range-to:entry_date" value="{low_search_range-to:entry_date}">
+
+    <label>Ensemble</label>
+    <select name="child:related_ensembles_v2[]" multiple="multiple" class="multiple">
+    {exp:channel:entries channel="ensembles" dynamic="off"}
+        <option value="{entry_id}"{if low_search_child:related_ensembles_v2 *= entry_id}selected{/if}>{title}</option>
+    {/exp:channel:entries}
+    </select>
+
+    <label>Degree Types</label>
+    <select name="child:archive_recital_type[]" multiple="multiple" class="multiple">
+    {exp:channel:entries channel="degree_types" dynamic="off"}
+        <option value="{entry_id}"{if low_search_child:archive_recital_type *= entry_id}selected{/if}>{title}</option>
+    {/exp:channel:entries}        
+    </select>   
+
+    <label>Instrument</label>
+    <select name="child:archive_instrument[]" multiple="multiple" class="multiple">
+    {exp:channel:entries channel="college_instruments" dynamic="off"}
+        <option value="{entry_id}"{if low_search_child:archive_instrument *= entry_id}selected{/if}>{title}</option>
+    {/exp:channel:entries} 
+    </select>
+
+    <label>Hall</label>
+    <select name="child:room[]" multiple="multiple" class="multiple">
+    {exp:channel:entries channel="rooms" dynamic="off"}
+        <option value="{entry_id}"{if low_search_child:room *= entry_id}selected{/if}>{title}</option>
+    {/exp:channel:entries}        
+    </select>
+
+    <label>Performers</label>
+    <select name="tag_id[]" multiple="multiple" class="multiple">
+        {exp:tag:cloud channel="live" websafe_separator="_" show_expired="yes" tag_group_id="3" cache="yes" refresh="320" rank_by="entries" orderby="total_entries" limit="1000"}
+        <option value="{tag_id}" {if low_search_tag_id *= websafe_tag}selected{/if}>{tag}</option>
+        {/exp:tag:cloud}
+    </select>
+--}
+
+    <button name="submit" class="basic_button">Search</button>
+  {/exp:low_search:form}
+
+</form>
+
+  <article class="search_results_head">
+    <h2>Archived Concerts {if logged_in}<i class="fa fa-unlock" title="You must login in to view archived concerts"></i>{if:else}<i class="fa fa-lock" title="You are logged-in and able to view archived events"></i>{/if}</h2>
+  </article>
+
+{exp:low_search:results
+  query="{segment_3}"
+  keywords:lang="en"
+  keywords:inflect="yes"
+  collection="1"
+  limit="20"
+  show_expired="yes"
+  orderby_sort="date|desc"
+  status="open|pending|waitingforreview|pendingvideo|pendingaudio|livestream"
+  }
+  {if count=='1'}
+  <section class="table_layout">
+    <span class="table_layout_row search_table_head">
+      <article>Date</article>
+      <article>Title</article>
+      <article>Type</article>
+      <article>Hall</article>
+    </span>
+  {/if}    
+   <a href="{entry_id_path=downloads/item}" class="table_layout_row">
+    {if no_results}
+      <article>
+      <p>No Results for “{low_search_keywords}”.
+      {exp:low_search:suggestions keywords="{low_search_keywords}" keywords:lang="en" limit="2"}
+        {if suggestion_count == 1}Did you mean{/if}
+        <a href="{low_search:url keywords="{suggestion}"}">{suggestion}</a>{if suggestion_count != total_suggestions}&nbsp;or&nbsp;{if:else}?{/if}
+        {if no_suggestions}Check your spelling or try a different search term.{/if}
+      {/exp:low_search:suggestions}
+      </p>
+      </article>
+    {/if}
+    <article class="results_date">
+      {entry_date format="%Y %F %j"}
+    </article>
+    <article class="results_title">
+      {exp:char_limit total="40"}{title}{/exp:char_limit}
+    </article>
+    <article class="results_type">
+      {archive_recital_type backspace="2"}{archive_recital_type:title}, {/archive_recital_type}
+    </article>
+    <article class="results_room">
+      {room:title}
+    </article>
+  </a>
+  {if count==total_results}</section>{/if}
+  {paginate}{pagination_links}
+    {if {total_pages} > 1}
+    <ul class="pagination">
+      <li>Page {current_page} of {total_pages}</li>
+      {first_page}<li><a href="{pagination_url}" class="page-first"><i class="fa fa-angle-double-left"></i> First Page</a></li>{/first_page}
+      {previous_page}<li><a href="{pagination_url}" class="page-previous"><i class="fa fa-angle-left"></i> Previous</a></li>{/previous_page}
+      {next_page}<li><a href="{pagination_url}" class="page-next">Next <i class="fa fa-angle-right"></i> </a></li>{/next_page}
+      {last_page}<li><a href="{pagination_url}" class="page-last">Last Page <i class="fa fa-angle-double-right"></i> </a></li>{/last_page}
+    </ul>
+    {/if}
+    {/pagination_links}{/paginate}      
+{/exp:low_search:results}
+
+{exp:low_search:results
+  keywords:lang="en"
+  keywords:inflect="yes"
+  keywords:mode="any"
+  collection="2"
+  require_query="yes"
+  status="open|pending|waitingforreview|pendingvideo|pendingaudio|livestream"
+}
+  {if count=='1'}
+  <article class="search_results_head">
+    <h2>Ensembles</h2>
+  </article>
+  <section class="table_layout">
+    <span class="table_layout_row search_table_head">
+      <article>Title</article>
+      <article>Type</article>
+    </span>
+  {/if}    
+   <a href="{entry_id_path=downloads/item}" class="table_layout_row">
+    {if no_results}<!-- No ensemble results -->{/if}
+      <article class="results_title">
+        {exp:char_limit total="30"}{title}{/exp:char_limit}
+      </article>
+      <article class="results_type">
+        {ensemble_performance_area}{ensemble_performance_area:title}{/ensemble_performance_area}
+      </article>
+  </a>
+  {if count==total_results}</section>{/if}
+
+  {paginate}{pagination_links}
+    {if {total_pages} > 1}
+    <ul class="pagination">
+      <li>Page {current_page} of {total_pages}</li>
+      {first_page}<li><a href="{pagination_url}" class="page-first"><i class="fa fa-angle-double-left"></i> First Page</a></li>{/first_page}
+      {previous_page}<li><a href="{pagination_url}" class="page-previous"><i class="fa fa-angle-left"></i> Previous</a></li>{/previous_page}
+      {next_page}<li><a href="{pagination_url}" class="page-next">Next <i class="fa fa-angle-right"></i> </a></li>{/next_page}
+      {last_page}<li><a href="{pagination_url}" class="page-last">Last Page <i class="fa fa-angle-double-right"></i> </a></li>{/last_page}
+    </ul>
+    {/if}
+    {/pagination_links}{/paginate}
+
+  {/exp:low_search:results}
+
+</section>
+{embed=a/js}
+
+{embed=a/f}

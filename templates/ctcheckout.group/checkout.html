@@ -1,0 +1,719 @@
+{!--
+
+  Cartthrob-based checkout with Stripe v3.
+
+--}
+
+{preload_replace:template_root="ctcheckout"}
+{embed=a/h title="Payment and Final Checkout" meta="Payment information and Buying"}
+
+{if logged_out}
+<p>LOGIN!</p>
+{/if}
+
+<div id="content">
+    <h3><span class="fa fa-shopping-cart"></span> Payment</h3>
+    <nav id="bread">
+      <p><a href="/downloads">Catalog</a> - <a href="{path='{template_root}/view_cart'}">Cart</a>  - <strong>Payment</strong> <span style="color:#ccc">- Complete</span></p>
+    </nav>
+
+  <article class="center-align" aria-label="Shopping Cart items">
+  <!-- **************** Cart Info ************** -->
+	{exp:cartthrob:cart_items_info}
+    {if no_results}
+      <p>Your cart is Empty. <a href="/downloads" class="basic_button">Return to Archive</a></p>
+    {/if}
+ 
+			{if first_row}
+				{exp:cartthrob:update_cart_form return="{template_root}/checkout" id="cart_update_form"}
+        <table class="cart_contents">
+          <thead>
+            <tr>
+              <td>Item</td>
+              <td>Quantity</td>
+              <td>Price</td>
+              <td>Delete</td>
+            </tr>
+          </thead>
+          <tbody>
+			 {/if}
+	      <tr>
+	        <td>{title}</td>
+	        <td><input type="number" name="quantity[{row_id}]" size="1" value="{quantity}" /></td>
+	        <td>{item_subtotal}</td>
+	        <td><input type="checkbox" name="delete[{row_id}]"></td>
+	      </tr>
+		{if last_row}
+          <tr>
+            <td></td>
+            <td style="text-align:right"><strong>Total</strong></td>
+            <td><strong>{exp:cartthrob:cart_subtotal}</strong></td>
+            <td></td>
+          </tr>    
+	     	</tbody>
+	      </table>
+
+			<aside class="cart_update_buttons">
+				<button type="submit" name="update_cart" value="Update Cart" id="updateCartButton" class="basic_button"><span class="fa fa-refresh"></span> Update Cart</button>
+				<button type="submit" name="clear_cart" value="Clear Cart" class="basic_button" /><span class="fa fa-trash"></span> Empty Cart</button>
+			</aside>
+			
+			{/exp:cartthrob:update_cart_form}
+
+		{/if}
+	{/exp:cartthrob:cart_items_info}
+  </article>
+
+
+
+  <!-- **************** Credit Card ************** -->
+  {exp:cartthrob:checkout_form gateway="stripe" return="{template_root}/complete" skip_stripe_js="yes"} 
+
+  <section id="services_payment_column" class="services_payment_column center-align">
+
+    <article id="additional_payment_instructions" class="payment_type_block" style="display:none">
+      <h2 class="payment_type_header">Quick Pay</h2>
+      <div id="payment-request-button" style="max-width:200px;"></div>
+    </article>
+
+
+    <article class="payment_type_block">
+      <h2 class="payment_type_header">Standard Credit Card</h2>
+      <!--
+      <fieldset class="payment">
+        <legend>Card Info</legend>
+      -->
+
+        <section>
+          <article>
+            <label for="cc_name">Name</label>
+            <input 
+              id="cc_name"
+              class="field is-empty" 
+              type="text" 
+              placeholder="Name on Card" 
+              name="customer_name" 
+              value="{logged_in_screen_name}"
+              title="Name on the credit card."
+            />
+          </article>
+          
+          <article>  
+            <label for="cc_email">Receipt Email</label>
+            <input 
+              id="cc_email"
+              class="field" 
+              type="email" 
+              placeholder="" 
+              name="email_address" 
+              value="{logged_in_email}"
+              title="Where to send a receipt email."
+            />
+          </article>       
+
+          <article>
+            <label for="phone">Phone (optional)</label>
+            <input 
+              type="tel" 
+              name="phone" 
+              id="field_phone" 
+              value="{if phone}{phone}{/if}" 
+              title="Optional.  Helpful if we have a question" 
+              autocomplete="phone" 
+            />
+          </article>
+        </section>
+        
+        <section>
+          <article>
+            <!--<label>Card Details</label>-->
+            <div id="card-element" class="field is-empty"></div>
+          </article>
+        </section>
+       
+        <div id="element_CardErrors" class="cc_msg_hidden alerts alert-error" role="alert"></div>
+        <div id="element_Success" class="cc_msg_hidden alerts alert-success" role="alert"><i class="fa fa-check-circle" aria-hidden="true"></i> Your card was approved!  Attempting to charge it...</div>
+
+  		  <!--<p>Submitting will charge your credit card and send a receipt email to the Scheduling and Recording Services office.</p>-->
+
+        <input 
+          type="hidden"
+          placeholder="{exp:cartthrob:cart_total prefix=''}" 
+          value="{exp:cartthrob:cart_total prefix='' decimals='0'}00" 
+          name="plan_amount"
+          id="amount_total"
+        />
+
+        <!-- Hidden fiels for Stripe Meta. -->
+        {exp:cartthrob:cart_items_info}
+          <input type="hidden" name="meta:product" value="{title}" >
+          <input type="hidden" name="meta:quantity" value="{quantity}" >
+          <input type="hidden" name="meta:EUID" value="{logged_in_username}" >
+          <input type="hidden" name="meta:ConcertType" value="{item_options:event_degree}" >
+          <input type="hidden" name="meta:Service" value="{item_options:product_services_modifier}" >
+          <input type="hidden" name="meta:Location" value="{item_options:product_location}" >
+          <input type="hidden" name="meta:Video" value="{item_options:product_video}" >
+          <input type="hidden" name="meta:Date" value="{item_options:recital_date}" >
+          <input type="hidden" name="meta:LateFee" value="{item_options:product_late_fee}" >
+        {/exp:cartthrob:cart_items_info}
+
+  		  <button type="submit" id="complete_order_button" class="submit_order_button" disabled />Submit Charge for {exp:cartthrob:cart_total}</button>
+        <div id="processingSpinner" class="processing_spinner hidden" style="font-size: 3em;text-align:center"><i class="fa fa-cog fa-spin"></i></div>
+      <!--</fieldset>-->
+    </article>
+
+	</section>
+
+	{/exp:cartthrob:checkout_form}
+  
+  {if logged_in_member_id =='1'}
+  <nav style="position:absolute;bottom:0;left:0;display:block;width:100%">
+       <button id="playfireworks" class="basic_button">Show Fireworks</button>
+       <button id="removefireworks" class="basic_button" style="position:relative;z-index:9999">Stop Fireworks</button>
+  </nav>
+  {/if}
+
+
+  <article class="center-align" aria-label="Terms and Help">
+    <h3><span class="fa fa-question"></span> Need Help?</h3>
+    <p>Call us at (940) 565 3780 or email at recordingservices@unt.edu</p>
+    
+    <h3><span class="fa fa-exclamation"></span> Quanity</h3>
+    <p>Only (1) quantity is required to download.  The option is there incase additional quantities were added by accident.</p>
+
+    <h3>Concert Download Notes</h3>
+    <p>Concert video downloads have an availability of 1 year from the date of purchase.  This grants you a license for personal use.  Ensemble recordings are owned by UNT, and may not be resold, repackaged or distributed publicly without permission.  See our <a href="/services">Services</a> page for more information on copyrights and uses.</p>
+  </article>
+
+</div><!--content-->
+
+{jquery}
+{embed=a/js}
+
+<style>
+
+</style>  
+
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+jQuery(document).ready(function($) {
+
+/** Detect form changes, Remind users to click update cart. **/
+let form = document.querySelector('#cart_update_form');
+form.addEventListener('change', e => {
+  document.querySelector('#updateCartButton').classList.add('untgreen');
+});
+
+
+/********** Payment Scripts **********/
+(async () => {
+
+const paymentFormID         = document.getElementById('checkout_form');
+const paymentFormIDJquery   = $('#checkout_form');
+
+/** Elements **/
+const element_CardErrors    = document.getElementById('element_CardErrors'); // When entering a credit card wrong.
+const element_success       = document.getElementById('element_Success'); // When token is received.
+//const element_chargeError   = document.getElementById('element_chargeError'); // If token fails.
+const element_submitButton  = document.getElementById('complete_order_button'); // CC submit button.
+const element_processingSpinner = document.getElementById('processingSpinner');
+
+const amount_total          = (document.getElementById('amount_total').value) * 1;
+var cc_field_complete       = false;
+var contact_info_complete   = false;
+
+
+
+// Create a Stripe client.
+//const stripe                = Stripe('pk_test_zTQxL3cnFe8oMOjXcOngj0lu');
+const stripe                = Stripe('pk_live_9VVEre5LYuLR5zP2yhEPI17R00MlRmrQoD');
+
+// Create an instance of Elements.
+const elements              = stripe.elements();
+
+
+// Create a Card Element and pass some custom styles to it.
+var card = elements.create('card', {
+  paymentRequest: paymentRequest,
+  iconStyle: 'solid',
+  style: {
+    base: {
+      iconColor: '#8898AA',
+      color: 'black',
+      lineHeight: '36px',
+      fontWeight: 300,
+      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontSize: '19px',
+
+      '::placeholder': {
+        color: '#8898AA',
+      },
+    },
+    invalid: {
+      iconColor: '#e85746',
+      color: '#e85746',
+    }
+  },
+  classes: {
+    focus: 'is-focused',
+    empty: 'is-empty',
+  },
+});
+
+
+
+// Mount the Card Element on the page.
+card.mount('#card-element');
+
+
+// Monitor change events on the Card Element to display any errors.
+card.on('change', ({error}) => {
+  if (error) {
+    element_CardErrors.innerHTML = '<i class="fa fa-times-circle" aria-hidden="true"></i> '+error.message;
+    element_CardErrors.classList.remove('cc_msg_hidden');
+    element_submitButton.disabled = true;
+    cc_field_complete = false;
+  } else {
+    element_CardErrors.classList.add('cc_msg_hidden');
+  }
+  verify();
+});
+
+card.on('change', (event) => {
+  if (event.complete === true) {
+    cc_field_complete = true;
+  }
+  verify();
+});
+
+
+// Check on Load.
+validateBasicInfo();
+
+$(paymentFormIDJquery).on('keyup', () => {
+  validateBasicInfo();
+  verify();
+});
+
+function validateBasicInfo() {
+  if ( $('#cc_name').val().length > 5 && $('#cc_email').val().length > 10 ) {
+    contact_info_complete = true;
+  } else {
+    contact_info_complete = false;
+  }  
+}
+function verify() {
+  if (cc_field_complete && contact_info_complete) {
+    element_submitButton.disabled = false;
+  }
+}
+
+
+var paymentRequest = stripe.paymentRequest({
+  country: 'US',
+  currency: 'usd',
+  total: {
+    label: 'UNT Recording Services',
+    amount: amount_total,
+  },
+  requestPayerName: true,
+  requestPayerEmail: true,
+});
+
+
+
+
+// Create the Payment Request Button.
+const paymentRequestButton = elements.create('paymentRequestButton', {
+  paymentRequest:paymentRequest,
+});
+
+// Check if the Payment Request is available (or Apple Pay on the Web).
+const paymentRequestSupport = await paymentRequest.canMakePayment();
+if (paymentRequestSupport) {
+
+  // Display the Pay button by mounting the Element in the DOM.
+  paymentRequestButton.mount('#payment-request-button');
+
+  /** Show additional instructions **/
+  let instructions = document.querySelector('#additional_payment_instructions');
+  instructions.style.display = "block";
+  /*
+  let instructions = document.querySelectorAll('.additional_payment_instructions');
+  for (var instruction of instructions) {
+    instruction.style.display = "block";
+  }
+  */
+}
+
+
+
+
+
+/***********  Standard Credit Card submit.  *********/
+paymentFormID.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  //** Double-check all form fields are good **/
+  element_submitButton.disabled = true;
+  element_processingSpinner.classList.remove = 'hidden';
+  //element_submitButton.insertAdjacentHTML('beforeend', ' <i class="fa fa-spinner fa-spin"></i>');
+
+  const extraDetails = {
+    name: paymentFormID.querySelector('input[name=customer_name]').value,
+    email: paymentFormID.querySelector('input[name=email_address]').value,
+    /** address_zip ?? **/
+  };
+
+  /* Create Toaken */
+  stripe.createToken(card, extraDetails).then(setOutcome);
+
+});
+
+
+
+
+/** When Stripe returns a token by any means, then charge using EE **/
+paymentRequest.on('token', function(stripeResponse) {
+  // Send the token to server to charge it.
+  setOutcome(stripeResponse);
+});
+
+
+
+
+
+/** Change Styling, and proceed to charging the card. **/
+function setOutcome(stripeResponse) {
+
+  // Card was approved, and it returned a token.
+  if (stripeResponse.token) {
+
+    element_success.classList.remove('cc_msg_hidden');
+
+    // Charge the card.  Leaving here for reference.
+    // submitToCharge(stripeResponse.token);
+
+    // Send to Cartthrob to charge the card.
+    submitToCartthrob(paymentFormIDJquery, stripeResponse.token);
+
+  } else if (stripeResponse.error) {
+    element_CardErrors.innerHTML = '<i class="fa fa-times-circle" aria-hidden="true"></i> '+stripeResponse.error.message;
+    element_CardErrors.classList.remove('cc_msg_hidden');
+  }
+}
+
+
+
+
+
+function submitToCartthrob(formID, stripeResponse) {
+
+  /** Add hidden fields returned from Stripe to add to Cartthrob **/
+  const hiddenFields = {
+      card_token:           stripeResponse.id, // Charge
+      stripeToken:          stripeResponse.id, // Cartthrob
+      card_last4:           stripeResponse.card.last4, // Charge
+      credit_card_number:   stripeResponse.card.last4, // Cartthrob
+      card_type:            stripeResponse.card.brand,
+      card_name:            stripeResponse.card.name,
+      card_exp_month:       stripeResponse.card.exp_month,
+      card_exp_year:        stripeResponse.card.exp_year,
+      card_fingerprint:     stripeResponse.card.fingerprint,
+      card_address_line1:   stripeResponse.card.address_line1,
+      card_address_line2:   stripeResponse.card.address_line2,
+      card_address_city:    stripeResponse.card.address_city,
+      card_address_state:   stripeResponse.card.address_state,
+      card_address_zip:     stripeResponse.card.address_zip,
+      card_address_country: stripeResponse.card.address_country,
+      customer_name:        paymentFormID.querySelector('input[name=customer_name]').value,
+  };  
+  for (var prop in hiddenFields) {
+    if(hiddenFields.hasOwnProperty(prop)){
+        paymentFormID.innerHTML += "<input type='hidden' name=" + prop + " value='" + hiddenFields[prop] + "'/>";
+    }
+  }
+
+  // Tell the browser to submit the form like normal.
+  formID.submit();
+
+  // Reset?  Might confuse user to clicking again while the PHP loads.
+  // element_processingSpinner.classList.add = 'hidden';
+  // element_submitButton.disabled = false;
+
+
+}
+
+
+
+var inputs = paymentFormID.querySelectorAll('input.field');
+Array.prototype.forEach.call(inputs, function(input) {
+  input.addEventListener('focus', function() {
+    input.classList.add('is-focused');
+  });
+  input.addEventListener('blur', function() {
+    input.classList.remove('is-focused');
+  });
+  input.addEventListener('keyup', function() {
+    if (input.value.length === 0) {
+      input.classList.add('is-empty');
+    } else {
+      input.classList.remove('is-empty');
+    }
+  });
+});
+
+
+
+
+/******************************** Firework particle class *********************************/
+/** Credits: https://codepen.io/rainner/pen/GaqOOW **/
+class FireworkParticle {
+  
+  constructor( context, width, height, total ) {
+    this.context = context;  
+    this.width = width;
+    this.height = height;
+    this.total = total;
+    this.done = 0;
+    this.x = 0;
+    this.xTo = 0;
+    this.y = 0;
+    this.yTo = 0;
+    this.ease = 20;
+    this.size = 300;
+    this.hue = 0, 
+    this.particles = [];
+    this.reset(); 
+  }
+  
+  between( min, max ) {
+    return Math.random() * ( max - min + 1 ) + min;
+  }
+  
+  complete() {
+    return ( this.done >= this.total );
+  }
+  
+  reset() {
+    this.particles = [];
+    this.x = this.between( 100, this.width - 100 );
+    this.xTo = this.between( this.x + 100, this.x - 100 );
+    this.y = this.height + 10;
+    this.yTo = this.height / 2 - this.between( 0, 200 );
+    this.ease = this.between( 12, 20 );
+    this.hue = this.between( 100, 360 );
+    this.done = 0;
+  }
+  
+  explode() {
+    this.particles = [];
+    this.context.clearRect( 0, 0, this.width, this.height ); // flash 
+    
+    for ( let i = 0; i < this.total; i++ ) {
+      this.particles.push( {
+        x     : this.x,
+        y     : this.y,
+        xTo   : this.between( this.x - this.size, this.x + this.size ),
+        yTo   : this.between( this.y - this.size, this.y + this.size ),
+        size  : this.between( 1, 3 ),
+        ease  : this.between( 8, 28 ),
+        hue   : this.between( this.hue - 100, this.hue ),
+        alpha : 1
+      });
+    }
+  }
+  
+  update( width, height ) {
+    this.width = width || this.width;
+    this.height = height || this.height;
+    this.x += ( this.xTo - this.x ) / this.ease;
+    this.y += ( this.yTo - this.y ) / this.ease;
+  }
+  
+  drawBomb() {
+    this.context.beginPath();
+    this.context.arc( this.x, this.y, 2, 0, 2 * Math.PI, false );
+    this.context.fillStyle = `hsl( ${this.hue}, 100%, 60% )`;
+    this.context.fill();
+  }
+  
+  drawParticles() {
+    for ( let i = 0; i < this.particles.length; i++ ) {
+      const p = this.particles[ i ];
+
+      if ( p.alpha >= 0 ) {
+        this.context.beginPath();
+        this.context.arc( p.x, p.y, p.size, 0, 2 * Math.PI, false );
+        this.context.fillStyle = `hsla( ${p.hue}, 100%, 60%, ${p.alpha} )`;
+        this.context.fill();
+
+        p.x += ( p.xTo - p.x ) / p.ease;
+        p.y += ( p.yTo - p.y ) / p.ease;
+        p.alpha -= 0.014;
+        continue;
+      }
+      this.particles.splice( i, 1 );
+      this.done += 1;
+    }
+  }
+  
+  draw() {
+    if ( this.complete() ) return;
+    if ( this.y > this.yTo + 20 ) { this.drawBomb(); } 
+    else if ( !this.particles.length ) { this.explode(); } 
+    else { this.drawParticles(); } 
+  }
+}
+
+/**
+ * Setup
+ */
+function showFireworks() {
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  let particles = [];
+  
+  // particle canvas
+  const canvas = document.createElement( 'canvas' );
+  const context = canvas.getContext( '2d' );
+  canvas.id = 'firework-canvas';
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.display = 'block';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.position = 'fixed';
+  canvas.style.zIndex = '1';
+  canvas.style.left = '0';
+  canvas.style.top = '0';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.opacity = '.85';
+  document.body.appendChild( canvas );
+  
+  // on resize 
+  window.addEventListener( 'resize', e => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  });
+  
+  // add particles slowly over time 
+  const create = () => {
+    if ( particles.length > 2 ) return; 
+    particles.push( new FireworkParticle( context, width, height, 100 ) ); 
+    setTimeout( create, 600 );  
+  }; 
+  
+  // animation loop 
+  const loop = () => {
+    requestAnimationFrame( loop );
+    context.fillStyle = 'rgba(0,0,0,0.2)';
+    context.fillRect( 0, 0, width, height );
+    
+    for ( let p of particles ) {
+      if ( p.complete() ) p.reset();
+      p.update( width, height );
+      p.draw();
+    }
+  };
+ 
+  // init 
+  create();
+  loop();
+};
+
+function removeFireworks() {
+  let fireworksCanvas = document.getElementById('firework-canvas');
+  fireworksCanvas.parentNode.removeChild(fireworksCanvas);
+}
+
+})(); // async immediate function.
+
+
+});// Jquery
+</script>
+
+{embed=a/f}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{!--
+<script>
+/***
+  For charging to Stripe through JS instead of Cartthrob.
+  Leaving here for reference
+**/
+function submitToCharge(response) {
+  const card = {
+      card_token: response.id,
+      card_last4: response.card.last4,
+      card_type: response.card.brand,
+      card_name: response.card.name,
+      card_exp_month: response.card.exp_month,
+      card_exp_year: response.card.exp_year,
+      card_fingerprint: response.card.fingerprint,
+      card_address_line1: response.card.address_line1,
+      card_address_line2: response.card.address_line2,
+      card_address_city: response.card.address_city,
+      card_address_state: response.card.address_state,
+      card_address_zip: response.card.address_zip,
+      card_address_country: response.card.address_country,
+      customer_name: paymentFormID.querySelector('input[name=customer_name]').value,
+  };  
+
+  for (var prop in card) {
+      if(card.hasOwnProperty(prop)){
+          paymentFormID.innerHTML += "<input type='hidden' name=" + prop + " value='" + card[prop] + "'/>";
+      }
+  }
+  // Page refresh method:
+  // paymentFormIDJquery.get(0).submit();
+
+  console.log('Getting seralized array...')
+  console.log( $(paymentFormIDJquery).serializeArray() ); //debug
+
+
+  let EE_submittion_URL  = $(paymentFormIDJquery).attr("action");
+  let form_data          = $(paymentFormIDJquery).serialize();
+
+  axios.post( EE_submittion_URL, form_data )
+  .then(function (response) {
+
+      console.log(response.data);
+
+      if(response.data.success) {
+        console.log('EE Charge Success.');
+        // Add your success code here (redirect or status message).
+        $('.error').show().html('<div>EE Charge Success.</div>');
+      } else {
+        // show the errors on the form
+        $('.error').show().html(response.data.errors).addClass('alert').addClass('alert-error');
+        return false;
+      }
+
+
+  })
+  .catch(function (error) {
+    console.log('Async Error: ');
+    console.log(error);
+  });
+
+}
+</script>
+--}

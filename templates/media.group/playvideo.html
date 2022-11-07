@@ -1,0 +1,1298 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{exp:channel:entries
+    channel="live"
+    show_expired="yes"
+    show_future_entries="no"
+    entry_id="{if segment_4 ==""}{segment_3}{/if}{if segment_4 !=""}{segment_4}{/if}"
+    status="open|pending|waitingforreview|livestream|pendingvideo|pendingaudio|scheduled"
+    disable="pagination|categories|member_data"
+    limit="1"
+    cache="yes"
+    refresh="9000"
+}
+
+{!-- search:global_streaming="yes" --}
+
+{embed=a/h
+  title="{entry_date format="%F %j, %Y"} {title}"
+  meta="On-demand Video"
+}
+
+<script>
+  window.muxPlayerInitTime = Date.now();
+</script>
+
+<link rel="stylesheet" href="{stylesheet=media/styles}" />
+
+{!--
+<style>
+  /*** Dark mode styles copied in.  This is hacky!! *****/
+  :root{
+      --greenone:   #78AA67;
+      --greentwo:   #5C7456;
+      --greenthree: #4F7F24;
+      --greenfour:  #8CB773;
+      --greenfive:  #9ABA8E;
+
+      --lightgray:  rgba(64, 64, 64, .5);
+      --midgray:    rgba(209, 209, 209, .3);    
+
+      --darktext:   #A1A1A1;
+      --darkone:    #434343;
+
+      --link:       #AE4937;
+      --linkhover:  #C6B58D;
+
+      --text:       #A1A1A1;
+
+      --bodybackground: #0d0d0d; /* modified to be darker **/
+      --purewhite:  #D8DAD7;
+      --offwhite:   #282828;
+
+      --disabled_text:rgba(255,255,255,.2);
+
+      --content_background: #282828;
+
+
+      /******* Search Menu ******/
+      /** Gray **/
+      --highlight_primary      : rgba(0,0,0,.4);
+      --highlight_primary_soft : rgba(0,0,0,.1);
+     
+      --highlight_primary_txt  : rgba(255,255,255,.8);    
+  }
+  .archive_nav_v3 .ag_search_form {background:none;}  
+  .archive_nav_v3 .ag_search_form:focus-within {background:rgba(0,0,0,.5);}  
+  .archive_nav_v3 .menu_links {background:rgba(0,0,0,0.5);}
+  .archive_nav_v3 .archive_nav_search_icon {
+      background:none;
+      color:var(--text);
+  }
+  .archive_nav_v3 .toggle_refinement {background:none}
+  /************** End of Copied dark mode styles **************/
+
+
+
+
+  /* Remove border so it isn't white during light theme. */
+  .information_block .header_menu .basic_button {border:none;}
+
+  body {background:var(--bodybackground);}
+  .information_block {
+    padding:0 0 2em 0;
+    width:100%;  
+  }
+  .information_block header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:3px #272727 solid;
+    padding:.5em 1em;
+  }
+  .information_block header > * {margin:0;}
+  .information_block .header_menu {
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    flex-wrap: wrap;
+  }
+  .information_block .header_menu > * {
+    margin:.2em .3em;
+    padding:.2em .8em;
+  }
+  .information_block .header_menu .divider {
+    height:1.5rem;
+    width:2px;
+    padding:0;margin:0 .5em;
+    background:rgba(0,0.0,.1);
+  }  
+
+
+
+  .programlist {
+    color:var(--darktext); 
+    font-size:clamp(14px, .2em + 1vw, 20px);
+  }
+  .programlist .program_row {
+    transition:all 100ms ease-in-out; 
+  }
+  .programlist .program_row:nth-child(even) {background:rgba(255,255,255,.03);}
+  @media(hover: hover) and (pointer: fine) {
+    .programlist.clickable .program_row:hover {
+      background:#3A3A3A;  
+      color:white;
+      cursor:pointer;
+    }
+  }
+  .programlist.clickable .program_row:active {
+    background:#3A3A3A;  
+    color:white;
+    cursor:pointer;
+  }
+
+  .program_row .time {
+    width:5%;
+  }
+  .program_row .time_track {
+    width:10%;
+    white-space: nowrap;
+  }
+  .program_row .track_time_elapsed,
+  .program_row .track_time_remaining {
+    margin:0 .5em;
+  }
+
+  @media (min-width:501px) {
+    .programlist {
+      display:table;
+      width:100%;
+    }
+    .programlist .program_row {display:table-row;}
+    .programlist .program_row > * {
+      display:table-cell;
+      padding:.7em .3em;
+      -webkit-line-clamp: 1;
+      line-clamp:1;
+    }
+    .programlist .row:nth-child(1) {padding-left:1%;}
+  }
+
+  @media (max-width:500px) {
+    .information_block header {
+      flex-wrap: wrap;
+      justify-content:space-evenly;
+    }
+    .information_block .header_menu {margin-left:0;}
+    .information_block header > :first-child {
+      width:100%;
+      align-self: flex-start;
+    }
+    .programlist article {
+      display: flex;
+      flex-wrap:wrap;
+      padding-top:2%;
+      padding-bottom:2%
+    }
+    .program_row .row {
+      padding:0 2%;
+      width:8%;
+    }
+    .program_row .time,
+    .program_row .time_track {
+      width:45%;
+    }
+    .program_row .time_track {
+      text-align: right;
+    }
+    .piece, .composer, .arranger {
+      width: 92%;
+      padding:0 0 0 8%;
+     }
+    .program_row > :nth-child(2) {padding-left:0;}
+  }
+
+  .programlist .program_row.active,
+  .programlist .program_row:focus {
+    background:#3A3A3A;
+    color:white;
+  }
+
+  .player_container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    background:black;
+  }
+
+  .loadingIcon {
+    position: absolute;
+    padding:10%;
+    text-align: center;
+    width:100%;
+    top:20.5vw;
+    font-size:3vw;
+    z-index: 9999;
+  }
+
+  .notificaiton.info {
+    background: rgba(39, 126, 168, 0.41);
+    padding: .5em 1em;
+    margin: 0;
+  }
+
+</style>
+--}
+
+
+{if no_results}
+  {embed=a/h
+    title="{entry_date format="%F %j, %Y"} {title}"
+    meta="On-demand Video"
+  }
+  <main id="content">
+    <h1>This event is not available or no events found for this concert.</h1>
+  </main>
+  {embed=a/js}
+
+{/if}
+
+<div id="firstLoadingIcon" class="loadingIcon">
+  <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
+</div>
+
+
+{!--
+{if logged_in_member_id ==1}
+<section class="full_screen_overlay">
+  <article class="message">
+    <h2>Test</h2>
+  </article>
+</section>
+{/if}
+--}
+
+
+<div class="player_container">
+  <div id="mediaspace"></div>
+</div>
+
+{if logged_in_member_group =='12'}
+  <h2><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Restricted.</h2>
+  <p>Unfortunately your access level does not allow you to view entries.</p>
+{if:else}
+
+{!-- Shows when status is not open. --}
+{!-- Commenting out because a live stream VOD recording IS complete.
+{if status != "open"}
+  <div id="message_board"><p><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> This concert entry is not completed. ({status}) <span id="percentage_complete"></span></p></div>
+{/if}
+--}
+
+{if global_streaming == false AND archive_mux_vod_playback_id == ""}
+  <div id="message_board"><p> <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>This event may not have video.</p></div>
+{/if}
+
+{!-- Show a message to the user that the live stream recording is being played. --}
+{!-- Commenting out because we are not using post-production video as much, if at all.
+{if global_streaming == false AND archive_mux_vod_playback_id != ""}
+  <p class="notificaiton info"><i class="fa fa-info-circle" aria-hidden="true"></i> Live Stream Recording is Being Played. <span id="percentage_complete"></span></p>
+{/if}
+--}
+
+<section class="information_block">
+
+  <header>
+    <h4>{title} <br />{entry_date format="%F %j, %Y"} </h4>
+
+    <nav class="header_menu">
+
+
+        {!-- Only show video download here if the event is NOT featured. --}
+        {if live_stream == ""}
+
+          {!-- Show the re-processed video file if there was one attached --}
+          {if video_download_link}
+            {video_download_link}
+            {!--
+              <a id="disableContextMenu"
+                data-videodownload
+                data-videotype="program"                      
+                data-hj="video-download-media" 
+                type="video/mp4"
+                class="basic_button" 
+                title="mp4, h.264."
+                href="{site_url}{url}" 
+                download="{filename}.{extension}">Download</a>
+            --}
+            {/video_download_link}
+
+          {if:elseif archive_mux_vod_playback_id}
+
+          {!-- MUX --}
+            {!--
+            <a
+              data-videodownload
+              data-videotype="program"                      
+              data-hj="video-download-media" 
+              type="video/mp4"
+              class="basic_button" 
+              title="mp4, h.264."
+              href="https://stream.mux.com/{archive_mux_vod_playback_id}/high.mp4?download={entry_id}.mp4" 
+              download="{entry_id}.{extension}">Download</a>
+            --}
+
+          {!-- Show the top bitrate that would have been automatically generated from the encoder. --}
+          {if:else}
+            {!--
+            <a href="/comstreaming/{entry_date format='%Y'}/{entry_date format='%m'}/{entry_id}/{entry_date format='%Y-%m-%d-'}{entry_id}-1.mp4" download="{entry_date format="%M %j, %Y"} {title}" class="basic_button">Download</a>
+            --}
+          {/if}
+        {/if}
+
+      {!-- Removing PIP button because JW Player handles it natively now.
+      <button id="pipButton" class="basic_button tippy" hidden title="Picture in Picture" style="line-height:0"><img src="/images/pip.gif" width="25" height="10" alt="Picture in Picture mode"></button>
+      --}
+
+      <a href="{entry_id_path=downloads/item}" class="basic_button" title="Return to this Entry">Back to Entry</a>
+      
+      {if logged_in_member_group == 1 OR logged_in_member_group == 6}
+        <button id="changeFeed" class="admin_only basic_button">Next Feed</button>
+      {/if}      
+    
+    </nav>
+  </header>
+
+  <!--{!-- Check if there are actually chapters --} -->
+
+  {ondemand_chapters_grid limit="1"}
+    {if ondemand_chapters_grid:chapter_location_human}
+      <div id="chapterlist"></div>
+    {if:else}
+      <p style="color:#616161">No track markers set for this concert.</p>
+    {/if}
+  {/ondemand_chapters_grid}
+
+
+
+  <p class="legal_notice">Subject to the requirements set forth in Section 108(f)(1) of the Copyright Act, making a copy or the subsequent distribution of material accessed through this electronic reserve is strictly prohibited.</p>
+
+
+</section><!-- meta -->
+
+
+{embed=a/js}
+<script src="https://content.jwplatform.com/libraries/3ngmM3Mg.js"></script>
+<!--<link rel="stylesheet" href="{stylesheet=media/styles}" />-->
+
+<script src="https://src.litix.io/jwplayer/3/jwplayer-mux.js"></script>
+<!--<script src="/js/jwplayer-mux.js"></script>-->
+
+<script>
+
+//*********************************** Global ***********************************//
+{if logged_in_member_group == 1}
+  const vDebug = true;
+  if(vDebug){console.log('Debug Enabled.');}
+{if:else}
+  const vDebug = false;
+{/if}
+//
+
+const meta = {
+  "year"        : "{entry_date format='%Y'}",
+  "month"       : "{entry_date format='%m'}",
+  "entry_id"    : "{entry_id}",
+  "status"      : "{status}",
+  "euid"        : "{archive_euid}",
+  "type"        : "{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}",
+  "ondemand"    : {if global_streaming}true{if:else}false{/if}, //
+  "jw_media_id"     : '{archive_jw_media_id}',
+  "archive_mux_vod_playback_id" : {if archive_mux_vod_playback_id}"{archive_mux_vod_playback_id}"{if:else}false{/if}, //
+  "user_ip"         : "{logged_in_ip_address}",
+  "duration"        : {if archive_playtime_duration}{archive_playtime_duration}{if:else}0{/if}
+}
+//
+
+/** Jump to a specific time when the page loads. **/
+const urlParams = new URLSearchParams(window.location.search);
+const requestedTimeJump = urlParams.get('t') * 1;
+
+
+
+
+/*********************** Streaming Links ***************************/
+var playback_count = 0;
+let playback = [
+
+  {if global_streaming != ""}
+    {if status=='open'}
+      {
+        'name' : 'vod_fastly',
+        'url'  : `https://untcomstreaming.freetls.fastly.net/vod/website/${meta.year}/${meta.month}/${meta.entry_id}/smil:${meta.entry_id}.smil/playlist.m3u8`
+      },
+    {/if}
+
+    {
+      'name'  : 'vod_wowza',
+      'url'   : `https://54edc27ad2b3c.streamlock.net:443/vod/website/${meta.year}/${meta.month}/${meta.entry_id}/smil:${meta.entry_id}.smil/playlist.m3u8`
+    },
+  {/if} 
+
+  {if archive_mux_vod_playback_id}
+    {
+      'name' : 'vod_mux',
+      'url'  : 'https://stream.mux.com/{archive_mux_vod_playback_id}.m3u8'
+    },
+  {/if}
+
+  {if video_download_link AND status == "open"}
+    {video_download_link limit="1"}
+    {
+      'name' : 'mp4',
+      'url'  : '{url}'
+    },
+    {/video_download_link}
+  {/if}
+
+]
+///*** `///
+
+
+// Remove Fastly for Campus IP and non-Ensemble.
+if ( isCampusIP(meta.user_ip) === true || !meta.type.includes('Ensemble') )
+{
+  // Return renditions that are not fastly.  Removes fastly.
+  playback = playback.filter( rendition => { return rendition.name != 'vod_fastly'});
+}
+
+if(vDebug){console.debug("Playback Array:",playback)};
+
+/***************************/
+
+// Get any saved position from the last playback from LocalStorage.
+let savedTime = localStorage.getItem('vod_last_position-{entry_id}');
+
+
+
+function secondsToTime(seconds) {
+
+  // Time as 00:00:00
+  var time = {};
+  time.full = new Date(seconds * 1000).toISOString().substring(11, 19);
+
+  const splitTime = time.full.split(':');
+
+  time.pretty = time.full;  
+
+  if (splitTime[0] == '00') {
+    // remove hours.
+    if (splitTime[0] == "00") {
+      time.pretty = time.full.substr(3);
+    }
+
+    // Remove minutes.
+    if (splitTime[1] == "00") {
+      time.pretty = ":"+time.pretty.substr(3);
+    }
+  }
+
+  // Remove starting zero.
+  time.pretty = time.pretty.replace(/^0+/, '');
+
+  if (splitTime.length == 0) {
+    time.pretty = ":"+time.pretty;
+  }
+
+  return time;
+}
+
+
+function isCampusIP(user_ip) {
+  if (user_ip === "") {
+    return false;
+  }
+
+  let ip_array = user_ip.split(".");
+
+  if ( ip_array[0] == "129" && ip_array[1] == "120" ) {
+    return true;
+  } else {
+    return false;
+  }
+
+}
+
+/************************ Keen Tracking Event ******************/
+function logEvent(eventType, eventObj) {
+
+  /*
+  ga('send', {
+    hitType: 'event',
+    eventCategory: 'VOD',
+    eventAction: eventType,
+    eventLabel: {entry_id}
+  });
+  */  
+
+
+  /*
+  let initial_data = {
+    "ee_user_id"  : {logged_in_member_id},
+    "member_group": {logged_in_group_id},
+    "member_group_name" : "{logged_in_group_title}",    
+
+    "title"       : "{entry_date format='%M %d, %Y'} {title}",
+    "entry_id"    : {entry_id},
+    "date"        : "{entry_date format='%M %d, %Y'}",
+    "year"        : "{entry_date format='%Y'}",
+    "ensemble"    : "{related_ensembles_v2 backspace='2'}{related_ensembles_v2:title}, {/related_ensembles_v2}",
+    "instrument"  : "{archive_instrument backspace='2'}{archive_instrument:title}, {/archive_instrument}",
+    "recitaltype" : "{archive_recital_type backspace='2'}{archive_recital_type:title}, {/archive_recital_type}",
+    "room"        : "{room backspace='2'}{room:title}, {/room}",
+    "timestamp"   : new Date().toISOString(), // for Keen time parser.
+    //"accesstime"  : "{current_time format='%Y-%m-%d'}",    
+  };
+
+  let event_data;
+  if (eventObj) {
+    event_data = {...initial_data, ...eventObj};
+  } else {
+    event_data = eventObj;
+  }
+  */
+
+  FS.event(eventType, eventObj);
+ 
+
+}
+//* End */
+
+
+//*********************************** Helper functions /***********************************/
+
+
+
+//***************** Create or Update the JW Platform that the streaming video exists.
+async function updateJWplatform() {
+  if(vDebug){console.debug('Updating JW Platform...');}
+
+  let link;
+
+  if (meta.jw_media_id == ''){
+    link = '/media/jw_api/'+meta.entry_id+'/create/';
+
+    let jw_response = await fetch(link).then(response=>{return response.json()});
+    
+    if(vDebug){console.debug("Update JW Platform response: ", link, jw_response)};
+
+    return await jw_response;
+
+  }
+}
+
+//***************** Chapter List JSON ***************/
+const chaptermarkers = {
+  "items" : [
+    {ondemand_chapters_grid backspace="1"}
+    {
+      "piece"         : {if ondemand_chapters_grid:name_of_piece}{exp:ce_str:ing json_encode}{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_piece}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "composer"      : {if ondemand_chapters_grid:name_of_composer}{exp:ce_str:ing json_encode}{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_composer}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "arranger"      : {if ondemand_chapters_grid:name_of_arranger}{exp:ce_str:ing json_encode}{exp:char_limit total="50" exact="no"}{ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}{/exp:ce_str:ing}{if:else}""{/if},
+      "movements"     : {if ondemand_chapters_grid:movements}{exp:ce_str:ing nl2br json_encode}{ondemand_chapters_grid:movements}{/exp:ce_str:ing}{if:else}""{/if},
+      "performers"    : {if ondemand_chapters_grid:performers}{exp:ce_str:ing json_encode}{ondemand_chapters_grid:performers}{/exp:ce_str:ing}{if:else}""{/if},      
+      "marker"        : "{exp:timetoseconds:convert time='{ondemand_chapters_grid:chapter_location_human}'}",
+      "markerhuman"   : "{ondemand_chapters_grid:chapter_location_human}",
+      "rowid"         : "{ondemand_chapters_grid:field_row_count}",
+      "prefixedrowid" : "row-{ondemand_chapters_grid:field_row_count}"
+    },{/ondemand_chapters_grid}
+  ]
+}
+//* color formatting break. *//
+
+//*****************  Show Chapter Marker List ***************/
+function displayChapterMarks() {
+
+  if (chaptermarkers.items.length > 0 && meta.ondemand == true) {
+
+    // Create the chapter list HTML markup and assign it to a var.
+    var chapterlist="<section class='programlist clickable'>";
+
+    for (var i=0; i<chaptermarkers.items.length; i++) {
+      chapterlist+="<article data-playercontrol='"+chaptermarkers.items[i].marker+"' data-track='"+i+"' class='program_row "+chaptermarkers.items[i].prefixedrowid+"'><div class='row'>"+chaptermarkers.items[i].rowid+".</div><div class='time'>"+chaptermarkers.items[i].markerhuman+"</div><div class='time_track'></div><div class='piece'>"+chaptermarkers.items[i].piece+"</div><div class='composer'>"+chaptermarkers.items[i].composer+"</div><div class='arranger'>"+chaptermarkers.items[i].arranger+"</div></article>";
+    }
+    chapterlist+="</section>";
+
+    // Put the chapter list in the DOM.
+    try {
+      document.querySelector('#chapterlist').innerHTML = chapterlist;
+    } catch {
+      console.debug('No Chapters.');
+    }
+    
+  }
+}
+
+
+
+/************** Restart where last left off based on local storage ***************/
+function updateSavedPosition(player) {
+  window.setInterval(updatePosition, 6000);
+
+  function updatePosition() {
+    localStorage.setItem('vod_last_position-{entry_id}', Math.round(player.getPosition()) );
+  }
+}
+
+
+//******************************  JW Player internal streaming ********************************
+
+function bootPlayer() {
+
+  updateJWplatform();  
+  iniJWPlayer();
+
+  let feedbutton = document.querySelector('#changeFeed');
+  if (feedbutton) {
+    feedbutton.addEventListener('click', () => {
+      activateChangeFeed();
+    })
+  }
+
+}
+
+
+function activateChangeFeed() {
+    playback_count++;
+
+    if (playback_count > playback.length ) {
+      playback_count = 0;
+    }
+    iniJWPlayer();
+}
+
+
+async function iniJWPlayer() {
+  if(vDebug){console.debug('Starting Player...');}
+  var currentChapter = 0;
+  
+  const player = jwplayer('mediaspace');
+
+  if(vDebug){console.debug("Attempting: ", playback[playback_count])};
+
+  const jwplayerSetup = {
+    'width' : '100%',
+    'height' : '100%',
+    'autostart' : true,
+    'cast':{
+      appid:"3D9E046F",
+      loadscreen:'{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{/if}',
+      endscreen:'{site_url}{if ondemand_image}{exp:ce_img:pair src="{ondemand_image}" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{if:else}{exp:ce_img:pair src="/images/default.png" width="1920" height="1080" crop="yes"}{made}{/exp:ce_img:pair}{/if}',
+      logo:'{site_url}{exp:ce_img:pair src="/images/college_of_music_white.png" width="200"}{made}{/exp:ce_img:pair}',
+      railcolor:"#BAE197"
+    },
+    'playlist' : [{
+      //'preload': 'none',  //options: auto & metadata.  None since Wowza won't do this.
+      'title' : '{entry_date format="%M %j, %Y"} {title}',
+      'image' : '{exp:ce_img:pair src="/images/default_dark.png" width="1920" height="1080"}{made}{/exp:ce_img:pair}',
+      
+      {if archive_jw_media_id}
+      'mediaid': meta.jw_media_id,
+      {/if}
+
+      'tracks' : [{
+        'file' : '/media/webvtt/{entry_id}/chapters.vtt',
+        'kind' : 'chapters'
+
+        {if archive_mux_vod_playback_id AND !global_streaming}
+          ,'file'  : 'https://image.mux.com/{archive_mux_vod_playback_id}/storyboard.vtt',
+          'kind' : "thumbnails"
+        {/if}
+
+      }],          
+      'sources' : [
+        /** HLS SSL **/
+        {
+          'file' : playback[playback_count].url
+        }          
+      ]
+    }],
+  };
+
+
+  // Add Storyboard for Mux Playback.
+  if (playback[playback_count].name == 'vod_mux') {
+    jwplayerSetup.playlist[0].tracks.push( {
+      'file'  : 'https://image.mux.com/{archive_mux_vod_playback_id}/storyboard.vtt',
+      'kind' : "thumbnails"      
+    } );
+  }
+
+
+
+  // This will start JW Player.
+  player.setup(jwplayerSetup);
+
+  // Add MUX Data
+  console.debug("Playing ",playback[playback_count].name);
+    initJWPlayerMux(player, {
+      debug: false,
+      data: {
+        env_key: 'ous9tqsjn5svmi1jm4qbnl0ei',
+        player_name: 'VOD', 
+        player_init_time: window.muxPlayerInitTime,
+        viewer_user_id: {logged_in_member_id},
+        page_type:"watchpage",
+        video_content_type: "event",
+        video_id: {entry_id},
+        video_title: "{entry_date format="%Y-%m-%j"}-{entry_id}-{title}",
+        video_stream_type: playback[playback_count].name,
+        video_cdn: playback[playback_count].name
+      }
+    });
+
+
+  player.on('setupError', function(event) {
+    // .message is the JW error returned.
+    console.debug('Setup Error:',event.message);
+    logEvent('jwplayer-setupError');
+
+  });
+
+  player.on('error', async function(error) {
+    if(vDebug){console.debug('JW Error:', error)};
+    logEvent('jwplayer-error');
+    logEvent(error.code);
+    logEvent(error.sourceError.details);
+    logEvent(error.sourceError.type);
+
+    if (error.sourceError.fatal === true) {
+
+      playback_count++;
+
+      if (playback_count < playback.length ) {
+        player.remove();
+        iniJWPlayer();
+      } else {
+        player.remove();
+        logEvent('jwplayer-fail: '+meta.entry_id);
+        errorMessage('<strong>The stream was not able to start.</strong><br />A system might be down, and an error report was sent.');
+        let infoblock = document.querySelector('.full_screen_overlay');
+        infoblock.innerHTML = "<h2>Playback is offline</h2>";
+      }
+
+    }
+
+  });
+
+  player.on('ready', function(){
+
+    // Remove Loading Icon.
+    let loadingIcon = document.querySelector('#firstLoadingIcon');
+    if (loadingIcon) {
+      loadingIcon.classList.add('fadeOut');
+      setTimeout( () => {
+        loadingIcon.remove();
+      }, 500);
+    }
+
+    // Chapter Marker Seek Action.
+    // On click, Jump the video to the second off-set using the data-playercontrol attribute on the element.
+    document.querySelectorAll('[data-playercontrol]').forEach( item => { 
+      item.addEventListener('click', function(event) {
+
+        logEvent('video-chapter-click');
+
+        // Get current track from HTML dataset.  Zero-index, so add one.
+        currentChapter = this.dataset.track;
+
+        //currentChapter = $('#chapterlist').find('.program_row').index(this);
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+
+        // change var to a number type.
+        seekTime = seekTime * 1;
+
+        // Seek player to time.
+        jwplayer().seek( seekTime );
+      });
+    });
+
+    let div_row = document.querySelectorAll('.program_row');
+
+    // Update which track is currently active.
+    jwplayer().on('time', function(event) {
+
+      // There are markers, and there is timecode in the first one.
+      if (chaptermarkers.items.length > 0 && chaptermarkers.items[0].markerhuman !='' && meta.ondemand == true) {
+
+        // Find the chapter in the JSON list, and pull the time.
+        var results = chaptermarkers.items.filter(function (el) {
+          return el.marker < event.position + 1; // +1 for better highlighting.
+        });
+        // Make sure the search finds something otherwise Console lights up with undefined var errors.
+        if(results.length != 0) {
+          let activeRow = results[results.length - 1].prefixedrowid;
+          // returns chapter number.
+          currentChapter = results.length - 1;
+          
+          div_row.forEach( item => {
+            item.classList.remove('active');
+          });
+
+          try {
+            document.querySelector('.programlist .'+activeRow).classList.add('active');
+          } catch(error) {}
+
+
+
+
+          /************** Calculate Times as it plays *************/
+
+          // Remove time for other rows.
+          div_row.forEach( item => {
+            if ( item.dataset.track != currentChapter ) {
+              item.querySelector('.time_track').textContent = "";
+            }
+          });
+
+          // Calculate and Update Relative Time.
+          let track_time_seconds = Math.round(event.position) - results[currentChapter].marker; // playhead position - marker position.
+          let track_time = secondsToTime(track_time_seconds+1);
+
+
+
+          let track_time_remaining_seconds = 0;
+
+          if (currentChapter < chaptermarkers.items.length - 1 ) {
+            track_time_remaining_seconds = chaptermarkers.items[currentChapter + 1].marker - Math.round(event.position);
+          } else {
+            track_time_remaining_seconds = meta.duration*1 - Math.round(event.position);
+          }
+
+          let track_time_remaining = secondsToTime(track_time_remaining_seconds);
+
+          //console.log(track_time_remaining, track_time_remaining_seconds);
+
+          document.querySelector('[data-track="'+currentChapter+'"] > .time_track').innerHTML = "<span class='track_time_elapsed'>"+track_time.pretty+"</span> <span class='track_time_remaining'>-"+track_time_remaining.pretty+"</span>";
+
+        } else {
+          // Before a chapter marker begins.
+
+          // Remove all timestamps.
+          div_row.forEach( item => {
+            item.querySelector('.time_track').textContent = "";
+          });
+
+        }
+      }
+    });
+
+    /** Change quality level to lowest on seeking to improve playback performance, then put back to auto.**/
+    jwplayer().on('seek', function(e){
+      let lowest = jwplayer().getQualityLevels().length - 1;
+      jwplayer().setCurrentQuality(lowest);
+    });    
+
+    jwplayer().on('seeked', function(e){
+      jwplayer().setCurrentQuality(0);
+    });
+
+    function playpause() {
+      if (jwplayer().getState() == 'paused') {
+        jwplayer().play();
+      } else {
+        jwplayer().pause();
+      }
+    }
+    function skipAhead() {
+      var currentPosition = jwplayer().getPosition();
+      // skip 5 seconds.
+      var newPosition = currentPosition + 5;
+      jwplayer().seek(newPosition);
+    }
+    function skipBackwards() {
+      var currentPosition = jwplayer().getPosition();
+      // skip 5 seconds.
+      var newPosition = currentPosition - 5;
+      jwplayer().seek(newPosition);
+    }
+    function playNextChapter() {
+      currentChapter++;
+      if(currentChapter > chaptermarkers.items.length - 1) {
+        currentChapter = '0';
+        var seekTime = chaptermarkers.items[0].marker;
+      }else{
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+      }
+      jwplayer().seek( seekTime );
+    }
+    function playPreviousChapter() {
+      currentChapter--;
+      // If at the beginning and go up, then go to the end.
+      if(currentChapter < 0) {
+        var seekTime = chaptermarkers.items[chaptermarkers.items.length - 1].marker;
+      } else {
+        var seekTime = chaptermarkers.items[currentChapter].marker;
+      }
+      jwplayer().seek( seekTime );
+    }
+
+
+  });// End on-ready.
+
+
+
+
+
+  jwplayer().on('firstFrame', () => {
+    if(vDebug){console.debug('First Frame')};
+    logEvent('video-firstplay');
+
+
+
+    // Log Same EUID.
+    const entry_euid = meta.euid;
+    const logged_in_euid = "{logged_in_username}"; // EE populated.
+    if (entry_euid == logged_in_euid) {
+      console.debug("EUIDs match.");
+      logEvent("video-euid_match");
+    }
+
+    // Days between concert and access.
+    let now         = new Date();
+    let entry_date  = new Date( '{entry_date format="{DATE_ISO8601}"}' );
+    let diff        = now.getTime() - entry_date.getTime();
+    let diff_days   = diff / (1000 * 3600 * 24);
+    FS.event('video-access_lapse', {"days" : Math.round(diff_days)});
+
+    if (playback[playback_count].name == 'vod_mux' && playback_count != 0) {
+
+        new Noty({
+          text: '<strong>Playing live stream recording</strong><br />- Primary stream might be down.<br />- Chapter markers may be incorrect.',
+          type: 'error',
+          theme: 'nest',
+          timeout: 20000
+      }).show();
+
+    }
+
+    {if logged_in_member_group == 1}
+
+      new Noty({
+          text: 'Playing: '+playback[playback_count].name,
+          type: 'success',
+          theme: 'nest',
+          timeout: 3000,
+          layout: 'topLeft'
+      }).show();
+
+    {/if}
+
+
+    // If muted, show a message.
+    /*
+    if(jwplayer().getMute()){
+      noticeMessage('Pst...Volume is Muted');
+    }
+    if(jwplayer().getVolume() < 2){
+      noticeMessage('Pst...Volume is Muted');
+    }
+    */
+
+    jwplayer().setVolume(100);
+
+    // Put quality back to auto.
+    //jwplayer().setCurrentQuality(0); 
+
+    // If there was a saved position, resume.
+    if (savedTime) {
+      player.seek(savedTime);
+      player.play();
+    }
+
+    updateSavedPosition(player);
+
+    if (requestedTimeJump || requestedTimeJump == 0) {
+      player.seek(requestedTimeJump);
+      player.play();
+    }
+
+    // Tracking Events //
+    jwplayer().on('play', function(e){
+      logEvent('video-play');
+    });
+    jwplayer().on('seek', function(e){
+      logEvent('video-seek');
+    });
+    jwplayer().on('pause', function(e){
+      logEvent('video-pause');
+    });
+    jwplayer().on('volume', function(e){
+      logEvent('video-volumechange');
+    });
+    jwplayer().on('fullscreen', function(e){
+      logEvent('video-fullscreen');
+    });
+    /* Needs throttling for tag tragging. */
+    jwplayer().on('resize', function(e){
+      if(vDebug){console.debug('resizing...',e)};
+    });
+    jwplayer().on('displayClick', function(e){
+      logEvent('video-displayClick');
+    });
+    /* Track the number of times a buffer stalled. */
+    /*
+    jwplayer().on('buffer', function(e){
+      if (e.reason === 'stalled' || e.reason === 'error') {
+        console.log('Buffer Stalled or Errored.'+e.reason);
+        console.log(e);
+      }
+    });
+    */
+    jwplayer().on('bufferChange', function(e){
+      if(e.bufferPercent <=0){
+        console.debug('Buffer Underrun.', e);
+      }
+      //This generates events every second.  if(vDebug){console.group();console.log('BufferChnage: ');console.log(e);console.groupEnd()};
+    });
+
+    if (vDebug) {
+
+      player.on('visualQuality', function(e){
+        //logEvent('video-q-'+e.level.index);
+        //console.log("Quality Level: "+e.level.index);
+      });
+
+      player.on('levelsChanged', function(e){
+      });
+
+      player.on('levels', function(e){
+      });
+
+    }
+
+    player.on('visualQuality', function(e){
+      logEvent('video-q-'+e.level.index);
+    });
+
+
+    console.debug( 'Ad Block: '+player.getAdBlock() );
+    try {
+      FS.event("adblock", {'true_bool' : true});
+    } catch(error) {
+      console.debug('Adblock event failed.');
+    }
+
+
+    /*********** Picture in Picture Mode **********/
+    /*
+    const jwElements      = player.getContainer();
+    const jwVideo         = jwElements.querySelector('.jw-video');
+    const pipButton       = document.querySelector('#pipButton');
+    let safariPipSupport  = false;
+    let chromePipSupport  = false;
+
+
+    //**** Safari ****
+    if (jwVideo.webkitSupportsPresentationMode && typeof jwVideo.webkitSetPresentationMode === "function") {
+      safariPipSupport = true;
+      // Toggle PiP when the user clicks the button.
+      pipButton.addEventListener("click", function(event) {
+        jwVideo.webkitSetPresentationMode(jwVideo.webkitPresentationMode === "picture-in-picture" ? "inline" : "picture-in-picture");
+      });
+    }
+
+    //** Everything Else ***
+    if ('pictureInPictureEnabled' in document) {
+      chromePipSupport = true;   
+      pipButton.addEventListener('click', async function(event) {
+        try {
+          if (jwVideo !== document.pictureInPictureElement)
+            await jwVideo.requestPictureInPicture();
+          else
+            await document.exitPictureInPicture();
+        } catch(error) {
+          console.log(`> Argh! ${error}`);
+        }
+      });
+    }
+
+    // Show button if it is supported in either platform.
+    if (chromePipSupport || safariPipSupport) {
+      pipButton.hidden = false;
+    }
+    */
+
+
+    // Update the URL to include the time.
+    /*
+    function timeUpdate() {
+      history.replaceState(undefined, undefined, "/media/playvideo/{entry_id}?t=" + Math.round(player.getPosition()));
+    }
+    var urlTimeUpdate = setInterval(timeUpdate,5000);
+    */
+
+  });// On First Frame.
+
+} // function.
+
+
+
+
+
+/***************** Encoder Processing Status ******************/
+async function encodingStatusStart() {
+  let entry_id = {segment_3};
+  let element  =  document.querySelector('#percentage_complete');
+
+  const jobs = await fetch('/sys/elemental/server_current.json')
+    .then( response => {return response.json()} )
+    .catch( error => { console.debug("Error getting Elemental JSON: ", error) });
+
+  if (await jobs) {
+    getEncodingStatus(entry_id, element, jobs);
+  }
+}
+
+async function getEncodingStatus(entry_id, div_percentage, jobs) {
+
+  //let div_percentage = element.querySelector('#percentage_complete');
+  let percentage = 0;
+
+  if (jobs.hasOwnProperty('empty')) {
+    if (jobs.empty == 'There are currently no jobs') {
+      console.debug('No Jobs listed in Encoder.');
+      return;
+    }
+  }
+
+  //console.log(jobs, entry_id);
+
+  // Gets the generic data of the job that matches this entry.
+  let job = await findMachingJob(entry_id, jobs);
+
+  if (job == undefined) {
+    console.debug('Could not find matching encoder job.');
+    return;
+  }
+
+  console.group('Processing:');
+  console.debug("Entry ID: "+entry_id);
+
+  switch(true) {
+
+    case job.status == "complete" :
+    case job.status == "postprocessing" :
+      console.debug('Encoder: "'+job.status+'"');
+      div_percentage.textContent = "Processing Complete.";
+      break
+
+    case job.status == "error" :
+      console.debug("Elemental Errored.");
+      break;
+
+    case job.status == "running" :
+    case job.status == "pending" :
+      console.debug('Encoder "'+job.status+'" at '+job.pct_complete+"%");
+
+      // Update Percentage.
+      if (job.status=="pending") {
+        div_percentage.textContent = "In Line, Waiting to Process...";
+      }      
+      if (job.status=="running") {
+        div_percentage.textContent = "Processing: " + job.pct_complete + "%";
+      }
+
+      // Parsex out the job ID.
+      let link        = job['@attributes'].href;
+      let link_array  = link.split('/');
+      let job_id      = link_array[2];
+      console.debug('Encoder Job ID:', job_id);
+      break;
+
+
+    default:
+      console.error('Status not accounted for: ', job.status);
+  }
+  console.groupEnd();
+}
+
+async function findMachingJob(entry_id, jobs) {
+
+  let matchingJob;
+
+  // Just objects don't work yet.
+  // PHP script changes from array to object when there is only one job.
+  if ( typeof(jobs == 'object') ) {
+    jobs['job'] = jobs.job;
+  }
+
+  jobs['job'].forEach( item => {
+
+    // Parse out the ExpressionEngine from the filename.
+    let uri = item.input.file_input.uri; // File path.
+    let uri_array = uri.split("/"); // Split path to array.
+    let filename = uri_array.slice(-1)[0]; // Get the last item, should be filename.
+    let filename_array = filename.split("-"); // split filename into array.
+    let ee_id = filename_array[3]; // get the second to last, should be the EE ID.
+
+    // Check for conductor camera.
+    let title = filename_array[4];
+    // let isConductorCam = title.toLowerCase().indexOf("cc");
+
+    //if (ee_id == entry_id && isConductorCam === -1 ) {
+    if (ee_id == entry_id) {
+      matchingJob = item;
+    }
+  });
+  return matchingJob;
+}
+
+
+async function screenlock() {
+    
+    if ('wakeLock' in navigator === false) {
+        return;
+    }
+    // Function that attempts to request a screen wake lock.
+    const requestWakeLock = async () => {
+        let wakeLock = null;
+
+        try {
+            wakeLock = await navigator.wakeLock.request();
+            wakeLock.addEventListener('release', () => {
+            console.debug('Screen Wake Lock released:', wakeLock.released);
+            });
+            console.debug('Screen Wake Lock released:', wakeLock.released);
+            return wakeLock;
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+        }
+    };
+    
+    // Request a screen wake lock…
+    let wakeLock = await requestWakeLock();
+
+    // …and release it again after 5s.
+    /*
+    window.setTimeout(() => {
+    wakeLock.release();
+    console.log(wakeLock);
+    test = null;
+    }, 5000);
+    */
+
+    const handleVisibilityChange = async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return requestWakeLock;
+};
+screenlock();
+
+
+
+
+{if !global_streaming}
+  encodingStatusStart();
+  let encodingInterval = setInterval( encodingStatusStart, 30000);
+{/if}
+
+
+displayChapterMarks();
+bootPlayer();
+
+
+
+
+
+
+</script>
+
+
+{/if}{!-- member group is 12 --}
+{/exp:channel:entries}
+
+{embed=a/f}

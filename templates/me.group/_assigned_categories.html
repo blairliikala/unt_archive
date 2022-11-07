@@ -1,0 +1,101 @@
+<!--{total_queries} Queries :: {memory_usage} of Memory :: {elapsed_time} :: Seconds to Build.-->
+{!--
+
+  Performance Categories assigned from the performance category entry.  Will show all concerts in one list.
+
+
+  I think I deleted the field this is looking for.
+
+
+  
+
+--}
+{exp:query sql="SELECT entry_id FROM exp_channel_data WHERE field_id_338 LIKE '%{logged_in_username}%'"}
+{exp:channel:entries 
+  channel="performance_categories" 
+  disable="pagination|categories|member_data" 
+  entry_id="{entry_id}" 
+  orderby="title" 
+  sort="asc" 
+  cache="yes" refresh="500" 
+}
+
+{if count==1}
+  <!--<h2>Performance Categories <i class="fa fa-info" title="These were assigned to you by RS" class="tippy"></i></h2>-->
+{/if}
+
+<!-- Ensembles -->
+{parents orderby="title"}
+  <section class="scroll_group">
+    <header class="scroll_group_header">
+      <div class="scroll_group_image">
+      {exp:ce_img:pair src="{parents:default_picture}" width="150" height="150" crop="yes" save_type="jpg" fallback_src="/images/default.png"}
+        <a href="{site_url}/downloads/byensemble/{parents:entry_id}"><img src="{made}" alt="{parents:title}" title="Open {parents:title}" class="scroll_group_header_image" intrinsicsize="150x150" /></a>
+      {/exp:ce_img:pair}
+      </div>
+      <h2 class="scroll_group_title"><a href="{site_url}/downloads/byensemble/{parents:entry_id}">{title}: {parents:title}</a></h2>
+      <a href="{site_url}/feeds/downloads-by-ensemble/{parents:entry_id}" class="basic_button tippy" title="RSS feed of this Ensemble"><span class="fa fa-rss"></span></a>
+    </header>
+    <div class="scroll_group_items">
+
+  <!-- Entries -->
+  {parents:parents show_expired="yes" show_future_entries="yes" orderby="date" limit="11"}
+    <div class="scroll_group_item"> 
+
+      {if parents:parents:expiration_date > current_time}
+        <a href="{site_url}/live/event/{parents:parents:entry_id}" data-hjtag="assigned-categories">
+      {if:else}
+        <a href="{site_url}/downloads/item/{parents:parents:entry_id}" data-hjtag="assigned-categories">
+      {/if}
+
+        <div class="scroll_group_item_img_container">
+        <div class="scroll_group_item_img_container2">
+        {if parents:parents:ondemand_image}
+          {exp:ce_img:pair src="{parents:parents:ondemand_image}" width="400" height="225" crop="yes" save_type="jpg"}
+          <img src="{made}" title="{parents:parents:title}" alt="{parents:parents:title}" width="{width}" height="{height}">
+          {/exp:ce_img:pair}
+        {if:else}
+          {if parents:parents:related_ensembles_v2 AND '{parents:parents:related_ensembles_v2:default_picture}' }
+            {parents:parents:related_ensembles_v2 limit='1'}
+              {exp:ce_img:pair src="{parents:related_ensembles_v2:default_picture}" width="400" height="225" crop="yes" save_type="jpg"}
+              <img src="{made}" title="{parents:parents:title}" alt="{parents:parents:title}" width="{width}" height="{height}">
+              {/exp:ce_img:pair}
+            {/parents:parents:related_ensembles_v2}
+          {if:else}
+            {if parents:parents:archive_faculty_notificaiton AND '{parents:parents:archive_faculty_notificaiton:faculty_photo:server_path}' }
+                {exp:ce_img:pair src="{parents:parents:archive_faculty_notificaiton:faculty_photo:server_path}" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{parents:parents:title}" alt="{parents:parents:title}" width="{width}" height="{height}">
+                {/exp:ce_img:pair}
+            {if:else}
+              {if '{parents:parents:room:room_primary_image:server_path}' }
+                {exp:ce_img:pair src="{parents:parents:room:room_primary_image:server_path}" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{parents:parents:title}" alt="{parents:parents:title}" width="{width}" height="{height}">
+                {/exp:ce_img:pair}
+              {if:else}
+                {exp:ce_img:pair src="/images/default.png" width="400" height="225" crop="yes" save_type="jpg"}
+                <img src="{made}" title="{parents:parents:title}" alt="{parents:parents:title}" width="{width}" height="{height}">
+                {/exp:ce_img:pair}
+              {/if}
+            {/if}       
+          {/if}
+        {/if}
+        </div></div>
+        <section class="scroll_group_item_meta">
+          <h4>{exp:char_limit total="30"}{parents:parents:title}{/exp:char_limit}</h4>
+          <p>{parents:parents:entry_date format="%F %j, %Y"}</p>
+        </section>
+      </a>
+    </div>
+
+    {if parents:parents:count == parents:parents:total_results}
+    </div><!-- scroll group items-->
+    </section><!-- scroll group -->
+    {/if}
+
+  {/parents:parents}
+{/parents}
+
+{if count==total_results}{/if}
+
+{/exp:channel:entries}
+{/exp:query}

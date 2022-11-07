@@ -1,0 +1,180 @@
+{embed=a/h title="Archive - WorksBy Ensemble" meta="Recordings listed by works for each ensemble"}
+{embed=downloads/_nav}
+
+{if segment_3 ==''}
+<p>Try an Entry ID first so it doesn't bomb the server.</p>
+{if:else}
+
+<style>
+table {
+  width:100%;
+}
+thead th {
+  padding:.4em .5em;
+}
+thead th:hover {
+  cursor: pointer;
+}
+tr, td {
+  white-space: initial;
+}
+@media (min-width:800px) {
+  table {font-size:13px;}
+}
+table thead th.active {
+  background: var(--greenone);
+}
+
+</style>
+
+<div id="content">
+
+  {exp:channel:entries
+    channel="ensembles" 
+    disable="member_data|categories" 
+    entry_id="{segment_3}"
+    cache="yes"
+    refresh="10000"
+    require_entry="yes" 
+  }
+
+  {if count=='1'}
+  <header class="ens_head">
+    <h1>{title}</h1>
+    <a href="{entry_id_path=feeds/downloads-by-ensemble}" class="basic_button tippy" title="RSS feed of this tag"><span class="fa fa-rss"></span></a>
+    <a href="webcal://recording.music.unt.edu/feeds/ical-ensemble/{related_ensembles_v2:entry_id}" class="basic_button tippy" title="Subscribe to live events in your Calendar"><i class="fa fa-calendar-plus-o"></i></a>
+    <a href="https://digital.library.unt.edu/explore/partners/UNTML/browse/?q='{title}'&t=fulltext&fq=untl_collection%3ACOMR" title="More at the Willis Library website" class="basic_button tippy">Library</a>
+    <a href="/{segment_1}/byensemble/{entry_id}" class="basic_button tippy" title="View Concerts Grouped by Date">By Date</a>
+  </header>
+
+  <p>This is an inital view of works by piece, more features to come soon.  Columns have basic sorting.</p>
+
+  <table id="tablesort">
+    <thead>
+        <tr>
+        <th data-type="string">Title</th>
+        <th data-type="string">Composer</th>
+        <th data-type="string">Arranger</th>
+        <th data-type="string">Concert</th>
+        <th data-type="number">Track</th>
+        <!--<th data-type="string">Timecode</th>-->
+      </tr>
+    </thead>
+    <tbody>
+  {/if}
+
+  {parents show_expired="yes" orderby="date" sort="desc"}
+  {parents:ondemand_chapters_grid}
+    <tr>
+      <td class="tracks_name">{exp:char_limit total="50"}{parents:ondemand_chapters_grid:name_of_piece}{/exp:char_limit}</td>
+      <td class="tracks_composer">{exp:char_limit total="50" exact="no"}{parents:ondemand_chapters_grid:name_of_composer}{/exp:char_limit}</td>
+      <td class="arranger">{exp:char_limit total="50" exact="no"}{parents:ondemand_chapters_grid:name_of_arranger}{/exp:char_limit}</td>
+      <td class="concert"><a href="{parents:entry_id_path=downloads/item}">{parents:entry_date format="%Y %F %j"} {exp:char_limit total="40"}{parents:title}{/exp:char_limit}</a></td>
+      <td class="tracks_count">{parents:ondemand_chapters_grid:count}</td>
+      <!--<td class="playvideo_offset"><a href="{site_url}/media/playvideo/{parents:entry_id}?t={exp:timetoseconds:convert time='{parents:ondemand_chapters_grid:chapter_location_human}'}">{parents:ondemand_chapters_grid:chapter_location_human}</a></td>-->
+    </tr>
+  {/parents:ondemand_chapters_grid}
+  {/parents}
+
+  {if count==total_results}
+  </tbody>
+  </table>
+  {/if}
+
+  {paginate}{pagination_links}
+    {if {total_pages} > 1}
+    <ul class="pagination">
+      <li>Page {current_page} of {total_pages}</li>
+      {first_page}<li><a href="{pagination_url}" class="page-first"><i class="fa fa-angle-double-left"></i> First Page</a></li>{/first_page}
+      {previous_page}<li><a href="{pagination_url}" class="page-previous"><i class="fa fa-angle-left"></i> Previous</a></li>{/previous_page}
+      {next_page}<li><a href="{pagination_url}" class="page-next">Next <i class="fa fa-angle-right"></i> </a></li>{/next_page}
+      {last_page}<li><a href="{pagination_url}" class="page-last">Last Page <i class="fa fa-angle-double-right"></i> </a></li>{/last_page}
+    </ul>
+    {/if}
+    {/pagination_links}{/paginate}    
+
+{/exp:channel:entries}
+</div>
+
+{/if}
+{embed=a/js}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+
+// Table Sorting.
+    const table = document.getElementById('tablesort');
+    const headers = table.querySelectorAll('th');
+    const tableBody = table.querySelector('tbody');
+    const rows = tableBody.querySelectorAll('tr');
+
+    // Track sort directions
+    const directions = Array.from(headers).map(function(header) {
+        return '';
+    });
+
+    // Transform the content of given cell in given column
+    const transform = function(index, content) {
+        // Get the data type of column
+        const type = headers[index].getAttribute('data-type');
+        switch (type) {
+            case 'number':
+                return parseFloat(content);
+            case 'string':
+            default:
+                return content;
+        }
+    };
+
+    const sortColumn = function(index) {
+        // Get the current direction
+        const direction = directions[index] || 'asc';
+
+        // A factor based on the direction
+        const multiplier = (direction === 'asc') ? 1 : -1;
+
+        const newRows = Array.from(rows);
+
+        newRows.sort(function(rowA, rowB) {
+            const cellA = rowA.querySelectorAll('td')[index].innerHTML;
+            const cellB = rowB.querySelectorAll('td')[index].innerHTML;
+
+            const a = transform(index, cellA);
+            const b = transform(index, cellB);    
+
+            switch (true) {
+                case a > b: return 1 * multiplier;
+                case a < b: return -1 * multiplier;
+                case a === b: return 0;
+            }
+        });
+
+        // Remove old rows
+        [].forEach.call(rows, function(row) {
+            tableBody.removeChild(row);
+        });
+
+        // Reverse the direction
+        directions[index] = direction === 'asc' ? 'desc' : 'asc';
+
+        // Append new row
+        newRows.forEach(function(newRow) {
+            tableBody.appendChild(newRow);
+        });
+    };
+
+    [].forEach.call(headers, function(header, index) {
+        header.addEventListener('click', function() {
+
+            [].forEach.call(headers, function(header2, index2) {
+              header2.classList.remove('active');
+            });
+
+            header.classList.add('active');
+            sortColumn(index);
+        });
+    });
+});
+</script>  
+
+{embed=a/f}

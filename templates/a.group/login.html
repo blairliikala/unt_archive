@@ -1,0 +1,88 @@
+{embed=a/h title="Login" meta="UNT Only"}
+
+		{if logged_in}
+			{redirect='downloads/index'}
+			{!--<p style="font-size:1.3em;padding:2em;text-align:center">You are logged in. <a href="{path=LOGOUT}">Logout</a></p>--}
+		{/if}
+
+
+
+		{if logged_out}
+			<div id="login_form">
+
+			<!--<p style="background:#ccc;color:white;font-weight:bold; padding:.5em 1em; margin:0 0 1em 0;border-radius:5px;font-size:1.5em">We did some recent work on the login today.  If you have problems let us know in the chat.</p>-->
+			<h3>Login:</h3>
+
+			<ul>
+			{exp:member:login_form 
+				id="the_actual_login_form" 
+				return="{segment_1}/{segment_2}/{segment_3}/{segment_4}/{segment_5}/{segment_6}"
+			}
+			
+			{!--{exp:member:login_form id="the_actual_login_form"}--}
+			<li>
+				<label>EUID <span>(abc001)</span> Or Educator Email</label>
+				<input 
+					type="text" 
+					inputmode="text"
+					name="username" 
+					maxlength="50" 
+					tabindex="1" 
+					autocorrect="off" 
+					autocapitalize="off" 
+					autocomplete="username" 
+					required 
+					autofocus 
+					pattern=".{5,}"
+				>
+			</li>
+			<li>
+				<label>Password</label>
+				<input
+					type="password" 
+					inputmode="text"	
+					name="password" 
+					tabindex="2" 
+					autocorrect="off" 
+					autocapitalize="off" 
+					autocomplete="current-password"
+					required 
+					pattern=".{5,}"
+				>
+			</li>
+			<li><button name="Log Me In" value="Submit" class="login_submit" id="submit" tabindex="3">Submit</button></li>
+			{/exp:member:login_form}
+			</ul>
+
+			<p>Archive is for educational use by students, and is not available to the public due to copyrights and permissions.</p>
+
+			<p><a href="{site_url}/me/forgot_password">Forgot Password?</a></p>
+
+			</div>
+		{/if}
+
+{embed=a/js}
+
+<script>
+const submit_button = document.querySelector('#submit');
+var triggered = false;
+submit_button.addEventListener("click", e => {
+    if(triggered) return;
+    triggered = true;
+	submit_button.insertAdjacentHTML('beforeend', ' <i class="fa fa-spinner fa-spin"></i>');
+});
+
+
+
+
+let f = function() {
+  this.classList.add('touched');
+}
+document.querySelectorAll('input').forEach((e) => {
+  e.addEventListener('blur', f, false)
+  e.addEventListener('keydown', f, false)
+})
+
+</script>
+
+{embed=a/f}

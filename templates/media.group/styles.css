@@ -1,0 +1,233 @@
+/*** Dark mode styles copied in.  This is hacky!! *****/
+:root{
+    --greenone:   #78AA67;
+    --greentwo:   #5C7456;
+    --greenthree: #4F7F24;
+    --greenfour:  #8CB773;
+    --greenfive:  #9ABA8E;
+
+    --lightgray:  rgba(64, 64, 64, .5);
+    --midgray:    rgba(209, 209, 209, .3);    
+
+    --darktext:   #A1A1A1;
+    --darkone:    #434343;
+
+    --link:       #AE4937;
+    --linkhover:  #C6B58D;
+
+    --text:       #A1A1A1;
+
+    --bodybackground: #0d0d0d; /* modified to be darker **/
+    --purewhite:  #D8DAD7;
+    --offwhite:   #282828;
+
+    --disabled_text:rgba(255,255,255,.2);
+
+    --content_background: #282828;
+
+
+    /******* Search Menu ******/
+    /** Gray **/
+    --highlight_primary      : rgba(0,0,0,.4);
+    --highlight_primary_soft : rgba(0,0,0,.1);
+   
+    --highlight_primary_txt  : rgba(255,255,255,.8);    
+}
+.archive_nav_v3 .ag_search_form {background:none;}  
+.archive_nav_v3 .ag_search_form:focus-within {background:rgba(0,0,0,.5);}  
+.archive_nav_v3 .menu_links {background:rgba(0,0,0,0.5);}
+.archive_nav_v3 .archive_nav_search_icon {
+    background:none;
+    color:var(--text);
+}
+.archive_nav_v3 .toggle_refinement {background:none}
+/************** End of Copied dark mode styles **************/
+
+
+.player_container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  background:black;
+}
+
+
+.full_screen_overlay {
+  aspect-ratio: 16 / 9;
+  display:flex;
+  align-items:center;
+  
+  z-index:20;
+  background:rgba(0,0,0,.8);
+}
+
+.full_screen_overlay > * {
+  color: var(--text);
+  z-index: 21;
+  padding:1em;
+}
+
+
+@supports not (aspect-ratio: 16 / 9) { 
+  .full_screen_overlay {
+    position: absolute;
+    width:100%;
+    height:0;
+    padding-top:56.25%;
+  }
+
+  .full_screen_overlay > * {
+    position: absolute;
+    top: 56.21%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width:90%;
+  }
+}
+
+
+
+
+/* Remove border so it isn't white during light theme. */
+.information_block .header_menu .basic_button {border:none;}
+
+body {background:var(--bodybackground);}
+.information_block {
+  padding:0 0 2em 0;
+  width:100%;  
+}
+.information_block header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:3px #272727 solid;
+  padding:.5em 1em;
+}
+.information_block header > * {margin:0;}
+.information_block .header_menu {
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  flex-wrap: wrap;
+}
+.information_block .header_menu > * {
+  margin:.2em .3em;
+  padding:.2em .8em;
+}
+.information_block .header_menu .divider {
+  height:1.5rem;
+  width:2px;
+  padding:0;margin:0 .5em;
+  background:rgba(0,0.0,.1);
+}  
+
+
+
+.programlist {
+  color:var(--darktext); 
+  font-size:clamp(14px, .2em + 1vw, 20px);
+}
+.programlist .program_row {
+  transition:all 100ms ease-in-out; 
+}
+.programlist .program_row:nth-child(even) {background:rgba(255,255,255,.03);}
+@media(hover: hover) and (pointer: fine) {
+  .programlist.clickable .program_row:hover {
+    background:#3A3A3A;  
+    color:white;
+    cursor:pointer;
+  }
+}
+.programlist.clickable .program_row:active {
+  background:#3A3A3A;  
+  color:white;
+  cursor:pointer;
+}
+
+.program_row .time {width:5%;}
+.program_row .time_track {
+  width:10%;
+  white-space: nowrap;
+}
+.program_row .track_time_elapsed,
+.program_row .track_time_remaining {
+  margin:0 .5em;
+}
+
+.program_row .piece_title {
+  display: block;
+}
+.program_row .movements {
+  display: block;
+  padding-left:1em;
+}
+
+@media (min-width:501px) {
+  .programlist {
+    display:table;
+    width:100%;
+  }
+  .programlist .program_row {display:table-row;}
+  .programlist .program_row > * {
+    display:table-cell;
+    padding:.7em .3em;
+    -webkit-line-clamp: 1;
+    line-clamp:1;
+  }
+  .programlist .row:nth-child(1) {padding-left:1%;}
+}
+
+@media (max-width:500px) {
+  .information_block header {
+    flex-wrap: wrap;
+    justify-content:space-evenly;
+  }
+  .information_block .header_menu {margin-left:0;}
+  .information_block header > :first-child {
+    width:100%;
+    align-self: flex-start;
+  }
+  .programlist article {
+    display: flex;
+    flex-wrap:wrap;
+    padding-top:2%;
+    padding-bottom:2%
+  }
+  .program_row .row {
+    padding:0 2%;
+    width:8%;
+  }
+  .program_row .time,
+  .program_row .time_track {width:45%;}
+  .program_row .time_track {
+    text-align: right;
+  }
+  .piece, .composer, .arranger {
+    width: 92%;
+    padding:0 0 0 8%;
+   }
+  .program_row > :nth-child(2) {padding-left:0;}
+}
+
+.programlist .program_row.active,
+.programlist .program_row:focus {
+  background:#3A3A3A;
+  color:white;
+}
+
+.loadingIcon {
+  position: absolute;
+  padding:10%;
+  text-align: center;
+  width:100%;
+  top:20.5vw;
+  font-size:3vw;
+  z-index: 9999;
+}
+
+.notificaiton.info {
+  background: rgba(39, 126, 168, 0.41);
+  padding: .5em 1em;
+  margin: 0;
+}
+

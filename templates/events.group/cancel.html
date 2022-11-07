@@ -1,0 +1,102 @@
+<button class="basic_button" data-micromodal-trigger="modal-cancel-{embed:entry_id}"><i class="fa fa-times-circle"></i> Cancel Recording</button>
+
+{exp:channel:form 
+  channel="live"
+  entry_id="{embed:entry_id}"
+  include_jquery="no"
+  include_assets="no"
+  json="yes"
+}
+<section class="modal micromodal-slide" id="modal-cancel-{embed:entry_id}" aria-hidden="true">
+  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modal-1-title">Confirm Recital Recording Cancel</h2>
+        <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+      </header>
+      <main class="modal__content">
+
+      {if '{embed:edit_expired}' == 'yes'}
+        <p>Clicking submit will cancel event and void all payments.  Are you sure?</p>
+      {if:else}
+        <p>Only cancel if you will not be giving another recital in the academic year.  Otherwise Edit this event.</p>
+      {/if}
+      <p><button id="submit_cancel_button" class="basic_button"><i class="fa fa-times-circle"></i> Cancel Recording</button></p>
+
+      </main>
+    </div>
+  </div>
+</section>          
+
+<input type="hidden" name="status" value="Cancelled" >
+
+{if "{embed:edit_expired}" == "yes"}
+  {exp:user:edit}
+  <input type="hidden" id="amount_due" name="amount_due" value="75"><br />
+  {/exp:user:edit}
+{/if}
+
+{jquery}
+<script src="/js/axios/axios.js"></script>
+<script>
+  let thisForm = document.querySelector('form');
+  let button = document.querySelector('#submit_cancel_button');
+
+  button.addEventListener('click', function(e) {
+    e.preventDefault();
+    submitForms(thisForm);
+  });
+  async function submitForms(form) {
+
+      let formSeralized = serialize(thisForm);
+      let action = thisForm.getAttribute('action');
+
+      axios.post(action, formSeralized)
+        .then(function (response) {
+
+          if (response.data.success == 1) {
+            location.reload(true);
+          } else {
+            console.log(response);
+            MicroModal.close('modal-cancel-{embed:entry_id}');
+          }
+
+        })
+        .catch(function (error) {
+           // Reload regardless of return.  There's a bug Cartthrob is returning.
+          location.reload(true);
+        });
+  }
+var serialize = function (form) {
+
+  // Setup our serialized data
+  var serialized = [];
+
+  // Loop through each field in the form
+  for (var i = 0; i < form.elements.length; i++) {
+
+    var field = form.elements[i];
+
+    // Don't serialize fields without a name, submits, buttons, file and reset inputs, and disabled fields
+    if (!field.name || field.disabled || field.type === 'file' || field.type === 'reset' || field.type === 'submit' || field.type === 'button') continue;
+
+    // If a multi-select, get all selections
+    if (field.type === 'select-multiple') {
+      for (var n = 0; n < field.options.length; n++) {
+        if (!field.options[n].selected) continue;
+        serialized.push(encodeURIComponent(field.name) + "=" + encodeURIComponent(field.options[n].value));
+      }
+    }
+
+    // Convert field data to a query string
+    else if ((field.type !== 'checkbox' && field.type !== 'radio') || field.checked) {
+      serialized.push(encodeURIComponent(field.name) + "=" + encodeURIComponent(field.value));
+    }
+  }
+
+  return serialized.join('&');
+};
+
+</script>
+
+{/exp:channel:form}

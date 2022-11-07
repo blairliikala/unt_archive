@@ -1,0 +1,1034 @@
+{!-- Create an entry from scratch.  Not currently in use.  Uses Full Calendar. --}
+{preload_replace:checkout_root="chargecheckout"}
+
+{embed=a/h title="Pay for Services" meta="Pay with a credit card services & support."}
+<!--<link href="{path='css/_ee_channel_form_css'}" type="text/css" rel="stylesheet" media="screen">-->
+
+<style>
+.new_event {
+  max-width:90%;
+  margin:0 auto;
+  padding:3%;
+  background:#efefef;
+  border-radius: 5px;
+}
+.no_select {
+  text-decoration: line-through;
+}
+#loadingIndicator {
+  position:fixed;
+  top:2em;
+  right:3em;
+  font-size:1em;
+  z-index: 99;
+}
+#loadingIndicator div {
+  border: 8px solid var(--greenfour);
+  border-top-color: var(--greenone);
+  border-radius: 50%;
+  width: 5em;
+  height: 5em;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+#loadingIndicator .hidden {
+  transition: all .5s ease-in-out;
+}
+
+h2 {
+  margin:.2em 0 .7em .2em;
+  text-transform: uppercase;
+  color:var(--text);
+  font-size:1em
+}
+
+.form_block {
+  border:1px solid var(--midgray);
+  border-bottom:0;
+  padding:.5em 1.2em 1.2em 1.2em;
+  background:var(--purewhite);
+  clear:both;
+}
+
+input{
+  outline:none;
+}
+input:focus {
+  background-color:var(--lightgray);
+}
+
+input[type=radio] {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+}
+input[type=radio]+label {
+    margin:0;
+    padding:0;
+    display: block;
+    border-radius:5px;
+    font-weight: normal;
+}
+input[type=radio]+label:before {
+    font-family: FontAwesome;
+    display: inline-block;
+    content: "\f1db";
+    letter-spacing: .5em;
+    color: var(--darktext);
+    padding:0 0 0 .4em;
+    margin:0;
+    transition: all .2s ease-in-out;
+}
+input[type=radio]+label:hover {
+  background:var(--greenfive);
+  color:var(--purewhite);
+  cursor: pointer;
+}
+input[type=radio]:checked+label:before {
+    content: "\f00c";
+    color: var(--greenfour);
+    letter-spacing: .3em;
+}
+input[type=radio]:checked+label:before,
+input[type=radio]:focus+label:before {
+  color: var(--purewhite);
+}
+input[type=radio]:checked+label,
+input[type=radio]:focus+label { 
+  color: var(--purewhite);
+  background:var(--greenfour);
+}
+
+input[type=radio]:disabled+label, input[type=radio]:disabled+label:before {color:var(--midgray);}
+@media (max-width:500px) {
+    #login_form input[type=radio] ~ label:before {padding-left:.5em;}
+    #login_form input[type=radio]:checked ~ label:before {
+        font-size: 1.1em;
+    }
+    #login_form input[type=radio]:checked ~ label {padding-right:1em;}
+    #login_form ul li ul li label {
+       font-size:1em;
+        overflow: hidden;
+        white-space: nowrap
+    }
+}
+
+input[type=text] {
+  border:0;
+  margin:0;
+}
+input[type=text]:focus {
+  font-weight: bold;
+}
+
+.helper {
+  float:right;
+  width:50%;
+  border-left:1px dashed;
+  padding:0 1em;
+  background:var(--purewhite);
+}
+
+
+
+
+.date_select_header {
+  display:flex;
+}
+
+
+.cal_menu .dropdown_button ~ label {
+  display:inline-block;
+  padding:.8em 1em;
+  background:#ccc;
+}
+.cal_menu .dropdown_button ~ label:hover {cursor:pointer;}
+
+.cal_menu .dropdown_button {display:none;}
+
+.cal_menu > label:hover, 
+.cal_menu > input:checked ~ label,
+.cal_menu .dropdown:hover ~ label
+{background:rgba(0,0,0,.3)}
+
+.dropdown {
+  position: absolute;
+  transition: all 0.5s ease;
+  background-color: var(--purewhite);
+  height:0;
+  max-height:70vh;  
+  min-width:0;
+  overflow: hidden;
+  z-index: 50;
+  padding:0 1em;
+  opacity: 0;
+  box-shadow:5px 5px 20px 0 rgba(98, 101, 97, .5);
+  border-radius:0 0 10px 10px;
+  overflow-y: visible;
+}
+.hall_menu input:checked ~ .cal_menu label:after{
+  border-top:0 solid rgba(255,255,255,.5);
+  border-bottom:4px solid rgba(255,255,255,.5);
+  transition:border-top .1s, border-bottom .1s .1s;
+}
+
+/*show the second levele menu of the selected voice*/
+.cal_menu input:checked ~ .dropdown, 
+.cal_menu input:hover ~ .dropdown, 
+.dropdown:hover {
+  height:auto;
+  min-height:20em;
+  max-height:70vh;
+  min-width:20em;
+  transition:all 0.2s ease-in-out;
+  border:1px solid var(--midgray);
+  padding-top:1em;
+  padding-bottom:1em;
+  opacity: 1;
+}
+
+.cal_menu ul {
+  list-style: none;
+  margin:0;
+  padding:0;
+}
+
+
+</style>
+
+<div id="content">
+
+  <nav id="bread">
+    <p><a href="{path=services/index}">Services</a> - <strong>Create a Recital Request</strong></p>
+  </nav>
+
+  <h1>Create a Recital Request</h1>
+  <span id="loadingIndicator" class="hidden"><div></div></span>
+
+  <section id="entryform2" class="new_event">
+
+{exp:channel:form 
+  channel="live"
+  entry_id="{segment_3}"
+  status="open|pending|closed"
+  include_jquery="no"
+  include_assets="no"
+  unique_url_title="yes"
+  id="event_form"
+  json="yes"
+}
+
+<!--
+  secure_action="yes"
+  secure_return="yes"
+  return="submit/entry/ENTRY_ID"   
+-->
+
+
+  <article class="form_block">
+    <h2>2. Select Date/Time & Hall</h2>
+    <p>Event requests must be a minimum of 2 weeks out.</p>
+
+    <article class="date_select_header">
+      <section class="cal_date_select">
+        <select id="month">
+            <option value="00" {if '{current_time format='%m'}' == '01'}selected{/if}>January</option>
+            <option value="01" {if '{current_time format='%m'}' == '02'}selected{/if}>February</option>
+            <option value="02" {if '{current_time format='%m'}' == '03'}selected{/if}>March</option>
+            <option value="03" {if '{current_time format='%m'}' == '04'}selected{/if}>April</option>
+            <option value="04" {if '{current_time format='%m'}' == '05'}selected{/if}>May</option>
+            <option value="05" {if '{current_time format='%m'}' == '06'}selected{/if}>June</option>
+            <option value="06" {if '{current_time format='%m'}' == '07'}selected{/if}>July</option>
+            <option value="07" {if '{current_time format='%m'}' == '08'}selected{/if}>August</option>
+            <option value="08" {if '{current_time format='%m'}' == '09'}selected{/if}>September</option>
+            <option value="09" {if '{current_time format='%m'}' == '10'}selected{/if}>October</option>
+            <option value="10" {if '{current_time format='%m'}' == '11'}selected{/if}>November</option>
+            <option value="11" {if '{current_time format='%m'}' == '12'}selected{/if}>December</option>
+        </select>
+        <select id="day">
+            <option value="01">01</option>
+        </select>            
+        <select id="year">
+            {!-- Plugin that displays the last x years in a option dropdown. --}
+            {exp:year_options years="-1"}
+        </select>
+      </section>
+
+      <section class="cal_menu">
+        <input id="menu1" type="checkbox" name="menu" class="dropdown_button" />
+        <label for="menu1" class="cal_name">Halls</label>
+        <div class="dropdown">
+          <label for="menu1" class="cal_name">Halls</label>
+            {options:room}
+            <li>
+              <input type="checkbox" id="{option_value}" name="{option_value}" class="hallcheckbox" data-halltitle="{option_name}" value="{option_value}" checked>
+              <label for="{option_value}">{option_name}</label>
+            </li>
+            {/options:room}
+        </div>
+      </section>
+    </article>  
+
+    <div id="calendar"></div>
+
+    <label><h2>Concerts Start</h2></label>
+    <input type="text" name="entry_date" id="entry_date" value="{entry_date}" maxlength="23" size="25" v-model="form.startDate">
+    <!--<input type="datetime-local" name="" value="2018-06-12T19:30" min="2019-01-07T00:00" max="2020-06-14T00:00">-->
+
+    <label><h2>Concert End</h2></label>
+    <input type="text" name="expiration_date" id="expiration_date" value="{expiration_date}" maxlength="23" size="25" v-model="form.endDate">
+  </article>
+
+
+
+  <article class="form_block">
+    <h2>3. Performance Hall</h2>
+    {options:room}
+      <input type="radio" id="hall_{option_value}" class="room" name="room[data][]" value="{option_value}" {checked}>
+      <label class="checkbox" for="hall_{option_value}">{option_name}</label>
+    {/options:room}
+  </article>
+
+
+
+  <article class="form_block">
+    <h2>4. Classification</h2>
+    <p>Select what kind of concert this will be.</p>
+    <div class="helper">
+      <h3>Descriptions</h3>
+      <p>DMA, Faculty, GAC, Masters and Senior Recitals have audio paid for by course fees.</p>
+      <p>DMA encompasses all doctoral recital types.</p>
+      <p>If none of the options apply, select non-degree</p>
+      <p>Faculty recitals require 51% of the concert to be performed by faculty.</p>
+      <p>Guest artist recitals will require permission to record and distribute.</p>
+    </div>
+    <div class="options">
+    {options:archive_recital_type}
+      <input type="radio" id="type_{option_value}" class="archive_recital_type" name="archive_recital_type[data][]" value="{option_value}" {checked} v-model="form.type">
+      <label class="checkbox" for="type_{option_value}">{option_name}</label>
+    {/options:archive_recital_type}
+    </div>
+  </article>
+
+
+
+  <article id="select_instrument" class="form_block hidden">
+    <h2>5. Primary Instrument</h2>
+    <select id="instrument_{option_value}" class="select2 archive_instrument" name="archive_instrument[data][]" style="width:100%">
+    {options:archive_instrument}
+      <option value="{option_value}" {checked}>{option_name}</option>
+    {/options:archive_instrument}
+    </select>
+
+    {!--
+    {options:archive_instrument}
+      <input type="radio" id="instrument_{option_value}" class="archive_instrument" name="archive_instrument[data][]" value="{option_value}" {checked}>
+      <label class="checkbox" for="instrument_{option_value}">{option_name}</label>
+      <br />
+    {/options:archive_instrument}
+    --}
+  </article>
+
+
+
+  <article id="select_ensemble" class="form_block hidden">
+    <h2>Ensembles</h2>
+    <div class="helper">
+      <p>Ensembles are defined as an offical UNT regular performing group with a course number.</p>
+      <p>If the ensemble is not listed here, please contact us.</p>
+    </div>
+    <div class="options">
+      <select id="ens_{option_value}" class="select2 related_ensembles_v2" name="related_ensembles_v2[data][]" style="width:100%">
+      {options:related_ensembles_v2}
+        <option value="{option_value}"{checked}>{option_name}</option>
+      {/options:related_ensembles_v2}
+    </select>
+    </div>
+
+    {!--
+    {options:related_ensembles_v2}
+      <input type="checkbox" id="ens_{option_value}" class="related_ensembles_v2" name="related_ensembles_v2[data][]" value="{option_value}" {checked}>
+      <label for="ens_{option_value}">{option_name} {option_value}</label>
+      <br />
+    {/options:related_ensembles_v2}
+    --}
+
+  </article>
+
+  <article class="form_block">
+    <label for="title"><h2>1. Name, instrument (just as your program will say)</h2></label>
+    <input type="text" name="title" id="title" value="{title}" size="50" maxlength="100">
+    {error:title}
+  </article>
+
+  <!--<label for="url_title">URL Title (ignore this)</label>-->
+  <input type="hidden" name="url_title" id="url_title" value="{url_title}">
+
+
+
+  <!--
+  65 = Name
+  66 = short name
+  67 = cost
+  -->
+  <article class="form_block">
+  <h2>Audio Request</h2>
+  <input 
+    type="radio" 
+    id="service_audio_nofee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="0"
+    data-name="Audio, Course Fee covered"
+    data-shortname="audio_coursefee"
+    data-price="0"
+    {if service_audio:shortname == audio_coursefee}selected{/if}
+  >
+  <label class="checkbox" for="service_audio">Audio-only Course Fee $0.00</label>
+
+  <input 
+    type="radio"
+    id="service_audio_fee" 
+    class="validateAudio" 
+    name="service_audio[rows][new_row_0][col_id_67]" 
+    value="75.00"
+    data-name="Audio-only"
+    data-shortname="audio_fee"
+    data-price="75"
+    {if service_audio:shortname == audio_coursefee}selected{/if}
+    >
+  <label class="checkbox" for="service_audio">Audio-only $75.00</label>
+
+  <!-- Name -->
+  <input type="text" id="audio_hidden_name" name="service_audio[rows][new_row_0][col_id_65]" value="" v-model="form.audionname">
+
+  <!--Shortname -->
+  <input type="text" id="audio_hidden_shortname" name="service_audio[rows][new_row_0][col_id_66]" value="" v-model="form.audioshortname">
+
+  <!-- Will need additional hidden fields to add more meta to the service type -->
+
+  </article>
+
+
+
+  <!-- Field 362
+  68 = Name
+  69 = short name
+  70 = cost
+  -->
+
+<article id="video_request" class="form_block">
+  <h2>Video Request</h2>
+  <input 
+    type="radio" 
+    id="service_video_novideo"
+    class="validateVideo"
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0" 
+    data-shortname="service_video_novideo" 
+    data-name="No Video"
+    data-price="0"
+    {if service_video:shortname == service_video_novideo}selected{/if}
+    checked
+  >
+  <label class="checkbox" for="service_video_novideo">No Video $0.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_center" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75.00"
+    data-shortname="service_video_center" 
+    data-name="Video - Center Camera"
+    data-price="75" 
+  >
+  <label class="checkbox" for="service_video_center">Video - Center Camera-only $75.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_multi" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="75.00"
+    data-shortname="service_video_multi" 
+    data-name="Video - Multiple Cameras"  
+    data-price="75"    
+  >
+  <label class="checkbox" for="service_video_multi">Video - Multiple Cameras $75.00</label>
+
+  <input 
+    type="radio" 
+    id="service_video_recitallivestream" 
+    class="validateVideo"    
+    name="service_video[rows][new_row_0][col_id_70]" 
+    value="0"
+    data-shortname="service_video_recitallivestream" 
+    data-name="Video - Recital Live Stream"         
+    data-price="0"
+  >
+  <label class="checkbox" for="service_video_recitallivestream">Video - Multiple Cameras, Live Stream $75.00</label>
+
+  <div id="video_live_ens" class="hidden">
+    <input 
+      type="radio" 
+      id="service_video_enslivestream" 
+      class="validateVideo"    
+      name="service_video[rows][new_row_0][col_id_70]" 
+      value="0"
+      data-shortname="service_video_enslivestream" 
+      data-name="Video - Ensemble Live Stream"
+      data-price="0"  
+    >
+    <label class="checkbox" for="service_video_enslivestream">Video - Ensemble Live Stream $0.00</label>
+  </div>
+
+
+
+  <!-- Name -->
+  <input type="text" id="video_hidden_name" name="service_video[rows][new_row_0][col_id_68]" value="">
+
+  <!--Shortname -->
+  <input type="text" id="video_hidden_shortname" name="service_video[rows][new_row_0][col_id_69]" value="">
+
+</article>
+
+
+  <article class="form_block">
+    <h2>Amount Due</h2>
+    <p>Payment will be required on the next page.</p>
+    <input type="number" id="amount_due" name="archive_amount_due" value="{archive_amount_due}" readonly></p>
+  </article>
+
+  <input type="hidden" id="status" name="status" value="pending">
+  <input type="hidden" id="EUID" name="exceptions" value="{logged_in_username}">
+  <input type="hidden" id="email" name="" value="{logged_in_email}">
+
+  <p><button type="submit" id="submit" class="basic_button">Submit Request <span class="submit_paymsg hidden">and Pay</span></button></p>
+
+{/exp:channel:form}
+
+</div><!--content-->
+
+{jquery}
+{embed=a/js}
+
+<script src="/js/axios/axios.js"></script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+<script src='/js/moment/moment.2.24.0.min.js'></script>
+
+
+  <link href='/js/fullcalendar/v4/packages/core/main.min.css' rel='stylesheet' />
+  <link href='/js/fullcalendar/v4/packages/bootstrap/main.min.css' rel='stylesheet' />
+  <!--<link href='/js/fullcalendar/v4/packages/daygrid/main.min.css' rel='stylesheet' />-->
+  <!--<link href='/js/fullcalendar/v4/packages/list/main.min.css' rel='stylesheet' />-->
+  <!--<link href='/js/fullcalendar/v4/packages/resource-timeline/main.min.css' rel='stylesheet' />-->
+  <link href='/js/fullcalendar/v4/packages/timegrid/main.min.css' rel='stylesheet' />
+  <!--<link href='/js/fullcalendar/v4/packages/timeline/main.min.css' rel='stylesheet' />-->
+
+  <script src='/js/fullcalendar/v4/packages/core/main.min.js'></script>
+  <script src='/js/fullcalendar/v4/packages/bootstrap/main.min.js'></script>
+  <script src='/js/fullcalendar/v4/packages/daygrid/main.min.js'></script>
+  <script src='/js/fullcalendar/v4/packages/timegrid/main.min.js'></script>
+  <!--<script src='/js/fullcalendar/v4/packages/timeline/main.min.js'></script>-->
+  <script src='/js/fullcalendar/v4/packages/interaction/main.min.js'></script>
+  <!--<script src='/js/fullcalendar/v4/packages/list/main.min.js'></script>-->
+  <!--<script src='/js/fullcalendar/v4/packages/moment/main.min.js'></script>-->
+  <script src='/js/fullcalendar/v4/packages/resource-common/main.min.js'></script>
+  <script src='/js/fullcalendar/v4/packages/resource-daygrid/main.min.js'></script>
+  <script src='/js/fullcalendar/v4/packages/resource-timegrid/main.min.js'></script>
+  <!--<script src='/js/fullcalendar/v4/packages/resource-timeline/main.min.js'></script>-->
+  <!--<script src="https://unpkg.com/v8n/dist/v8n.min.js"></script>-->
+
+<script>
+$(document).ready(function() {      
+
+  // Select 2 Ini
+  $('.select2').select2();
+
+  var total = document.getElementById('amount_due').value;
+
+  // on Load.
+  copyHiddenVideoFields();
+  calculateFee();
+
+
+  var form = document.forms['event_form'];
+
+  $('#event_form').on('change', calculateFee);
+  $('.room').on('change', roomActions);
+
+
+  function roomActions() {
+    // Winspear & Voertman.
+    const videoSupport  = ['3266', '3267'];
+    const fieldname     = 'room[data][]';
+    const videoDiv      = document.querySelector('#video_request')
+    const videoOptions  = document.querySelectorAll('.validateVideo');
+
+    if ( videoSupport.indexOf(form.elements[fieldname].value) >= 0 ) {
+      // Video Supported in this hall.
+      // Video is not supported in this hall.
+      [].forEach.call(videoOptions, function(div) {
+        div.classList.remove = 'no_select';
+        div.removeAttribute('disabled', false);
+      });
+      videoDiv.classList.remove('no_select');
+
+    } else {
+      // Video is not supported in this hall.
+      [].forEach.call(videoOptions, function(div) {
+        div.classList.add = 'no_select';
+        div.setAttribute('disabled', true);
+      });
+      videoDiv.classList.add('no_select');
+    }
+  };
+
+
+
+
+
+  $('.archive_recital_type').on('change', function(e){
+    
+    //************** Show/Hide Ensemble and Instrument List. **************//
+    switch (this.value) {
+
+      // Ensemble
+      case '8783':
+        document.querySelector('#select_ensemble').classList.remove('hidden');
+        document.querySelector('#select_instrument').classList.add('hidden');
+        document.querySelector('#video_live_ens').classList.remove('hidden'); // Show Ensemble Live stream.
+      break;
+
+      // SR, NonDeg, Masters, JR, GAC, DMA, studio
+      case '8789': case '8788': case '8779': case '8787': case '8781': case '8780': case '8790':
+        document.querySelector('#select_ensemble').classList.add('hidden');
+        document.querySelector('#select_instrument').classList.remove('hidden');
+        document.querySelector('#video_live_ens').classList.add('hidden'); // hide Ensemble Live stream.
+      break;
+
+      default:
+        document.querySelector('#select_ensemble').classList.add('hidden');
+        document.querySelector('#select_instrument').classList.add('hidden');
+    }
+
+
+    //************** Change Audio recording fees accordingly.  **************//
+
+    // DMA, Ensemble, Faculty, GAC, Masters, SR
+    const coursefee = ['8780','8783','8784','8781','8779','8789'];
+    const fieldname = 'archive_recital_type[data][]';
+
+    let noFee = document.getElementById('service_audio_nofee');
+    let fee   = document.getElementById('service_audio_fee');
+
+    if ( coursefee.indexOf(form.elements[fieldname].value) >= 0 ) {
+      // Is a degree recital. No Fee.
+      noFee.setAttribute('checked', true);
+      noFee.removeAttribute('disabled');
+      noFee.classList.remove('no_select');
+      fee.setAttribute('disabled', true);
+      fee.classList.add('no_select');
+      fee.removeAttribute('checked');
+
+    } else {
+      // Fee required.
+      noFee.setAttribute('disabled', true);
+      noFee.classList.add('no_select');
+      noFee.removeAttribute('checked');
+      fee.setAttribute('checked', true);
+      fee.removeAttribute('disabled');
+      fee.classList.remove('no_select');
+    }    
+
+    // Copy field data to hidden fields.
+    copyHiddenVideoFields();
+
+  });
+
+
+  $('.validateAudio').on('change', function(e) {
+    copyHiddenAudioFields();
+  });
+
+  $('.validateVideo').on('change', function(e) {
+    copyHiddenVideoFields();
+  });
+
+
+
+
+
+  function calculateFee() {
+    //var mydata = $(form+' [data-price]:checked');
+    var mydata = $('[data-price]:checked');
+    var total = 0;
+
+    mydata.each( function(i,elm){
+      total = total + $(mydata[i]).data('price');
+    });
+    // Update field.
+    document.getElementById('amount_due').value = total;
+
+    // Show message on submit button.
+    if (total*1 > 0) {
+      document.querySelector('.submit_paymsg').classList.remove('hidden');
+      document.querySelector('#status').value = 'needspayment';
+    } else {
+      document.querySelector('.submit_paymsg').classList.add('hidden');
+      document.querySelector('#status').value = 'pending';
+    }
+  }
+
+
+  function copyHiddenVideoFields() {
+      document.querySelector('#video_hidden_name').value = document.querySelector('.validateVideo').dataset.name;
+      document.querySelector('#video_hidden_shortname').value = document.querySelector('.validateVideo').dataset.shortname;
+  }
+  function copyHiddenAudioFields() {
+      document.querySelector('#audio_hidden_name').value = document.querySelector('.validateAudio').dataset.name;
+      document.querySelector('#audio_hidden_shortname').value = document.querySelector('.validateAudio').dataset.shortname;
+  }
+  function showLoadingIndicator(toggle) {
+    // toggle = true then show it.
+    if(toggle) {
+      document.querySelector('#loadingIndicator').classList.remove('hidden');
+    } else {
+      document.querySelector('#loadingIndicator').classList.add('hidden');             
+    }
+  }
+
+
+
+
+
+
+
+  $('#event_form').on('submit', function(event){
+    event.preventDefault();
+    showLoadingIndicator(true);
+
+    let form = $('#event_form');
+    let formSeralized = form.serialize();
+    let action = form.attr('action');
+
+    axios.post(action, formSeralized)
+      .then(function (response) {
+
+        // Hide loading.
+        showLoadingIndicator(false);
+
+        // If they pay, redirect.
+        if (total*1 > 0) {
+          // EE creates and returns and entry ID if all goes well.
+          // let entry_id = response.data.entry_id;
+          let entry_id = 11994;
+
+// Need a popup just incase redirect does not work.
+          window.location.replace("/chargecheckout/"+entry_id);
+        } else {
+          
+          window.location.replace("/submit");
+
+        }
+
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+  });
+
+
+     
+
+ // MicroModal.init();
+
+ // var today = new Date();
+  //var currentDate = today;
+  var searchParams = {}; // Additional parameters for Low Search when returning entries.
+  var calendarEvent;
+
+  const calendarEl = document.getElementById('calendar');
+
+  const defaultStartDate = new Date();
+  defaultStartDate.setDate(defaultStartDate.getDate() + 15);
+
+  //** Min booking date. **/
+  const minBookingDate = new Date();
+  minBookingDate.setDate(minBookingDate.getDate() + 14);
+
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    plugins: [ 
+      //'dayGrid',
+      //'timeGrid',
+      'interaction',
+      'resourceTimeGrid',
+      //'resourceTimeline',
+    ],
+
+    slotDuration: '00:30:00',
+    nowIndicator: true,
+
+    editable: true,
+    eventResizableFromStart: true,
+    selectable: true,
+    placeholder: true,
+    selectMirror: true,
+    //eventStartEditable: false,
+    eventOverlap:false,
+    selectOverlap:false,
+    unselectAuto:false,
+
+    defaultTimedEventDuration: '1:00',
+
+    resourceLabelText: 'Halls',
+
+    eventResize: function(arg) {
+      console.log(arg);
+    },
+
+    defaultDate: defaultStartDate,
+
+    select: function(arg) {
+
+      let startTime   = moment(arg.startStr).format('M/D/YYYY h:mm A');
+      let endTime     = moment(arg.endStr).format('M/D/YYYY h:mm A');
+      let roomID      = arg.resource.id;
+
+      document.getElementById('entry_date').value = startTime;
+      document.getElementById('expiration_date').value = endTime;
+      document.getElementById('hall_'+roomID).setAttribute('checked', true);
+
+      if (calendarEvent == ''){
+        //calendarEvent = this.addEvent(arg);
+      };
+
+
+      /*** Min Time ***/
+      let selectedDate = moment(arg.startStr);
+
+      if (minBookingDate >= selectedDate) {
+        console.log('Selected date is below threshold.');
+      }
+
+      roomActions(); // Fire function to enable, disable things.
+
+    },
+    unselect: function(arg) {
+      console.log('Unselect', arg);
+    },
+
+    schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+
+    header: {
+      left: 'prev,next',
+      center: 'title',
+      right: ''
+    },
+
+    defaultView: "resourceTimeGrid",
+
+    buttonText : {
+      resourceTimeGrid : "Roomview"
+    },
+
+    views: {
+      resourceTimeGrid: {
+        minTime: '09:00:00',
+      }
+    },
+
+    dayRender: function(dayRenderInfo) {
+      // Date, el, view
+    },
+
+    eventSources: [
+      {
+        startParam: 'range-from:entry_date', // to be added to URL dynamically.  Matches Low Search.
+        endParam: 'range-to:expiration_date', // to be added to URL dynamically.  Matches Low Search.
+        url: '/feeds/concert-item-medium?limit=1000&status=open&show_expired=yes&show_future_entries=yes',
+        method: 'GET',
+        extraParams: searchParams,             
+        failure: function(error) {
+          alert('there was an error while fetching events!' + error);
+        }
+      }          
+    ],
+
+    resources: [
+      {exp:channel:entries 
+        channel="rooms" 
+        sort="desc"
+        dynamic="off" 
+        disable="member_data|pagination|category_fields"
+        cache="yes"
+        refresh="10000"
+      }  
+      {
+        id: '{entry_id}',
+        title: '{title}',
+      }{if count < total_results},{/if}
+      {/exp:channel:entries}
+    ],
+
+    eventClick: function (item) {
+      console.log(item);
+    },
+
+    loading: function (bool) {
+      if (bool) {
+        document.querySelector('#loadingIndicator').classList.remove('hidden');
+      } else {
+        document.querySelector('#loadingIndicator').classList.add('hidden');           
+      }
+    }    
+  });
+
+  /** Add an event from now till min booking date. Blocks ablity to book dates below the min date **/
+  calendar.addEvent(
+    {
+      title: 'Blocked',
+      start: new Date(),
+      end: minBookingDate,
+      //allDay: true,
+    }
+  );
+
+  function setResources(calendar) {
+    const bootResources = ['3270','7432','3271','3274','3273','3272'] // Resources (halls) to remove when the page loads.
+    const resourceCheckbox = document.querySelectorAll('.hallcheckbox'); // Checkbox class.
+
+    // Remove resource from Full Calendar.
+    bootResources.forEach(function(item, index) {
+      let resource = calendar.getResourceById(item);
+      resource.remove();
+    });
+
+    // Uncheck halls in dropdown menu.
+    resourceCheckbox.forEach( function(element) {
+      let checkboxValue = element.value;
+      if (bootResources.includes(checkboxValue)) {
+        element.removeAttribute('checked');
+      } else {
+        element.setAttribute('checked', true);
+      }
+    });
+  }
+
+  setResources(calendar);
+  calendar.render();
+
+  updateDays(moment().month());
+
+  function updateDays(month) {
+      // Update number of days
+      let daysArray = getDaysArrayByMonth(month); // get number of days in month.
+      let html = ''; // blank out variable.
+      let n = 1; // Start with 1 so you see day 1.
+      while (n <= daysArray.length) {
+         html += '<option value="'+n+'">'+n+'</option>';
+         n++;
+      };
+      document.getElementById('day').innerHTML = html;
+  }
+
+
+  function getDaysArrayByMonth(month) {
+    var daysInMonth = moment().month(month).daysInMonth();
+    var arrDays = [];
+    while(daysInMonth) {
+      var current = moment().date(daysInMonth);
+      arrDays.push(current);
+      daysInMonth--;
+    }
+    return arrDays;
+  }  
+
+  function pageUpdate(segment, IDthis) {
+      let month  = $("#month").val();
+      let day    = $("#day").val();
+      let year   = $("#year").val();
+      let newDate = moment().set('year', year).set('month', month).set('day', day).subtract({hours:5}).toISOString();
+      calendar.gotoDate( newDate );
+  };
+
+  $("#month").change(function() {
+      updateDays(this.value);
+      pageUpdate(5, this);
+  });
+  $("#day").change(function(){
+    pageUpdate(6, this);
+  });
+
+  $("#year").change(function() {
+      pageUpdate(4, this);
+  });
+
+
+
+
+
+
+  $('.hallcheckbox').on('change', function(element){
+    let resource = calendar.getResourceById(this.name);
+    if(this.checked){
+      calendar.addResource({
+        id : this.name,
+        title : this.dataset.halltitle,
+      });
+    } else {
+      resource.remove();
+    }
+  });
+
+
+
+
+
+
+  $('#entry_date').on('change', function(){
+    let date = moment(this.value);
+    let minutes = moment(date).minutes();
+    let hours = moment(date).hours();
+
+    var m = (parseInt((minutes + 7.5)/15) * 15) % 60;
+    var h = minutes > 52 ? (hours === 23 ? 0 : ++hours) : hours;
+
+    let roundedDate = date.minute(m).hour(h).format('M/D/Y h:mA');
+
+    this.value = roundedDate;
+  });
+
+  $('#expiration_date').on('change', function(){
+    let date = moment(this.value);
+    let minutes = moment(date).minutes();
+    let hours = moment(date).hours();
+
+    var m = (parseInt((minutes + 7.5)/15) * 15) % 60;
+    var h = minutes > 52 ? (hours === 23 ? 0 : ++hours) : hours;
+
+    let roundedDate = date.minute(m).hour(h).format('M/D/Y h:mA');
+
+    this.value = roundedDate;
+  });
+
+
+
+
+});
+</script> 
+
+
+{embed=a/f} 

@@ -1,0 +1,76 @@
+{!-- Shows iCal formatted events for upcoming live streams.  Events are removed afterwards.
+	For use, /feeds//ical-livestream/anything.ics
+--}{exp:ce_cache:it global="yes" seconds="604800" tags="ical"}BEGIN:VCALENDAR
+METHOD:PUBLISH
+VERSION:2.0
+X-WR-CALNAME:Upcoming Concerts
+X-WR-CALDESC:All UNT College of Music Live Stream Events
+X-APPLE-CALENDAR-COLOR:#2952A3
+X-WR-TIMEZONE:America/Chicago
+PRODID:UNT Recording Services
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+LAST-MODIFIED:20050809T050000Z
+BEGIN:STANDARD
+DTSTART:20071104T020000
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0600
+TZNAME:CST
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:20070311T020000
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0400
+TZNAME:EDT
+END:DAYLIGHT
+END:VTIMEZONE
+{exp:channel:entries 
+	channel="live" 
+	show_future_entries="yes" 
+	limit="500" 
+	show_expired="no" 
+    status="LiveStream|Scheduled" 
+	search:live_stream="yes"
+	disable="pagination|categories|member_data" 
+	cache="yes" refresh="600"
+}
+BEGIN:VEVENT
+TRANSP:OPAQUE
+UID:{entry_id}
+LOCATION:{if room:entry_id=="3266" OR room:entry_id=="3270"}Murchison Performing Arts Center\, 2100 Interstate 35E Frontage Rd\, Denton\, TX 76201
+{if:else}Music Building\, 415 Ave C\, Denton, TX 76201\, USA
+{/if}
+URL;VALUE=URI:http://recording.music.unt.edu/live
+DESCRIPTION:{room:title} Live events start 15 minutes beforehand.
+SEQUENCE:{if archive_ical_increment}{archive_ical_increment}{if:else}1{/if}
+SUMMARY:{title}
+{concert_program}ATTACH;FILENAME={concert_program:filename}.{concert_program:extension};FMTTYPE=text/pdf;MANAGED-ID=100000{concert_program:source_id}
+ 65539ff;SIZE={concert_program:size unformatted="yes"};VALUE=URI:http://recording.music.unt.edu{concert_program:url}{/concert_program}
+DTSTART;TZID=America/Chicago:{entry_date format="%Y%m%dT%H%i%s"}
+DTEND;TZID=America/Chicago:{expiration_date format="%Y%m%dT%H%i%s"}
+DTSTAMP;TZID=America/Chicago:{if edit_date}{edit_date format="%Y%m%dT%H%i%s"}{if:else}20190701T110000{/if}
+BEGIN:VALARM
+X-WR-ALARMUID:{entry_id}{entry_id}
+UID:{entry_id}{entry_id}
+TRIGGER;VALUE=DATE-TIME:{entry_date format="%Y%m%dT%H%i%s"}Z
+ACTION:NONE
+END:VALARM
+BEGIN:VALARM
+X-WR-ALARMUID:{entry_id}{entry_id}
+UID:{entry_id}{entry_id}
+TRIGGER:-PT1M
+ATTACH;VALUE=URI:Basso
+ACTION:AUDIO
+END:VALARM
+END:VEVENT
+{ical_space}{/exp:channel:entries}
+END:VCALENDAR
+{/exp:ce_cache:it}
+
+{!--
+
+X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=2100 N Interstate 35 E\\
+ nDenton TX 76205;X-APPLE-RADIUS=99;X-TITLE=2100 N Interstate 35 E:geo:33
+ .208022,-97.159236
+
+ --}

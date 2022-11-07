@@ -1,0 +1,61 @@
+{embed=a/h title="Engineers" meta="Internal Training Guide"}
+{jquery}
+<script src="/js/fancybox-2.1.4/jquery.fancybox.js"></script>
+<link rel="stylesheet" href="/js/fancybox-2.1.4/jquery.fancybox.css" />
+<script>
+	$(document).ready(function() { 
+		$("a.popup").fancybox({
+		'openEffect'	:	'elastic',
+		'closeEffect'	:	'elastic',
+		'openSpeed'		:	200, 
+		'closeSpeed'	:	200, 
+		'overlayShow'	:	false,
+		'helpers'		: {
+			overlay	:null,
+			closeClick: true	
+		},
+		'closeClick': true
+		});
+	});
+</script>
+
+<div id="content">
+<nav class="engineer_content_nav">
+
+<p><a href="/sys/" class="basic_button" target="_blank" rel="noopener noreferrer" style="color:var(--text);margin-top:3em">Admin Login</a></p>
+
+<h3>Guides:</h3>
+  {exp:channel:category_archive channel="engineers" style="nested"}
+    {categories}{category_name}{/categories}
+    {entry_titles}
+	    <a href="{site_url}/engineers/pages/{entry_id}" {if '{segment_3}'=='{entry_id}'}class="active"{/if}>{title}</a>
+    {/entry_titles}
+  {/exp:channel:category_archive}
+
+	<h3>Calendar</h3>
+	<ul>
+		<li><a href="https://www.google.com/calendar/embed?src=19sckb9510vpifrnrldb87jfvs%40group.calendar.google.com&ctz=America/Chicago" class="tippy" title="HTML Web view.">Google Calendar Web</a></li>
+		<li><a href="https://www.google.com/calendar/ical/19sckb9510vpifrnrldb87jfvs%40group.calendar.google.com/public/basic.ics" class="tippy" title="iCal/Outlook feed.">Google Calendar Feed</a></li>
+		<li><a href="http://calendar.music.unt.edu" class="tippy" title="Concert Hall books by hour.">Roomview</a></li>
+	</ul>
+
+</nav>
+
+<section class="engineer_content">
+
+{exp:channel:entries channel="engineers"}
+<h2>{title}</h2>
+<section id="last_edited"><p>This guide was last updated {edit_date format="%F %j, %Y"}</p></section>
+
+{engineers_guide_body}
+
+{/exp:channel:entries}
+<div class="clear"></div>
+
+</section>
+
+<div class="clear"></div>
+</div>
+{embed=a/js}
+
+{embed=a/f}

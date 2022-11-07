@@ -1,0 +1,132 @@
+{preload_replace:template_root="ctcheckout"}
+
+{embed=a/h title="View Cart" meta="Double-check items in the cart"}
+
+<div id="content">
+
+    <h3><span class="fa fa-shopping-cart"></span> Your Cart</h3>
+    <nav id="bread">
+		  <p><a href="{path={template_root}/index}">Catalog</a> - <strong>Cart</strong>  <span style="color:#ccc">- Payment</span> <span style="color:#ccc">- Complete</span></p>
+    </nav>
+
+    <article class="center-align">
+
+      {!--{exp:cartthrob:cart_items_info search:global_video_download="yes"}--}
+      {exp:cartthrob:cart_items_info}
+   		
+        {if no_results}<h1>Your cart is Empty.</h1>{/if}
+ 
+  			{!-- outputting data that is only applicable for the first item. --}
+  			{if first_row}
+  				{exp:cartthrob:update_cart_form id="cart_update_form" return="{template_root}/view_cart"}
+   
+  					{!-- update_cart_form allows you to edit the information of one or more items in the cart at the same time as well as save customer information, and shipping options. --}
+  						<table class="cart_contents">
+  							<thead>
+  								<tr>
+  								<td>Item</td>
+  								<td>Quantity</td>
+  								<td>Price</td>
+  								<td>Delete</td>
+  								</tr>
+  							</thead>
+  							<tbody>
+  			 {/if}
+                  <tr>
+                    <td>
+                      {if entry_id == 935 OR entry_id == 934}
+                        {title}
+                      {if:else}
+                        <a href="/downloads/item/{entry_id}">{title}</a>
+                      {/if}
+                    </td>
+                    <td><input type="number" name="quantity[{row_id}]" size="2" value="{quantity}" /></td>
+                    <td>{item_subtotal}</td>
+                    <td class="delete"><input type="checkbox" name="delete[{row_id}]"></td>
+                  </tr>
+        	{if last_row}
+	        {!-- outputting data that's only applicable for the last item. --}
+                <tr>
+                  <td></td>
+                  <td style="text-align:right"><strong>Total</strong></td>
+                  <td><strong>{exp:cartthrob:cart_subtotal}</strong></td>
+                  <td></td>
+                </tr> 
+                </tbody>
+              </table>
+				<aside class="cart_update_buttons">
+					<button type="submit" name="update_cart" value="Update Cart" id="updateCartButton" class="basic_button"><span class="fa fa-refresh"></span> Update Cart</button>
+					<button type="submit" name="clear_cart" value="Clear Cart" class="basic_button" /><span class="fa fa-trash"></span> Clear Cart</button>
+				</aside>
+				
+				
+				{/exp:cartthrob:update_cart_form}
+        <a href="{path={template_root}/checkout}" id="complete_order_button" class="submit_order_button">Payment <span class="fa fa-arrow-right"></span></a>
+				
+      </article>
+
+
+<!--
+        <section class="checkout_info">
+
+					<article class="order_info">
+						
+            <h4><span class="fa fa-question"></span> Need Help?</h4>
+						<p>Call us at (940) 565 3780 or email at recordingservices@unt.edu</p>
+						
+            <h4><span class="fa fa-exclamation"></span> Quanity</h4>
+						<p>Only (1) quantity is required to download.  The option is there incase additional quantities were added by accident.</p>
+
+            <h4>Concert Download Notes</h4>
+            <p>Concert video downloads have an availability of 1 year from the date of purchase.  This grants you a license for personal use.  Ensemble recordings are owned by UNT, and may not be resold, repackaged or distributed publicly without permission.  See our <a href="/services">Services</a> page for more information on copyrights and uses.</p>
+
+					</article>
+-->				
+
+
+          {!-- Never have use discount codes!
+ 					<section id="apply_coupon_code">
+						<h4>Apply Coupon Code</h4>
+    	       {exp:cartthrob:add_coupon_form return="{template_root}/view_cart"}
+					    <input type="text" name="coupon_code" />
+					    <input type="submit" name="Add Coupon" />
+						{/exp:cartthrob:add_coupon_form}
+					</section>
+          --}
+								
+
+
+          <article class="totals">
+
+            {!-- Makes sub totals pointless.
+            {if cart_discount != 0}    
+              <p class="sub_totals">
+              Sub total: {exp:cartthrob:cart_subtotal}<br />
+              {Discount: {cart_discount}
+              </p>
+            {/if}
+      			<p><strong id="actual_total">Total: {cart_total}</strong></p>
+            --}
+
+      			
+				  </article>
+
+        </section>
+        {/if}
+
+    {/exp:cartthrob:cart_items_info}
+
+</div><!--content-->
+{embed=a/js}
+
+<script>
+
+/** Detect form changes, Remind users to click update cart. **/
+let form = document.querySelector('#cart_update_form');
+form.addEventListener('change', e => {
+  document.querySelector('#updateCartButton').classList.add('untgreen');
+});
+
+</script>
+
+{embed=a/f}

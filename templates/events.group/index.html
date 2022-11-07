@@ -1,0 +1,194 @@
+{!-- For submitting new events.  This was a test for trying to attach payment information. --}
+{!-- What likely has to happen is the entry status is changed when a purchase is complete. --}
+
+{embed=a/h title="Submit Event Home"}
+<style>
+  table {
+
+  }
+.event_actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+</style>
+
+<h1 style="margin:1em">Upcoming Recital Recordings</h1>
+
+<div class="thirds_container">
+{embed=me/_nav}
+
+<div class="thirds_content">
+<!--<p style="text-align: right"><a href="/events/import" class="basic_button"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> Create New</a></p>-->
+
+{exp:member:custom_profile_data}
+  {if amount_due > 0}
+  <p id="admin_notice" class="bad"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> You currently owe ${amount_due}.00 on your next event.</p>
+  {/if}
+{/exp:member:custom_profile_data}
+
+
+{exp:channel:entries
+  channel="live"
+  show_expired="no"
+  show_future_entries="yes"
+  search:archive_euid="{logged_in_username}"
+  disable="pagination|categories|member_data"
+  status="open|pending|closed|pending|NeedsPayment|WaitingForReview|LiveStream|PendingVideo|PendingAudio|scheduled"
+}
+  {!-- search:exceptions="{logged_in_username}" --}
+  {!-- {exceptions backspace="1"}{item}|{/exceptions} --}
+
+  {if no_results}
+  <p>There are no upcoming events tagged with your EUID to display here.  Events are synced every hour, 30 days out.</p>
+  {/if}
+
+  {if count=='1'}
+    <h3>Upcoming Events</h3>
+  {/if}
+    <table>
+      <thead>
+        <td>Event Date</td>
+        <td>Name</td>
+        <td>Change Deadline</td>
+        <td>Status</td>
+        <td>Service</td>
+      </thead>
+    <tr class="{status} {if archive_change_deadline != '' AND current_time > archive_change_deadline} edit_expired_row{/if}">
+      <td><time datetime="{entry_date format='{DATE_ATOM}'}">{entry_date format="%n/%d/%Y %g:%i%a"}</time></td>
+      <td>{title} <br />{archive_instrument backspace="2"}{archive_instrument:title}, {/archive_instrument}</td>
+      <td class="{if archive_change_deadline != '' AND current_time > archive_change_deadline}edit_expired_time{if:else}editable{/if}">
+        {if archive_change_deadline == ''}
+          <small style="color:#ccc">No edit deadline was set.</small>
+        {/if}
+        {archive_change_deadline format="%n/%d/%Y %g:%i%a"}
+      </td>
+      <td>{status}</td>
+      <td>
+          {service_audio}{if service_audio:option_name}{service_audio:option_name}{/if}{/service_audio}
+          {service_video}{if service_video:option_name}<br />{service_video:option_name}{/if}{/service_video}
+      </td>
+    </tr>
+  </table>
+
+      <section class="event_actions">
+
+        {if archive_charege_paid ==''}
+          {if
+            "{archive_amount_due}" > 0 OR 
+            "{service_audio limit='1'}{service_audio:cost}{/service_audio}" > 0 OR 
+            "{service_video limit='1'}{service_video:cost}{/service_video}" > 0
+          }
+            {service_audio limit='1'}
+              <a href="/chargecheckout/{entry_id}" class="basic_button tippy" title="This recital requires payment for a service type not covered by a course fee."><i class="fa fa-credit-card-alt" aria-hidden="true"></i> Pay</a>
+            {/service_audio}            
+          {/if}
+        {/if}
+
+        {if archive_change_deadline == '' OR current_time < archive_change_deadline}
+          <!-- More than 2 weeks of notice. -->
+          <!-- Show Edit Entry -->
+          <a href="{entry_id_path='events/edit'}" id="edit_button_{entry_id}" class="basic_button" data-tippy-content="You can edit this until 2 weeks ahead of the event."><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></p>
+
+          <!-- Show Cancell Entry -->
+          {embed=events/cancel entry_id="{entry_id}" edit_expired="no"}
+          
+          {if archive_charge_hash_receipt !=''}
+            <div data-tippy-content="Please send us an email with the event for refunds.">Request Refund</div>
+          {/if}
+
+        {if:else}
+          <!-- Less than 2 weeks of notice -->
+          {embed=events/cancel entry_id="{entry_id}" edit_expired="yes"}
+        {/if}        
+
+      </section>
+  {if count==total_results}
+  {/if}
+{/exp:channel:entries}
+
+
+
+
+{exp:channel:entries
+  channel="live"
+  show_expired="yes"
+  show_future_entries="no"
+  search:archive_euid="{logged_in_username}"
+  disable="pagination|categories|member_data"
+  status="open|pending|closed|pending|NeedsPayment|WaitingForReview|PendingVideo|PendingAudio"
+  cache="yes"
+  refreesh="1000"
+}
+  {if count=='1'}
+  <h3>Past Events</h3>
+  <table>
+
+    <table>
+      <thead>
+        <td>Date</td>
+        <td>Name</td>
+        <td>Hall</td>
+        <td>Last Edit Date</td>
+        <td>Status</td>
+        <td>Audio</td>
+        <td>Video</td>
+        <td>Paid</td>
+        <td></td>
+      </thead>
+  {/if}      
+      <tr>
+        <td>{entry_date format="%M %j, %Y %g:%m%a"}</td>
+        <td>{title}</td>
+        <td>{room backspace="2"}{room:title}, {/room}</td>
+        <td>{edit_date format="%n/%j/%Y %g:%i%a"}</td>
+        <td>{status}</td>
+        <td>{service_audio backspace="6"}{service_audio:option_name}<br />{/service_audio}</td>
+        <td>{service_video backspace="6"}{service_video:option_name}<br />{/service_video}</td>
+        <td>{if archive_charge_hash_receipt !=""}Yes{if:else}No{/if}</td>
+        <td class="edit">{if status=='open'}<a href="{entry_id_path='downloads/entry}">View</a>{/if}</td>
+      </tr>
+    {if count==total_results}
+    </table>
+    {/if}
+{/exp:channel:entries}
+
+</div>
+</div>
+{jquery}
+{embed=a/js}
+
+<link rel="stylesheet" href="{path=events/event_form_styles}" />
+
+<script src='/js/moment/moment.2.24.0.min.js'></script>
+<script>
+
+tippy('.tippy2');
+
+
+const today     = moment();
+const deadline  = moment().add(15, 'days');
+
+function actionCancel(id) {
+  if (today < deadline) {
+    let item = document.querySelector('#cancel_'+id);
+    item.classList.add('hidden');
+  }
+}
+
+function actionEditDeadline() {
+  if (today < deadline) {
+    //let item = document.querySelector('#edit_button_'+id);
+    //item.classList.add('hidden');
+    /*
+    let document.querySelector('#edit_${id}');
+    item.innerHTML = "Edit window deadline has pasted.";
+    */
+  }
+}
+
+</script>
+
+
+{embed=a/f}
