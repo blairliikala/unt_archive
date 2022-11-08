@@ -698,7 +698,7 @@ document.querySelectorAll('[data-videodownload]').forEach( element => {
     let videotype = element.dataset.videotype;
     try {
       var Airtable = require('airtable');      
-      var base = new Airtable({apiKey: 'keyZb7gzIYOF7QDRR'}).base('appm24BJQOEjuWSDn');
+      var base = new Airtable({apiKey: 'xxx'}).base('xxxx');
       base('VideoAccessLog').create({
         "ee_user_id"  : {logged_in_member_id},
         "email"       : "{logged_in_email}",
@@ -2033,7 +2033,7 @@ async function playpause(eventSeeked, finishedPrevious) {
       try {
 
         var Airtable = require('airtable');
-        var base = new Airtable({apiKey: 'keyZb7gzIYOF7QDRR'}).base('app5xTaHVo8L4WF0K');
+        var base = new Airtable({apiKey: 'xxx'}).base('xxxx');
 
         base('AudioAccessLog').create({
           "ee_user_id"  : {logged_in_member_id},
